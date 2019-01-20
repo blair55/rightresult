@@ -5,6 +5,7 @@ open System.IO
 open System.Threading
 
 open FSharp.Core
+open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Builder
@@ -24,6 +25,15 @@ open Server.Infrastructure.ElasticSearch
 open Server.HttpHandlers
 open Shared.Routes
 open Persistence
+
+
+// open Microsoft.AspNetCore
+// open Microsoft.AspNetCore.Builder
+// open Microsoft.AspNetCore.Hosting
+// open Microsoft.Extensions.DependencyInjection
+
+open FSharp.Control.Tasks.V2
+
 
 module Server =
 
@@ -272,7 +282,6 @@ module Server =
       | Some l -> Ok { LeagueName = l.LeagueName }
       | None -> ValidationError ("could not find league") |> Error
 
-
     let getLeagueWindow leagueId window : Rresult<LeagueTableDoc> =
       ElasticSearch.repo deps.ElasticSearch
       |> fun repo -> repo.Read (LeagueTableDocument (leagueId, window))
@@ -336,7 +345,11 @@ module Server =
         leaveLeague = leaveLeague
       }
 
-    FableGiraffeAdapter.httpHandlerWithBuilderFor protocol Routes.builder
+    // FableGiraffeAdapter.httpHandlerWithBuilderFor protocol Routes.builder
+    Remoting.createApi()
+    |> Remoting.withRouteBuilder Routes.builder
+    |> Remoting.fromValue protocol
+    |> Remoting.buildHttpHandler
 
   [<CLIMutable>]
   type FixtureSetHttp =
