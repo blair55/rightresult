@@ -4,10 +4,16 @@ group Server
     storage: none
 
     nuget FSharp.Core
+    nuget FSharp.Data 3.0.0-beta4 beta
     nuget Giraffe
     nuget Microsoft.AspNetCore
     nuget Microsoft.AspNetCore.StaticFiles
     nuget Fable.Remoting.Giraffe
+    nuget jose-jwt
+    nuget Fable.JsonConverter
+    nuget Newtonsoft.Json
+    nuget EventStore.ClientAPI.NetCore
+    nuget Neo4jClient
 
 group Client
     source https://api.nuget.org/v3/index.json
@@ -23,6 +29,7 @@ group Client
     nuget Fable.Remoting.Client ~> 4
     nuget Fulma
     nuget Fable.FontAwesome.Free
+    nuget Thoth.Elmish.Toast
 
 group Build
     source https://api.nuget.org/v3/index.json
@@ -34,3 +41,7 @@ group Build
     nuget Fake.DotNet.Cli
     nuget Fake.IO.FileSystem
 
+group Tests
+    storage: none
+    source https://api.nuget.org/v3/index.json
+    nuget Expecto

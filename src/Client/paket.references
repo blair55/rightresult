@@ -7,4 +7,5 @@ group Client
     Fable.Remoting.Client
     Fulma
     Fable.FontAwesome.Free
+    Thoth.Elmish.Toast
 

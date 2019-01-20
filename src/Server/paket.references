@@ -4,3 +4,9 @@ group Server
     Microsoft.AspNetCore
     Microsoft.AspNetCore.StaticFiles
     Fable.Remoting.Giraffe
+    Fable.JsonConverter
+    FSharp.Data
+    jose-jwt
+    Newtonsoft.Json
+    EventStore.ClientAPI.NetCore
+    Neo4jClient

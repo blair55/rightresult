@@ -4,8 +4,34 @@
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="..\Shared\Shared.fs" />
-        <Compile Include="Client.fs" />
+    <Compile Include="..\Shared\Shared.fs" />
+    <Compile Include="Routes.fs" />
+    <Compile Include="Areas\Components.fs" />
+    <Compile Include="Areas\Login.fs" />
+    <Compile Include="Areas\Home.fs" />
+
+    <Compile Include="Areas\Fixtures\OmniFixtures.fs" />
+    <Compile Include="Areas\Fixtures\AddFixtureSet.fs" />
+    <Compile Include="Areas\Fixtures\FixturesArea.fs" />
+
+    <Compile Include="Areas\Leagues\CreateLeague.fs" />
+    <Compile Include="Areas\Leagues\Leagues.fs" />
+    <Compile Include="Areas\Leagues\League.fs" />
+    <Compile Include="Areas\Leagues\JoinLeague.fs" />
+    <Compile Include="Areas\Leagues\LeaveLeague.fs" />
+    <Compile Include="Areas\Leagues\LeagueHistory.fs" />
+    <Compile Include="Areas\Leagues\LeagueHistoryTable.fs" />
+    <Compile Include="Areas\Leagues\GlobalLeague.fs" />
+    <Compile Include="Areas\Leagues\LeagueMatrix.fs" />
+    <Compile Include="Areas\Leagues\LeagueTable.fs" />
+    <Compile Include="Areas\Leagues\LeaguesArea.fs" />
+
+    <Compile Include="Areas\Players\AllPlayers.fs" />
+    <Compile Include="Areas\Players\Player.fs" />
+    <Compile Include="Areas\Players\PlayerFixtureSet.fs" />
+    <Compile Include="Areas\Players\PlayersArea.fs" />
+
+    <Compile Include="Client.fs" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

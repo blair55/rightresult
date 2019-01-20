@@ -1,0 +1,92 @@
+$brand-green: #00d1b2
+
+.text-right
+  text-align: right
+.text-left
+  text-align: left
+table.table th.text-right
+  text-align: right !important
+table.table th.text-left
+  text-align: left !important
+
+.matrix
+  .matrix-header-container
+    position: relative
+    height: 42px
+    .matrix-header
+      position: absolute
+    .matrix-header.home
+      left: 17px
+    .matrix-header.away
+      right: 17px
+  .matrix-player-row td
+    padding: .5em .75em .3em
+  .matrix-player-name, .matrix-player-score
+    white-space: nowrap
+    line-height: 2em
+
+.scorebox-container
+  $default-color: #f5f5f5
+  $white: #fff
+  width: 64px
+  height: 36px
+  position: relative
+  margin: 0 auto
+  .scorebox
+    position: absolute
+    width: 30px
+    height: 30px
+    align-items: center
+    background-color: $default-color
+    border-color: $default-color
+    border-style: solid
+    border-width: 1px
+    border-radius: 4px
+    color: #4a4a4a
+    display: inline-flex
+    justify-content: center
+    line-height: 1.5
+    padding-left: .75em
+    padding-right: .75em
+    white-space: nowrap
+    font-weight: bold
+  .scorebox-left
+    left: 1px
+  .scorebox-right
+    right: 1px
+
+  // .scorebox.kicked-off
+  // .scorebox.no-points
+  .scorebox.correct-result
+    background-color: $white
+    border-color: $brand-green
+    border-width: 2px
+
+  .scorebox.correct-score
+    background-color: $brand-green
+    border-color: $brand-green
+    color: $white
+
+  .scorebox-dd
+    @extend .scorebox
+    background-color: #ffdd57
+    width: 18px
+    height: 18px
+    font-size: 10px
+    left: 23px
+    bottom: 1px
+    border: none
+
+.player-fixtureset
+  .player-fixtureset-team
+    line-height: 2em
+  .badge
+    margin: 0.2em 0.5em
+  .home .badge
+    float: right
+  .away .badge
+    float: left
+
+.card.card-footer-only
+  .card-footer
+    border-top: none

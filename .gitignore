@@ -11,4 +11,7 @@ release.cmd
 release.sh
 .idea/
 *.DotSettings.user
-deploy
+deploy/
+eventstore/
+elasticsearch/
+.env
