@@ -41,7 +41,7 @@ module HomeArea =
 
   let globalLeaguePositionView (model:Model) (league:LeagueTableDoc) dispatch =
     let (_, membr) =
-      league.Members |> List.filter (fun (pId, _) -> pId = model.Player.Id) |> List.exactlyOne
+      league.Members |> List.filter (fun (pId, _) -> pId = model.Player.Id) |> List.head
     div []
       [ str <| sprintf "Position %i" membr.Position
       ]
@@ -50,7 +50,7 @@ module HomeArea =
     [ Components.cardWithFooter
         [ globalLeaguePositionView model league dispatch
         ]
-        [ Card.Footer.item [ Props [ OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] ]
+        [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] ]
             [ str "Global League" ]
         ]
       Components.card
@@ -104,7 +104,7 @@ module HomeArea =
                   ]
               ]
           ]
-          [ Card.Footer.item [ Props [ OnClick (fun _ -> dispatch ShowFeedbackModal) ] ]
+          [ Card.Footer.a [ Props [ OnClick (fun _ -> dispatch ShowFeedbackModal) ] ]
               [ str "Feedback"
               ]
           ]
@@ -116,7 +116,7 @@ module HomeArea =
           div [] [])
 
         Components.cardWithFooter []
-          [ Card.Footer.item [ Props [ OnClick (fun _ -> dispatch Logout) ] ]
+          [ Card.Footer.a [ Props [ OnClick (fun _ -> dispatch Logout) ] ]
               [ str "Logout"
               ]
           ]

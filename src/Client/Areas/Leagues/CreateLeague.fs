@@ -51,9 +51,9 @@ module CreateLeague =
                     Input.OnChange (fun e -> LeagueName e.Value |> EditName |> dispatch) ]
               ]
             Card.footer []
-              [ Card.Footer.item [ Props [ OnClick (fun _ -> LeaguesRoute PlayerLeaguesRoute |> NavTo |> dispatch) ] ]
+              [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute PlayerLeaguesRoute |> NavTo |> dispatch) ] ]
                     [ str "Cancel" ]
-                Card.Footer.item []
+                Card.Footer.a []
                   [ createLeagueButton (leagueName, isLoading) dispatch
                   ]
               ]

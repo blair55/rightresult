@@ -103,7 +103,7 @@ module AddFixtureSet =
               [ fixturesView model.FixtureSet
               ]
             Card.footer []
-              [ Card.Footer.item []
+              [ Card.Footer.a []
                   [ addFixtureSetButton model dispatch
                   ]
               ]

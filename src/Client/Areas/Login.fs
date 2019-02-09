@@ -22,7 +22,7 @@ module LoginArea =
               [ p [] [ str "You are logged out" ]
               ]
             Card.footer []
-              [ Card.Footer.item []
+              [ Card.Footer.a []
                   [ form [ HTMLAttr.Method "POST"; Action Routes.redirectToFacebookPath ]
                       [
                         input [ Type "hidden"; Name redirectPathKey; Value (getQs redirectPathKey)]
@@ -36,7 +36,7 @@ module LoginArea =
                             ]
                       ]
                   ]
-                Card.Footer.item []
+                Card.Footer.a []
                   [ form [ HTMLAttr.Method "POST"; Action Routes.redirectToTwitterPath ]
                       [
                         input [ Type "hidden"; Name redirectPathKey; Value (getQs redirectPathKey)]

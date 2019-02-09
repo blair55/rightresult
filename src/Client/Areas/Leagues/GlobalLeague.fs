@@ -49,13 +49,13 @@ module GlobalLeague =
       league.LeagueName
     let footer =
       Card.footer []
-        [ Card.Footer.item [ Props [ OnClick (fun _ -> LeagueTableRoute (Global.identifier) |> LeaguesRoute |> NavTo |> dispatch) ] ]
+        [ Card.Footer.a [ Props [ OnClick (fun _ -> LeagueTableRoute (Global.identifier) |> LeaguesRoute |> NavTo |> dispatch) ] ]
             [ str "Table"
             ]
-          Card.Footer.item [ Props [ OnClick (fun _ -> LeagueMatrixRoute (Global.identifier, gwno) |> LeaguesRoute |> NavTo |> dispatch) ] ]
+          Card.Footer.a [ Props [ OnClick (fun _ -> LeagueMatrixRoute (Global.identifier, gwno) |> LeaguesRoute |> NavTo |> dispatch) ] ]
             [ str "Latest Matrix"
             ]
-          Card.Footer.item [ Props [ OnClick (fun _ -> LeagueHistoryRoute (Global.identifier) |> LeaguesRoute |> NavTo |> dispatch) ] ]
+          Card.Footer.a [ Props [ OnClick (fun _ -> LeagueHistoryRoute (Global.identifier) |> LeaguesRoute |> NavTo |> dispatch) ] ]
             [ str "History"
             ]
         ]

@@ -8,8 +8,8 @@ open Fable.Helpers.React.Props
 open Fable.PowerPack
 open Fable.Import
 open Fable.Remoting.Client
+open Fable.FontAwesome
 open Fulma
-open Fulma.FontAwesome
 open Thoth.Elmish
 open Thoth.Elmish.Toast
 
@@ -43,7 +43,9 @@ type Msg =
   | PlayersMsg of PlayersArea.Msg
 
 let api : IProtocol =
-  Proxy.createWithBuilder<IProtocol> Routes.builder
+  Remoting.createApi()
+  |> Remoting.withRouteBuilder Routes.builder
+  |> Remoting.buildProxy<IProtocol>
 
 let update msg (model:Model) : Model * Cmd<Msg> =
   // printfn "m %A" model
@@ -80,25 +82,25 @@ let footabs model dispatch : React.ReactElement =
 
   let home =
     [ a [ OnClick (fun _ -> NavTo HomeRoute |> dispatch) ]
-        [ icon Fa.I.Home
+        [ Fa.i [ Fa.Solid.Home ] []
           desc "Home"
         ]
     ]
   let fixtures =
     [ a [ OnClick (fun _ -> NavTo (FixtureRoute OmniFixturesRoute) |> dispatch) ]
-        [ icon (Fa.I.Custom "fa-calendar-alt")
+        [ Fa.i [ Fa.Solid.CalendarAlt ] []
           desc "Fixtures"
         ]
     ]
   let leagues =
     [ a [ OnClick (fun _ -> NavTo (LeaguesRoute PlayerLeaguesRoute) |> dispatch) ]
-        [ icon Fa.I.Trophy
+        [ Fa.i [ Fa.Solid.Trophy ] []
           desc "Leagues"
         ]
     ]
   let players =
     [ a [ OnClick (fun _ -> NavTo (PlayersRoute AllPlayersRoute) |> dispatch) ]
-        [ icon Fa.I.User
+        [ Fa.i [ Fa.Solid.User ] []
           desc "Players"
         ]
     ]
@@ -176,6 +178,12 @@ open Elmish.Browser.Navigation
 let clearFragment () =
   Browser.window.location.hash <- ""
 
+let loadPlayerFromBrowserStorage() =
+  BrowserLocalStorage.load Decoders.decodeClientSafePlayer "player"
+  |> function
+  | Ok p -> Some p
+  | _ -> None
+
 let urlUpdate route model =
   match model.Player, route with
   | _, Some LoginRoute ->
@@ -186,10 +194,12 @@ let urlUpdate route model =
         |> JS.decodeURIComponent
         |> Browser.window.atob
         |> fun p -> Browser.localStorage.setItem("player", p)
-        { model with Player = BrowserLocalStorage.load<ClientSafePlayer> "player" }, nav
+        { model with Player = loadPlayerFromBrowserStorage() }, nav
       match getFragmentValue "player", getFragmentValue "redirectPath" with
-      | Some playerString, Some path when path <> "" -> loginInAndRedirect playerString (navToString path)
-      | Some playerString, _ -> loginInAndRedirect playerString (navTo HomeRoute)
+      | Some playerString, Some path when path <> "" ->
+        loginInAndRedirect playerString (navToString path)
+      | Some playerString, _ ->
+        loginInAndRedirect playerString (navTo HomeRoute)
       | _ -> model, []
 
   | Some p, Some HomeRoute ->
@@ -214,7 +224,7 @@ let urlUpdate route model =
 
 let init route =
   let player =
-    try BrowserLocalStorage.load<ClientSafePlayer> "player"
+    try loadPlayerFromBrowserStorage()
     with _ -> BrowserLocalStorage.delete "player"; None
   urlUpdate route
     { Player = player

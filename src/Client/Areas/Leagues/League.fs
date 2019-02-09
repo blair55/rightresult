@@ -9,7 +9,6 @@ open Fable.Import
 open Areas
 open Shared
 open Fulma
-open Fulma.FontAwesome
 open Routes
 
 module League =
@@ -116,22 +115,22 @@ module League =
       model.PrivateLeagueId
     let standingsFooter =
       Card.footer []
-        [ Card.Footer.item [ Props [ OnClick (fun _ -> LeagueTableRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] ]
+        [ Card.Footer.a [ Props [ OnClick (fun _ -> LeagueTableRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] ]
             [ str "Table"
             ]
-          Card.Footer.item [ Props [ OnClick (fun _ -> LeagueMatrixRoute (string leagueId, gwno) |> LeaguesRoute |> NavTo |> dispatch) ] ]
+          Card.Footer.a [ Props [ OnClick (fun _ -> LeagueMatrixRoute (string leagueId, gwno) |> LeaguesRoute |> NavTo |> dispatch) ] ]
             [ str "Latest Matrix"
             ]
-          Card.Footer.item [ Props [ OnClick (fun _ -> LeagueHistoryRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] ]
+          Card.Footer.a [ Props [ OnClick (fun _ -> LeagueHistoryRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] ]
             [ str "History"
             ]
         ]
     let membershipFooter =
       Card.footer []
-        [ Card.Footer.item [ Props [ OnClick (fun _ -> LeaveLeagueRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] ]
+        [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaveLeagueRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] ]
             [ str "Leave"
             ]
-          Card.Footer.item [ Props [ OnClick (fun _ -> dispatch ShowModal) ] ]
+          Card.Footer.a [ Props [ OnClick (fun _ -> dispatch ShowModal) ] ]
             [ str "Invite"
             ]
         ]

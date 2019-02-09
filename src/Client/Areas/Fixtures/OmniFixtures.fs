@@ -7,7 +7,7 @@ open Fable.Helpers.React.Props
 
 open Shared
 open Fulma
-open Fulma.FontAwesome
+open Fable.FontAwesome
 open Fable
 open Routes
 open Areas
@@ -147,11 +147,13 @@ module OmniFixtures =
             (if isDoubleDown
             then
               Text.span []
-                [ Icon.faIcon [ Icon.Size IsSmall ] [ Fa.icon Fa.I.AngleDoubleDown ]
-                  str "Double Down"
-                ]
-            else Text.span [] [])
+                // [ Icon.faIcon [ Icon.Size IsSmall ] [ Fa.icon Fa.I.AngleDoubleDown ]
+                //   str "Double Down"
+                // ]
+                // [ Fa.i [ Fa.Solid.AngleDoubleDown; Fa.Size Fa.FaSmall ] [ str "Double Down" ] ]
+                [ smallIconWithText Fa.Solid.AngleDoubleDown "Double Down" ]
 
+            else Text.span [] [])
             Text.span [] rhs
           ]
       ]
@@ -160,42 +162,45 @@ module OmniFixtures =
     let (KickOff ko) = f.KickOff
     let homeScore = Option.map (fun (ScoreLine (Score h, _)) -> h) f.Prediction
     let awayScore = Option.map (fun (ScoreLine (_, Score a)) -> a) f.Prediction
-    let footItem item = Card.Footer.item [] item
+    let footItem item = Card.Footer.a [] item
 
     let rhs =
       match homeScore, awayScore with
       | Some _, Some _ -> []
       | _ ->
-        [ Icon.faIcon [ Icon.Size IsSmall ] [ Fa.icon Fa.I.AngleDoubleRight ]
-          str "Awaiting"
-        ]
+        // [ Icon.faIcon [ Icon.Size IsSmall ] [ Fa.icon Fa.I.AngleDoubleRight ]
+        //   str "Awaiting"
+        // ]
+        [ smallIconWithText Fa.Solid.AngleDoubleRight "Awaiting" ]
 
     let disabledIcon i =
-      Icon.faIcon
-        [ Icon.Modifiers
-            [ Modifier.TextColor IsGreyLight ]
-        ] [ Fa.icon i ]
+      // Icon.faIcon
+      //   [ Icon.Modifiers
+      //       [ Modifier.TextColor IsGreyLight ]
+      //   ] [ Fa.icon i ]
+      Fa.i [ i; Fa.Props [ Style [ Color "#b5b5b5" ] ] ] []
 
     let scoreIncButton dispatch (fsId, fId, team) =
       button [ Button.Color IsLight ]
         (if f.InProgress then ignore else fun _ -> PredictionAction (fsId, fId, team, Inc) |> Prediction |> dispatch)
-        [ Icon.faIcon [] [ Fa.icon Fa.I.AngleUp ] ]
+        [ Fa.i [ Fa.Solid.AngleUp ] [] ]
 
     let scoreDecButton dispatch (fsId, fId, team, score:int option) =
       match score with
       | Some s when s > 0 ->
         button [ Button.Color IsLight ]
           (if f.InProgress then ignore else fun _ -> PredictionAction (fsId, fId, team, Dec) |> Prediction |> dispatch)
-          [ Icon.faIcon [] [ Fa.icon Fa.I.AngleDown ] ]
-      | _ -> disabledIcon Fa.I.AngleDown
+          [ Fa.i [ Fa.Solid.AngleDown ] [] ]
+      | _ -> disabledIcon Fa.Solid.AngleDown
 
     let doubleDownButton dispatch (f:FixturePredictionViewModel) =
       let icon i =
-        [ Icon.faIcon [] [ Fa.icon i ] ]
+        // [ Icon.faIcon [] [ Fa.icon i ] ]
+        [ Fa.i [ i ] [] ]
       match f.IsDoubleDownAvailable, f.Prediction, f.IsDoubleDown with
-      | true, Some _, false -> button [Button.Color IsLight] (if f.InProgress then ignore else fun _ -> SetDoubleDown (f.FixtureSetId, f.Id) |> dispatch) (icon Fa.I.AngleDoubleDown)
-      | true, Some _, true  -> button [Button.Color IsWarning] (if f.InProgress then ignore else fun _ -> RemoveDoubleDown f.FixtureSetId |> dispatch) (icon Fa.I.AngleDoubleDown)
-      | _ -> disabledIcon Fa.I.AngleDoubleDown
+      | true, Some _, false -> button [Button.Color IsLight] (if f.InProgress then ignore else fun _ -> SetDoubleDown (f.FixtureSetId, f.Id) |> dispatch) (icon Fa.Solid.AngleDoubleDown)
+      | true, Some _, true  -> button [Button.Color IsWarning] (if f.InProgress then ignore else fun _ -> RemoveDoubleDown f.FixtureSetId |> dispatch) (icon Fa.Solid.AngleDoubleDown)
+      | _ -> disabledIcon Fa.Solid.AngleDoubleDown
 
     let predictionBox =
       match f.Prediction with
@@ -240,9 +245,10 @@ module OmniFixtures =
   let classifiedFixtureView
     (f:FixturePredictionViewModel)
     (ScoreLine (Score homeScore, Score awayScore), points, category) =
+    let s = if points = 1 then sprintf "%i point" points else sprintf "%i points" points
     let rhs =
-        [ Icon.faIcon [ Icon.Size IsSmall ] [ Fa.icon Fa.I.AngleDoubleRight ]
-          str (if points = 1 then sprintf "%i point" points else sprintf "%i points" points)
+        // [ Icon.faIcon [ Icon.Size IsSmall ] [ Fa.icon Fa.I.AngleDoubleRight ]
+        [ smallIconWithText Fa.Solid.AngleDoubleRight s
         ]
     let predictionBox =
       match f.Prediction with
@@ -292,7 +298,8 @@ module OmniFixtures =
             | Some p ->
               [ button [ Button.Size IsSmall; Button.Modifiers [ Modifier.IsPulledLeft ] ]
                   (fun _ -> Page p |> dispatch)
-                  [ Icon.faIcon [] [ Fa.icon Fa.I.AngleLeft ]
+                  [ Fa.i [ Fa.Solid.AngleRight ] []
+                  // [ Icon.faIcon [] [ Fa.icon Fa.I.AngleLeft ]
                     str "Prev"
                   ]
               ]
@@ -302,7 +309,8 @@ module OmniFixtures =
               [ button [ Button.Size IsSmall; Button.Modifiers [ Modifier.IsPulledRight ] ]
                   (fun _ -> Page n |> dispatch)
                   [ str "Next"
-                    Icon.faIcon [] [ Fa.icon Fa.I.AngleRight ]
+                    // Icon.faIcon [] [ Fa.icon Fa.I.AngleRight ]
+                    Fa.i [ Fa.Solid.AngleRight ] []
                   ]
               ]
             | None -> [])

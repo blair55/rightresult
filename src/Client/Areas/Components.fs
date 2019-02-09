@@ -2,7 +2,7 @@ namespace Areas
 
 open Fable.Helpers.React
 open Fable.Helpers.React.Props
-open Fulma.FontAwesome
+open Fable.FontAwesome
 
 open Shared
 open Fulma
@@ -108,8 +108,11 @@ module Components =
           ))
       ]
 
-  let icon i =
-    Icon.faIcon [] [ Fa.icon i ]
+  // let icon ic =
+  //   Icon.icon [] [ i [ ic ] [] ]
+
+  let smallIconWithText iconName text =
+    Fa.i [ iconName; Fa.Size Fa.FaSmall ] [ str text ]
 
   open Shared.Teams
 
@@ -154,6 +157,7 @@ module Components =
     Text.span [ Modifiers [ ]; Props [ Class clas' ] ] []
 
   module ScoreBox =
+    open Fable.FontAwesome.Free
 
     let private boxes clas' h a dd =
       [ div [ Class <| sprintf "scorebox scorebox-left %s" clas' ]
@@ -161,9 +165,13 @@ module Components =
         div [ Class <| sprintf "scorebox scorebox-right %s" clas' ]
           [ str a ]
       ]
+
       |> fun homeAndAway ->
         if dd then
-          [ div [ Class "scorebox-dd" ] [ icon Fa.I.AngleDoubleDown ] ]
+          // let f : Fable.FontAwesome.Fa.IconOption = Fa.Solid.AngleDoubleDown
+          // [ div [ Class "scorebox-dd" ] [ icon Fa.I.AngleDoubleDown ] ]
+          // [ div [ Class "scorebox-dd" ] [ icon Fable.FontAwesome.Free.Fa.Solid.AngleDoubleDown ] ]
+          [ div [ Class "scorebox-dd" ] [ Fa.i [ Fa.Solid.AngleDoubleDown ] [] ] ]
         else
           []
       |> fun dd ->

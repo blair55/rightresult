@@ -46,7 +46,7 @@ module Leagues =
     |> (fun l ->
       l @ [ Card.card []
               [ Card.footer []
-                  [ Card.Footer.item [ Props [ OnClick (fun _ -> LeaguesRoute CreateLeagueRoute |> NavTo |> dispatch) ] ]
+                  [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute CreateLeagueRoute |> NavTo |> dispatch) ] ]
                       [ str "Create League"
                       ]
                   ]
@@ -62,7 +62,7 @@ module Leagues =
               ]
           ]
         Card.footer []
-          [ Card.Footer.item [ Props [ OnClick (fun _ -> LeaguesRoute CreateLeagueRoute |> NavTo |> dispatch) ] ]
+          [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute CreateLeagueRoute |> NavTo |> dispatch) ] ]
               [ str "Create League"
               ]
           ]

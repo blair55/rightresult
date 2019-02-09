@@ -5,6 +5,7 @@ open System.IO
 open System.Threading
 
 open FSharp.Core
+open Giraffe
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
 open Microsoft.AspNetCore
@@ -13,7 +14,6 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
-open Giraffe
 
 open Shared
 open Server.Login.Facebook
@@ -21,7 +21,6 @@ open Server.Elevated
 open Server.Utils
 open Server.Commands
 open Server.Infrastructure
-open Server.Infrastructure.ElasticSearch
 open Server.HttpHandlers
 open Shared.Routes
 open Persistence
@@ -32,7 +31,6 @@ open Persistence
 // open Microsoft.AspNetCore.Hosting
 // open Microsoft.Extensions.DependencyInjection
 
-open FSharp.Control.Tasks.V2
 
 
 module Server =
