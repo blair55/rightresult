@@ -11,7 +11,6 @@ open Fable.Remoting.Giraffe
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
-open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 
@@ -22,20 +21,19 @@ open Server.Utils
 open Server.Commands
 open Server.Infrastructure
 open Server.HttpHandlers
+open Server.HttpHandlers.HttpHandlers
 open Shared.Routes
 open Persistence
-
-
-// open Microsoft.AspNetCore
-// open Microsoft.AspNetCore.Builder
-// open Microsoft.AspNetCore.Hosting
-// open Microsoft.Extensions.DependencyInjection
 
 
 
 module Server =
 
+#if DEBUG
+  let publicPath = "/Users/nblair/lab/rightresult/src/Client/public"
+#else
   let publicPath = Path.GetFullPath "../Client/public"
+#endif
   let port = 8085us
 
   type ApplicationConfiguration =
@@ -68,6 +66,7 @@ module Server =
 
     let q =
       deps.Queries
+
 
     let validateToken =
       Jwt.appTokenToJwtPlayer config.encryptionKey >> Ok
@@ -328,7 +327,7 @@ module Server =
         getPlayerPointsTotal = fun playerId t -> t |> (vt >> Result.bind (fun _ -> getPlayerPointsTotal playerId) >> Async.retn)
         getPlayerFixtureSets = fun playerId t -> t |> (vt >> Result.bind (fun _ -> getPlayerFixtureSets playerId) >> Async.retn)
         getPlayerFixtureSet = fun playerId fsId t -> t |> (vt >> Result.bind (fun _ -> getPlayerFixtureSet playerId fsId) >> Async.retn)
-        getNewFixtureSet = vt >> (fun _ -> FixtureSourcing.getNewFixtureSetViewModel deps) >> AsyncResult.retn
+        getNewFixtureSet = vt >> (fun _ -> printfn "SFSDFSDFS"; FixtureSourcing.getNewFixtureSetViewModel deps) >> AsyncResult.retn
         getLeagueHistoryFixtureSets = fun leagueId t -> t |> (vt >> Result.bind (fun _ -> getLeagueHistoryFixtureSets leagueId) >> Async.retn)
         getLeagueHistoryMonths = fun leagueId t -> t |> (vt >> Result.bind (fun _ -> getLeagueHistoryMonths leagueId) >> Async.retn)
         getDateFormat = fun dateTime format t -> t |> (vt >> Result.map (fun _ -> dateTime.ToString(format)) >> Async.retn)
@@ -348,194 +347,6 @@ module Server =
     |> Remoting.withRouteBuilder Routes.builder
     |> Remoting.fromValue protocol
     |> Remoting.buildHttpHandler
-
-  [<CLIMutable>]
-  type FixtureSetHttp =
-    { GameweekNo : int
-      Fixtures : FixtureHttp list
-    }
-  and FixtureHttp =
-    { FixtureId : Guid
-      Home : string
-      Away : string
-      KickOff : DateTimeOffset
-    }
-
-  let createFixtureSet handleCommand next (ctx:HttpContext) =
-    let respond next ctx (result:Rresult<Unit>) =
-      match result with
-      | Ok () -> Successful.CREATED "Created" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
-    let getFixtureSetFromRequest (ctx:HttpContext) =
-      ctx.BindModelAsync<FixtureSetHttp>()
-    let createFixtureSetCmd (fs:FixtureSetHttp) =
-      fs.Fixtures
-      |> List.map (fun f ->
-          FixtureSetId (Guid.NewGuid())
-          |> fun fsId ->
-          { FixtureRecord.Id = FixtureId (Guid.NewGuid())
-            FixtureSetId = fsId
-            GameweekNo = GameweekNo fs.GameweekNo
-            KickOff = KickOff f.KickOff
-            TeamLine = TeamLine (Team f.Home, Team f.Away)
-            ScoreLine = None
-            SortOrder = 0 })
-      |> fun fixtures -> GameweekNo fs.GameweekNo, fixtures
-      |> CreateFixtureSet
-      |> fun fscmd -> FixtureSetCommand (FixtureSetId (Guid.NewGuid()), fscmd)
-    ctx
-    |> (getFixtureSetFromRequest
-    >> Task.toAsync
-    >> Async.map createFixtureSetCmd
-    >> Async.toTask (Async.bind handleCommand)
-    >> Task.bind (respond next ctx))
-
-  [<CLIMutable>]
-  type EditFixtureKoHttp =
-    { FixtureSetId : Guid
-      FixtureId : Guid
-      KickOff : DateTimeOffset
-    }
-
-  let editFixtureKo handleCommand next (ctx:HttpContext) =
-    let respond next ctx (result:Rresult<Unit>) =
-      match result with
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
-    let editFixtureKoCmd (e:EditFixtureKoHttp) =
-      (FixtureId e.FixtureId, KickOff e.KickOff)
-      |> EditFixtureKickOff
-      |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd)
-    ctx
-    |> (fun ctx -> ctx.BindModelAsync<EditFixtureKoHttp>()
-    >> Task.toAsync
-    >> Async.map editFixtureKoCmd
-    >> Async.toTask (Async.bind handleCommand)
-    >> Task.bind (respond next ctx))
-
-  [<CLIMutable>]
-  type FixtureClassificationHttp =
-    { HomeTeam : string
-      AwayTeam : string
-      HomeScore : int
-      AwayScore : int }
-
-  let classifyFixture (deps:Dependencies) handleCommand next (ctx:HttpContext) =
-    let respond next ctx (result:Rresult<Unit>) =
-      match result with
-      | Ok () -> Successful.CREATED "Created" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
-    let getClassificationFromRequest (ctx:HttpContext) =
-      ctx.BindModelAsync<FixtureClassificationHttp>()
-    let getFixtureFromRequest (fc:FixtureClassificationHttp) =
-      deps.Queries.getFixtureByTeams (Team fc.HomeTeam) (Team fc.AwayTeam)
-    let createClassifyFixtureCmd (fc:FixtureClassificationHttp, fr:FixtureRecord) =
-      ClassifyFixture (fr.Id, ScoreLine (Score fc.HomeScore, Score fc.AwayScore))
-      |> fun fscmd -> FixtureSetCommand (fr.FixtureSetId, fscmd)
-    ctx
-    |> (getClassificationFromRequest
-    >> Task.toAsync
-    >> Async.map (fun fc -> (fc, getFixtureFromRequest fc) |> createClassifyFixtureCmd)
-    >> Async.toTask (Async.bind handleCommand)
-    >> Task.bind (respond next ctx))
-
-  let classifyAllFixtures (deps:Dependencies) handleCommand =
-    Classifier.classifyAllFixtures handleCommand deps.Queries
-    Successful.OK "Ok"
-
-  let classifyFixturesAfterGameweek (deps:Dependencies) handleCommand gwno =
-    Classifier.classifyFixturesAfterGameweek handleCommand deps.Queries (GameweekNo gwno)
-    Successful.OK "Ok"
-
-  [<CLIMutable>]
-  type RemovePlayerHttp =
-    { PlayerId : string
-    }
-
-  let removePlayer handleCommand =
-    fun next (ctx:HttpContext) ->
-      ctx.BindModelAsync<RemovePlayerHttp>()
-      |> Task.map (fun p -> (PlayerId p.PlayerId, Remove) |> PlayerCommand)
-      |> Task.bind (Async.toTask handleCommand)
-      |> Task.bind (function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
-
-  [<CLIMutable>]
-  type AddPlayerToLeagueHttp =
-    { PlayerId : string
-      LeagueId : Guid
-    }
-
-  let addPlayerToLeague handleCommand =
-    fun next (ctx:HttpContext) ->
-      ctx.BindModelAsync<AddPlayerToLeagueHttp>()
-      |> Task.map (fun p -> (PrivateLeagueId p.LeagueId, PlayerId p.PlayerId |> JoinLeague) |> PrivateLeagueCommand)
-      |> Task.bind (Async.toTask handleCommand)
-      |> Task.bind (function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
-
-  [<CLIMutable>]
-  type RemovePlayerFromLeagueHttp =
-    { PlayerId : string
-      LeagueId : Guid
-    }
-
-  let removePlayerFromLeague handleCommand =
-    fun next (ctx:HttpContext) ->
-      ctx.BindModelAsync<RemovePlayerFromLeagueHttp>()
-      |> Task.map (fun p -> (PrivateLeagueId p.LeagueId, PlayerId p.PlayerId |> LeaveLeague) |> PrivateLeagueCommand)
-      |> Task.bind (Async.toTask handleCommand)
-      |> Task.bind (function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
-
-
-  [<CLIMutable>]
-  type OverwritePredictionSetHttp =
-    { SourcePlayerId : string
-      DestinationPlayerId : string
-      FixtureSetId : Guid
-    }
-
-  let overwritePredictionSet handleCommand =
-    fun next (ctx:HttpContext) ->
-      ctx.BindModelAsync<OverwritePredictionSetHttp>()
-      |> Task.map (fun m ->
-        PlayerId m.SourcePlayerId
-        |> OverwritePredictionSet
-        |> fun cmd -> PredictionSetCommand (PlayerId m.DestinationPlayerId, FixtureSetId m.FixtureSetId, cmd))
-      |> Task.bind (Async.toTask handleCommand)
-      |> Task.bind (function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
-
-  [<CLIMutable>]
-  type KickOffFixtureHttp =
-    { HomeTeam : string
-      AwayTeam : string
-    }
-
-  let kickOffFixture (deps:Dependencies) handleCommand next (ctx:HttpContext) =
-    let respond next ctx (result:Rresult<Unit>) =
-      match result with
-      | Ok () -> Successful.CREATED "Created" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
-    let getKoFromRequest (ctx:HttpContext) =
-      ctx.BindModelAsync<KickOffFixtureHttp>()
-    let getFixtureFromRequest (ko:KickOffFixtureHttp) =
-      deps.Queries.getFixtureByTeams (Team ko.HomeTeam) (Team ko.AwayTeam)
-    let createKoFixtureCmd (fr:FixtureRecord) =
-      KickOffFixture fr.Id
-      |> fun fscmd -> FixtureSetCommand (fr.FixtureSetId, fscmd)
-    ctx
-    |> (getKoFromRequest
-    >> Task.toAsync
-    >> Async.map (getFixtureFromRequest >> createKoFixtureCmd)
-    >> Async.toTask (Async.bind handleCommand)
-    >> Task.bind (respond next ctx))
-
 
   let printDocstore (deps:Dependencies) =
     ElasticSearch.repo deps.ElasticSearch
@@ -622,7 +433,8 @@ module Server =
       POST >=> route  "/api/kickoffFixture" >=> kickOffFixture deps handleCommand
       GET  >=> route  "/api/printDocstore" >=> printDocstore deps
       buildProtocol handleCommand deps appConfig
-      htmlFile "index.html"
+      // htmlFile "index.html"
+
     ]
 
   let inf =
@@ -675,7 +487,10 @@ module Server =
 
   let configureServices (services:IServiceCollection) =
     services
+#if DEBUG
+#else
       .AddSingleton<IHostedService, RecurringTasks>()
+#endif
       .AddGiraffe() |> ignore
 
   WebHost

@@ -1,7 +1,7 @@
 namespace Areas
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 open Fable.FontAwesome
 
 open Shared
@@ -108,31 +108,34 @@ module Components =
           ))
       ]
 
-  // let icon ic =
-  //   Icon.icon [] [ i [ ic ] [] ]
-
   let smallIconWithText iconName text =
-    Fa.i [ iconName; Fa.Size Fa.FaSmall ] [ str text ]
+    div [ Style [ MarginLeft "2px" ] ]
+      [ Fa.i [ iconName; Fa.Size Fa.FaSmall ] []
+        span [ Style [ MarginLeft "2px" ] ] [ str text ]
+      ]
 
   open Shared.Teams
 
   let badgeAbbrv (Team team) =
     match team with
     | Arsenal -> "ARS"
+    | AstonVilla -> "AVL"
     | Bournemouth -> "BOU"
     | Brighton -> "BHA"
     | Burnley -> "BUR"
-    | Cardiff -> "CAR"
+    // | Cardiff -> "CAR"
     | Chelsea -> "CHE"
     | CrystalPalace -> "CRY"
     | Everton -> "EVE"
-    | Fulham -> "FUL"
-    | Huddersfield -> "HUD"
+    // | Fulham -> "FUL"
+    // | Huddersfield -> "HUD"
     | Leicester -> "LEI"
     | Liverpool -> "LIV"
     | ManCity -> "MCI"
     | ManUtd -> "MUN"
     | Newcastle -> "NEW"
+    | Norwich -> "NOR"
+    | SheffieldUtd -> "SHU"
     | Southampton -> "SOU"
     | Spurs -> "TOT"
     | Watford -> "WAT"

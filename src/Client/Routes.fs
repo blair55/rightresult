@@ -1,6 +1,6 @@
 module Routes
 
-open Elmish.Browser.UrlParser
+open Elmish.UrlParser
 
 type Route =
   | LoginRoute
@@ -103,7 +103,7 @@ let private routeToPath = function
     | PlayerFixtureSetRoute (pId, fsId) -> playerFixtureSetPath pId fsId
 
 let navToString s =
-  (Elmish.Browser.Navigation.Navigation.newUrl) s
+  (Elmish.Navigation.Navigation.newUrl) s
 
 let navTo r =
   (routeToPath >> sprintf "/%s" >> navToString) r
@@ -129,8 +129,6 @@ let resultToWebData = function
 let resultToOption = function
   | Ok a    -> Some a
   | Error _ -> None
-
-open Fable.PowerPack
 
 let delay r = promise {
   do! Promise.sleep 2000
@@ -163,13 +161,13 @@ let getQsValueFromString key (src:string) =
   |> Option.map snd
 
 let getQueryStringValue (key:string) =
-  let href = Browser.window.location.href
+  let href = Browser.Dom.window.location.href
   if href.Contains("?")
   then href.Split('?').[1] |> getQsValueFromString key
   else None
 
 let getFragmentValue (key:string) =
-  Browser.window.location.hash.TrimStart('#').Split('&')
+  Browser.Dom.window.location.hash.TrimStart('#').Split('&')
   |> Array.map(fun kvp -> kvp.Split('=') |> fun arr -> arr.[0], arr.[1])
   |> Array.tryFind(fun (k, _) -> k = key)
   |> FSharp.Core.Option.map snd

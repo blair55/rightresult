@@ -2,8 +2,8 @@ namespace Areas.Leagues
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open System
 open Shared
@@ -34,7 +34,7 @@ module LeagueHistoryTable =
         | Month _ -> Fetching
       LeagueTable = Fetching
     }, Cmd.batch
-        ([ Cmd.ofAsync
+        ([ Cmd.OfAsync.either
             (api.getLeagueTable leagueId window)
             player.Token
             LeagueTableReceived
@@ -44,7 +44,7 @@ module LeagueHistoryTable =
         | Full -> []
         | Week _ -> []
         | Month (y, m) ->
-          [ Cmd.ofAsync
+          [ Cmd.OfAsync.either
               (api.getDateFormat (DateTime(y, m, 1)) "MMMM yyyy")
               player.Token
               LeagueWindowDescriptionReceived

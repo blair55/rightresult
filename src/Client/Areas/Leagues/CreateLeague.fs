@@ -2,8 +2,8 @@ namespace Areas.Leagues
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Shared
 open Fulma
@@ -67,7 +67,7 @@ module CreateLeague =
       { model with LeagueName = leagueName }, []
     | Create leagueName ->
       { model with IsLoading = true },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.createLeague player.Token)
         leagueName
         CreateResult
@@ -77,5 +77,5 @@ module CreateLeague =
     | CreateResult r ->
       match r with
       | Ok (PrivateLeagueId leagueId) ->
-        model, Cmd.ofPromise delay (LeagueRoute (string leagueId) |> LeaguesRoute) NavTo (Error >> Init)
+        model, Cmd.OfPromise.either delay (LeagueRoute (string leagueId) |> LeaguesRoute) NavTo (Error >> Init)
       | Error e -> model, alert e

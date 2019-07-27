@@ -10,7 +10,7 @@ let decodeAppToken =
 let decodePlayerId =
   Decode.object (fun get -> get.Required.Field "PlayerId" Decode.string |> PlayerId)
 
-let decodeClientSafePlayer : Decode.Decoder<ClientSafePlayer> =
+let decodeClientSafePlayer : Decoder<ClientSafePlayer> =
   Decode.object
     (fun get ->
       { Name = get.Required.Field "Name" Decode.string

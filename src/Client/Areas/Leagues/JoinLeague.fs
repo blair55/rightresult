@@ -2,8 +2,8 @@ namespace Areas.Leagues
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Shared
 open Fulma
@@ -28,7 +28,7 @@ module JoinLeague =
     { PrivateLeagueId = privateLeagueId
       League = Fetching
       IsLoading = false },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.getLeagueTable (PrivateLeague privateLeagueId) Full)
         player.Token
         LeagueReceived
@@ -77,7 +77,7 @@ module JoinLeague =
     | LeagueReceived r -> { model with League = resultToWebData r }, []
     | Confirm privateLeagueId ->
       { model with IsLoading = true },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.joinLeague player.Token)
         privateLeagueId
         ConfirmResult
@@ -87,5 +87,5 @@ module JoinLeague =
     | ConfirmResult r ->
       match r with
       | Ok (PrivateLeagueId privateLeagueId) ->
-        model, Cmd.ofPromise delay (LeagueRoute (string privateLeagueId) |> LeaguesRoute) NavTo (Error >> Init)
+        model, Cmd.OfPromise.either delay (LeagueRoute (string privateLeagueId) |> LeaguesRoute) NavTo (Error >> Init)
       | Error e -> model, alert e

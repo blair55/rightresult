@@ -1,0 +1,2723 @@
+.badge-20 {
+  background-image: url("/images/badge-sprites/badges-20-sprite.png");
+  background-repeat: no-repeat;
+  width: 20px;
+  height: 20px;
+  display: block;
+  background-position: -20px -280px;
+}
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .badge-20 {
+    background-image: url("/images/badge-sprites/badges-20-sprite@x2.png");
+    background-size: 300px 300px;
+  }
+}
+.badge-20.ACM {
+  background-position: -20px 0px;
+}
+.badge-20.ADL {
+  background-position: -200px -120px;
+}
+.badge-20.AEK {
+  background-position: 0px -20px;
+}
+.badge-20.AFW {
+  background-position: -20px -20px;
+}
+.badge-20.AJA {
+  background-position: -40px 0px;
+}
+.badge-20.APO {
+  background-position: -40px -20px;
+}
+.badge-20.ARS {
+  background-position: 0px -40px;
+}
+.badge-20.ASI {
+  background-position: -20px -40px;
+}
+.badge-20.AST {
+  background-position: -40px -40px;
+}
+.badge-20.ASY {
+  background-position: -60px 0px;
+}
+.badge-20.ATA {
+  background-position: -60px -20px;
+}
+.badge-20.ATH {
+  background-position: -60px -40px;
+}
+.badge-20.ATM {
+  background-position: 0px -60px;
+}
+.badge-20.AUS {
+  background-position: -20px -60px;
+}
+.badge-20.AVL {
+  background-position: -40px -60px;
+}
+.badge-20.AZ {
+  background-position: -60px -60px;
+}
+.badge-20.B04 {
+  background-position: -80px 0px;
+}
+.badge-20.BAL {
+  background-position: -80px -20px;
+}
+.badge-20.BAR {
+  background-position: -80px -40px;
+}
+.badge-20.BAT {
+  background-position: -80px -60px;
+}
+.badge-20.BBV {
+  background-position: 0px -80px;
+}
+.badge-20.BCN {
+  background-position: -20px -80px;
+}
+.badge-20.BEF {
+  background-position: -40px -80px;
+}
+.badge-20.BEL {
+  background-position: -60px -80px;
+}
+.badge-20.BHA {
+  background-position: -80px -80px;
+}
+.badge-20.BIR {
+  background-position: -100px 0px;
+}
+.badge-20.BJK {
+  background-position: -100px -20px;
+}
+.badge-20.BLB {
+  background-position: -100px -40px;
+}
+.badge-20.BLP {
+  background-position: -100px -60px;
+}
+.badge-20.BMG {
+  background-position: -100px -80px;
+}
+.badge-20.BOL {
+  background-position: 0px -100px;
+}
+.badge-20.BOR {
+  background-position: -20px -100px;
+}
+.badge-20.BOU {
+  background-position: -40px -100px;
+}
+.badge-20.BRA {
+  background-position: -60px -100px;
+}
+.badge-20.BRE {
+  background-position: -80px -100px;
+}
+.badge-20.BRG {
+  background-position: -100px -100px;
+}
+.badge-20.BRI {
+  background-position: -120px 0px;
+}
+.badge-20.BRR {
+  background-position: -120px -20px;
+}
+.badge-20.BRU {
+  background-position: -120px -40px;
+}
+.badge-20.BRW {
+  background-position: -120px -60px;
+}
+.badge-20.BRY {
+  background-position: -120px -80px;
+}
+.badge-20.BSC {
+  background-position: -120px -100px;
+}
+.badge-20.BSL {
+  background-position: 0px -120px;
+}
+.badge-20.BUR {
+  background-position: -20px -120px;
+}
+.badge-20.BVB {
+  background-position: -40px -120px;
+}
+.badge-20.CAR {
+  background-position: -60px -120px;
+}
+.badge-20.CEL {
+  background-position: -80px -120px;
+}
+.badge-20.CHA {
+  background-position: -100px -120px;
+}
+.badge-20.CHE {
+  background-position: -120px -120px;
+}
+.badge-20.CHF {
+  background-position: -140px 0px;
+}
+.badge-20.CHT {
+  background-position: -140px -20px;
+}
+.badge-20.CLV {
+  background-position: -140px -40px;
+}
+.badge-20.CMU {
+  background-position: -140px -60px;
+}
+.badge-20.COU {
+  background-position: -140px -80px;
+}
+.badge-20.COV {
+  background-position: -140px -100px;
+}
+.badge-20.CPH {
+  background-position: -140px -120px;
+}
+.badge-20.CRE {
+  background-position: 0px -140px;
+}
+.badge-20.CRW {
+  background-position: -20px -140px;
+}
+.badge-20.CRY {
+  background-position: -40px -140px;
+}
+.badge-20.CSK {
+  background-position: -60px -140px;
+}
+.badge-20.CUT {
+  background-position: -80px -140px;
+}
+.badge-20.CZV {
+  background-position: -100px -140px;
+}
+.badge-20.DAG {
+  background-position: -120px -140px;
+}
+.badge-20.DER-new {
+  background-position: -140px -140px;
+}
+.badge-20.DER {
+  background-position: -160px 0px;
+}
+.badge-20.DMK {
+  background-position: -160px -20px;
+}
+.badge-20.DND {
+  background-position: -160px -40px;
+}
+.badge-20.DNR {
+  background-position: -160px -60px;
+}
+.badge-20.DON {
+  background-position: -160px -80px;
+}
+.badge-20.DYK {
+  background-position: -160px -100px;
+}
+.badge-20.DZG {
+  background-position: -160px -120px;
+}
+.badge-20.EAS {
+  background-position: -160px -140px;
+}
+.badge-20.EVE {
+  background-position: 0px -160px;
+}
+.badge-20.EXE {
+  background-position: -20px -160px;
+}
+.badge-20.FCA {
+  background-position: -40px -160px;
+}
+.badge-20.FCB {
+  background-position: -60px -160px;
+}
+.badge-20.FCL {
+  background-position: -80px -160px;
+}
+.badge-20.FCSM {
+  background-position: -100px -160px;
+}
+.badge-20.FEN {
+  background-position: -120px -160px;
+}
+.badge-20.FEY {
+  background-position: -140px -160px;
+}
+.badge-20.FGR {
+  background-position: -160px -160px;
+}
+.badge-20.FIO {
+  background-position: -180px 0px;
+}
+.badge-20.FKQ {
+  background-position: -180px -20px;
+}
+.badge-20.FKV {
+  background-position: -180px -40px;
+}
+.badge-20.FLE {
+  background-position: -180px -60px;
+}
+.badge-20.FUL {
+  background-position: -180px -80px;
+}
+.badge-20.GAL {
+  background-position: -180px -100px;
+}
+.badge-20.GIL {
+  background-position: -180px -120px;
+}
+.badge-20.GRI {
+  background-position: -180px -140px;
+}
+.badge-20.GRO {
+  background-position: -180px -160px;
+}
+.badge-20.HAL {
+  background-position: 0px -180px;
+}
+.badge-20.HBS {
+  background-position: -20px -180px;
+}
+.badge-20.HOF {
+  background-position: -40px -180px;
+}
+.badge-20.HUD {
+  background-position: -60px -180px;
+}
+.badge-20.HUL {
+  background-position: -80px -180px;
+}
+.badge-20.IBA {
+  background-position: -100px -180px;
+}
+.badge-20.IPS {
+  background-position: -120px -180px;
+}
+.badge-20.JUV {
+  background-position: -140px -180px;
+}
+.badge-20.KAA {
+  background-position: -160px -180px;
+}
+.badge-20.KOE {
+  background-position: -180px -180px;
+}
+.badge-20.KRA {
+  background-position: -200px 0px;
+}
+.badge-20.KYS {
+  background-position: -200px -20px;
+}
+.badge-20.LAZ {
+  background-position: -200px -40px;
+}
+.badge-20.LEE {
+  background-position: -200px -60px;
+}
+.badge-20.LEG {
+  background-position: -200px -80px;
+}
+.badge-20.LEI {
+  background-position: -200px -100px;
+}
+.badge-20.LEP {
+  background-position: 0px 0px;
+}
+.badge-20.LIB {
+  background-position: -200px -140px;
+}
+.badge-20.LIN {
+  background-position: -200px -160px;
+}
+.badge-20.LIV {
+  background-position: -200px -180px;
+}
+.badge-20.LKM {
+  background-position: 0px -200px;
+}
+.badge-20.LNO {
+  background-position: -20px -200px;
+}
+.badge-20.LOK {
+  background-position: -40px -200px;
+}
+.badge-20.LUD {
+  background-position: -60px -200px;
+}
+.badge-20.LUT {
+  background-position: -80px -200px;
+}
+.badge-20.LYN {
+  background-position: -100px -200px;
+}
+.badge-20.M05 {
+  background-position: -120px -200px;
+}
+.badge-20.MAN {
+  background-position: -140px -200px;
+}
+.badge-20.MAR {
+  background-position: -160px -200px;
+}
+.badge-20.MCH {
+  background-position: -180px -200px;
+}
+.badge-20.MCI {
+  background-position: -200px -200px;
+}
+.badge-20.MCO {
+  background-position: -220px 0px;
+}
+.badge-20.MFF {
+  background-position: -220px -20px;
+}
+.badge-20.MID {
+  background-position: -220px -40px;
+}
+.badge-20.MIL {
+  background-position: -220px -60px;
+}
+.badge-20.MKD {
+  background-position: -220px -80px;
+}
+.badge-20.MOL {
+  background-position: -220px -100px;
+}
+.badge-20.MOR {
+  background-position: -220px -120px;
+}
+.badge-20.MTA {
+  background-position: -220px -140px;
+}
+.badge-20.MUN {
+  background-position: -220px -160px;
+}
+.badge-20.NAP {
+  background-position: -220px -180px;
+}
+.badge-20.NEW {
+  background-position: -220px -200px;
+}
+.badge-20.NFO {
+  background-position: 0px -220px;
+}
+.badge-20.NHT {
+  background-position: -20px -220px;
+}
+.badge-20.NIC {
+  background-position: -40px -220px;
+}
+.badge-20.NKM {
+  background-position: -60px -220px;
+}
+.badge-20.NOR {
+  background-position: -80px -220px;
+}
+.badge-20.NOT {
+  background-position: -100px -220px;
+}
+.badge-20.NWP {
+  background-position: -120px -220px;
+}
+.badge-20.OFK {
+  background-position: -140px -220px;
+}
+.badge-20.OLD {
+  background-position: -160px -220px;
+}
+.badge-20.OLY {
+  background-position: -180px -220px;
+}
+.badge-20.OSM {
+  background-position: -200px -220px;
+}
+.badge-20.OXF {
+  background-position: -220px -220px;
+}
+.badge-20.PAO {
+  background-position: -240px 0px;
+}
+.badge-20.PBG {
+  background-position: -240px -20px;
+}
+.badge-20.PET {
+  background-position: -240px -40px;
+}
+.badge-20.PLY {
+  background-position: -240px -60px;
+}
+.badge-20.PLZ {
+  background-position: -240px -80px;
+}
+.badge-20.PNE {
+  background-position: -240px -100px;
+}
+.badge-20.POR {
+  background-position: -240px -120px;
+}
+.badge-20.PSG {
+  background-position: -240px -140px;
+}
+.badge-20.PSV {
+  background-position: -240px -160px;
+}
+.badge-20.PTO {
+  background-position: -240px -180px;
+}
+.badge-20.PTV {
+  background-position: -240px -200px;
+}
+.badge-20.QAB {
+  background-position: -240px -220px;
+}
+.badge-20.QPR {
+  background-position: 0px -240px;
+}
+.badge-20.RAP {
+  background-position: -20px -240px;
+}
+.badge-20.RBL {
+  background-position: -40px -240px;
+}
+.badge-20.RDG {
+  background-position: -60px -240px;
+}
+.badge-20.RMA {
+  background-position: -80px -240px;
+}
+.badge-20.RMD {
+  background-position: -100px -240px;
+}
+.badge-20.ROC {
+  background-position: -120px -240px;
+}
+.badge-20.RSB {
+  background-position: -140px -240px;
+}
+.badge-20.RSO {
+  background-position: -160px -240px;
+}
+.badge-20.RSV {
+  background-position: -180px -240px;
+}
+.badge-20.RTH {
+  background-position: -200px -240px;
+}
+.badge-20.RUB {
+  background-position: -220px -240px;
+}
+.badge-20.S04 {
+  background-position: -240px -240px;
+}
+.badge-20.SBR {
+  background-position: -260px 0px;
+}
+.badge-20.SCL {
+  background-position: -260px -20px;
+}
+.badge-20.SCU {
+  background-position: -260px -40px;
+}
+.badge-20.SDK {
+  background-position: -260px -60px;
+}
+.badge-20.SEV {
+  background-position: -260px -80px;
+}
+.badge-20.SHR {
+  background-position: -260px -100px;
+}
+.badge-20.SHU {
+  background-position: -260px -120px;
+}
+.badge-20.SHW {
+  background-position: -260px -140px;
+}
+.badge-20.SIO {
+  background-position: -260px -160px;
+}
+.badge-20.SKE {
+  background-position: -260px -180px;
+}
+.badge-20.SOU {
+  background-position: -260px -200px;
+}
+.badge-20.SPP {
+  background-position: -260px -220px;
+}
+.badge-20.SPR {
+  background-position: -260px -240px;
+}
+.badge-20.SSL {
+  background-position: 0px -260px;
+}
+.badge-20.STE {
+  background-position: -20px -260px;
+}
+.badge-20.STK {
+  background-position: -40px -260px;
+}
+.badge-20.STO {
+  background-position: -60px -260px;
+}
+.badge-20.STU {
+  background-position: -80px -260px;
+}
+.badge-20.STV {
+  background-position: -100px -260px;
+}
+.badge-20.SUN {
+  background-position: -120px -260px;
+}
+.badge-20.SUT {
+  background-position: -140px -260px;
+}
+.badge-20.SWA {
+  background-position: -160px -260px;
+}
+.badge-20.SWI {
+  background-position: -180px -260px;
+}
+.badge-20.TOT-ALT {
+  background-position: -200px -260px;
+}
+.badge-20.TOT {
+  background-position: -220px -260px;
+}
+.badge-20.VAL {
+  background-position: -240px -260px;
+}
+.badge-20.VIL {
+  background-position: -260px -260px;
+}
+.badge-20.VIT {
+  background-position: -280px 0px;
+}
+.badge-20.VTG {
+  background-position: -280px -20px;
+}
+.badge-20.WAT {
+  background-position: -280px -40px;
+}
+.badge-20.WBA {
+  background-position: -280px -60px;
+}
+.badge-20.WHU {
+  background-position: -280px -80px;
+}
+.badge-20.WIG {
+  background-position: -280px -100px;
+}
+.badge-20.WIM {
+  background-position: -280px -120px;
+}
+.badge-20.WLS {
+  background-position: -280px -140px;
+}
+.badge-20.WOB {
+  background-position: -280px -160px;
+}
+.badge-20.WOL {
+  background-position: -280px -180px;
+}
+.badge-20.WYC {
+  background-position: -280px -200px;
+}
+.badge-20.YEO {
+  background-position: -280px -220px;
+}
+.badge-20.ZLN {
+  background-position: -280px -240px;
+}
+.badge-20.ZNT {
+  background-position: -280px -260px;
+}
+.badge-20.ZRL {
+  background-position: 0px -280px;
+}
+.badge-20.default {
+  background-position: -20px -280px;
+}
+.badge-20.t185 {
+  background-position: -40px -280px;
+}
+
+.badge-25 {
+  background-image: url("/images/badge-sprites/badges-25-sprite.png");
+  background-repeat: no-repeat;
+  width: 25px;
+  height: 25px;
+  display: block;
+  background-position: -25px -350px;
+}
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .badge-25 {
+    background-image: url("/images/badge-sprites/badges-25-sprite@x2.png");
+    background-size: 400px 400px;
+  }
+}
+.badge-25.ACM {
+  background-position: -25px 0px;
+}
+.badge-25.ADL {
+  background-position: -275px -100px;
+}
+.badge-25.AEK {
+  background-position: 0px -25px;
+}
+.badge-25.AFW {
+  background-position: -25px -25px;
+}
+.badge-25.AJA {
+  background-position: -50px 0px;
+}
+.badge-25.APO {
+  background-position: -50px -25px;
+}
+.badge-25.ARS {
+  background-position: 0px -50px;
+}
+.badge-25.ASI {
+  background-position: -25px -50px;
+}
+.badge-25.AST {
+  background-position: -50px -50px;
+}
+.badge-25.ASY {
+  background-position: -75px 0px;
+}
+.badge-25.ATA {
+  background-position: -75px -25px;
+}
+.badge-25.ATH {
+  background-position: -75px -50px;
+}
+.badge-25.ATM {
+  background-position: 0px -75px;
+}
+.badge-25.AUS {
+  background-position: -25px -75px;
+}
+.badge-25.AVL {
+  background-position: -50px -75px;
+}
+.badge-25.AZ {
+  background-position: -75px -75px;
+}
+.badge-25.B04 {
+  background-position: -100px 0px;
+}
+.badge-25.BAL {
+  background-position: -100px -25px;
+}
+.badge-25.BAR {
+  background-position: -100px -50px;
+}
+.badge-25.BAT {
+  background-position: -100px -75px;
+}
+.badge-25.BBV {
+  background-position: 0px -100px;
+}
+.badge-25.BCN {
+  background-position: -25px -100px;
+}
+.badge-25.BEF {
+  background-position: -50px -100px;
+}
+.badge-25.BEL {
+  background-position: -75px -100px;
+}
+.badge-25.BHA {
+  background-position: -100px -100px;
+}
+.badge-25.BIR {
+  background-position: -125px 0px;
+}
+.badge-25.BJK {
+  background-position: -125px -25px;
+}
+.badge-25.BLB {
+  background-position: -125px -50px;
+}
+.badge-25.BLP {
+  background-position: -125px -75px;
+}
+.badge-25.BMG {
+  background-position: -125px -100px;
+}
+.badge-25.BOL {
+  background-position: 0px -125px;
+}
+.badge-25.BOR {
+  background-position: -25px -125px;
+}
+.badge-25.BOU {
+  background-position: -50px -125px;
+}
+.badge-25.BRA {
+  background-position: -75px -125px;
+}
+.badge-25.BRE {
+  background-position: -100px -125px;
+}
+.badge-25.BRG {
+  background-position: -125px -125px;
+}
+.badge-25.BRI {
+  background-position: -150px 0px;
+}
+.badge-25.BRR {
+  background-position: -150px -25px;
+}
+.badge-25.BRU {
+  background-position: -150px -50px;
+}
+.badge-25.BRW {
+  background-position: -150px -75px;
+}
+.badge-25.BRY {
+  background-position: -150px -100px;
+}
+.badge-25.BSC {
+  background-position: -150px -125px;
+}
+.badge-25.BSL {
+  background-position: 0px -150px;
+}
+.badge-25.BUR {
+  background-position: -25px -150px;
+}
+.badge-25.BVB {
+  background-position: -50px -150px;
+}
+.badge-25.CAR {
+  background-position: -75px -150px;
+}
+.badge-25.CEL {
+  background-position: -100px -150px;
+}
+.badge-25.CHA {
+  background-position: -125px -150px;
+}
+.badge-25.CHE {
+  background-position: -150px -150px;
+}
+.badge-25.CHF {
+  background-position: -175px 0px;
+}
+.badge-25.CHT {
+  background-position: -175px -25px;
+}
+.badge-25.CLV {
+  background-position: -175px -50px;
+}
+.badge-25.CMU {
+  background-position: -175px -75px;
+}
+.badge-25.COU {
+  background-position: -175px -100px;
+}
+.badge-25.COV {
+  background-position: -175px -125px;
+}
+.badge-25.CPH {
+  background-position: -175px -150px;
+}
+.badge-25.CRE {
+  background-position: 0px -175px;
+}
+.badge-25.CRW {
+  background-position: -25px -175px;
+}
+.badge-25.CRY {
+  background-position: -50px -175px;
+}
+.badge-25.CSK {
+  background-position: -75px -175px;
+}
+.badge-25.CUT {
+  background-position: -100px -175px;
+}
+.badge-25.CZV {
+  background-position: -125px -175px;
+}
+.badge-25.DAG {
+  background-position: -150px -175px;
+}
+.badge-25.DER-new {
+  background-position: -175px -175px;
+}
+.badge-25.DER {
+  background-position: -200px 0px;
+}
+.badge-25.DMK {
+  background-position: -200px -25px;
+}
+.badge-25.DND {
+  background-position: -200px -50px;
+}
+.badge-25.DNR {
+  background-position: -200px -75px;
+}
+.badge-25.DON {
+  background-position: -200px -100px;
+}
+.badge-25.DYK {
+  background-position: -200px -125px;
+}
+.badge-25.DZG {
+  background-position: -200px -150px;
+}
+.badge-25.EAS {
+  background-position: -200px -175px;
+}
+.badge-25.EVE {
+  background-position: 0px -200px;
+}
+.badge-25.EXE {
+  background-position: -25px -200px;
+}
+.badge-25.FCA {
+  background-position: -50px -200px;
+}
+.badge-25.FCB {
+  background-position: -75px -200px;
+}
+.badge-25.FCL {
+  background-position: -100px -200px;
+}
+.badge-25.FCSM {
+  background-position: -125px -200px;
+}
+.badge-25.FEN {
+  background-position: -150px -200px;
+}
+.badge-25.FEY {
+  background-position: -175px -200px;
+}
+.badge-25.FGR {
+  background-position: -200px -200px;
+}
+.badge-25.FIO {
+  background-position: -225px 0px;
+}
+.badge-25.FKQ {
+  background-position: -225px -25px;
+}
+.badge-25.FKV {
+  background-position: -225px -50px;
+}
+.badge-25.FLE {
+  background-position: -225px -75px;
+}
+.badge-25.FUL {
+  background-position: -225px -100px;
+}
+.badge-25.GAL {
+  background-position: -225px -125px;
+}
+.badge-25.GIL {
+  background-position: -225px -150px;
+}
+.badge-25.GRI {
+  background-position: -225px -175px;
+}
+.badge-25.GRO {
+  background-position: -225px -200px;
+}
+.badge-25.HAL {
+  background-position: 0px -225px;
+}
+.badge-25.HBS {
+  background-position: -25px -225px;
+}
+.badge-25.HOF {
+  background-position: -50px -225px;
+}
+.badge-25.HUD {
+  background-position: -75px -225px;
+}
+.badge-25.HUL {
+  background-position: -100px -225px;
+}
+.badge-25.IBA {
+  background-position: -125px -225px;
+}
+.badge-25.IPS {
+  background-position: -150px -225px;
+}
+.badge-25.JUV {
+  background-position: -175px -225px;
+}
+.badge-25.KAA {
+  background-position: -200px -225px;
+}
+.badge-25.KOE {
+  background-position: -225px -225px;
+}
+.badge-25.KRA {
+  background-position: -250px 0px;
+}
+.badge-25.KYS {
+  background-position: -250px -25px;
+}
+.badge-25.LAZ {
+  background-position: -250px -50px;
+}
+.badge-25.LEE {
+  background-position: -250px -75px;
+}
+.badge-25.LEG {
+  background-position: -250px -100px;
+}
+.badge-25.LEI {
+  background-position: -250px -125px;
+}
+.badge-25.LEP {
+  background-position: -250px -150px;
+}
+.badge-25.LIB {
+  background-position: -250px -175px;
+}
+.badge-25.LIN {
+  background-position: -250px -200px;
+}
+.badge-25.LIV {
+  background-position: -250px -225px;
+}
+.badge-25.LKM {
+  background-position: 0px -250px;
+}
+.badge-25.LNO {
+  background-position: -25px -250px;
+}
+.badge-25.LOK {
+  background-position: -50px -250px;
+}
+.badge-25.LUD {
+  background-position: -75px -250px;
+}
+.badge-25.LUT {
+  background-position: -100px -250px;
+}
+.badge-25.LYN {
+  background-position: -125px -250px;
+}
+.badge-25.M05 {
+  background-position: -150px -250px;
+}
+.badge-25.MAN {
+  background-position: -175px -250px;
+}
+.badge-25.MAR {
+  background-position: -200px -250px;
+}
+.badge-25.MCH {
+  background-position: -225px -250px;
+}
+.badge-25.MCI {
+  background-position: -250px -250px;
+}
+.badge-25.MCO {
+  background-position: -275px 0px;
+}
+.badge-25.MFF {
+  background-position: -275px -25px;
+}
+.badge-25.MID {
+  background-position: -275px -50px;
+}
+.badge-25.MIL {
+  background-position: -275px -75px;
+}
+.badge-25.MKD {
+  background-position: 0px 0px;
+}
+.badge-25.MOL {
+  background-position: -275px -125px;
+}
+.badge-25.MOR {
+  background-position: -275px -150px;
+}
+.badge-25.MTA {
+  background-position: -275px -175px;
+}
+.badge-25.MUN {
+  background-position: -275px -200px;
+}
+.badge-25.NAP {
+  background-position: -275px -225px;
+}
+.badge-25.NEW {
+  background-position: -275px -250px;
+}
+.badge-25.NFO {
+  background-position: 0px -275px;
+}
+.badge-25.NHT {
+  background-position: -25px -275px;
+}
+.badge-25.NIC {
+  background-position: -50px -275px;
+}
+.badge-25.NKM {
+  background-position: -75px -275px;
+}
+.badge-25.NOR {
+  background-position: -100px -275px;
+}
+.badge-25.NOT {
+  background-position: -125px -275px;
+}
+.badge-25.NWP {
+  background-position: -150px -275px;
+}
+.badge-25.OFK {
+  background-position: -175px -275px;
+}
+.badge-25.OLD {
+  background-position: -200px -275px;
+}
+.badge-25.OLY {
+  background-position: -225px -275px;
+}
+.badge-25.OSM {
+  background-position: -250px -275px;
+}
+.badge-25.OXF {
+  background-position: -275px -275px;
+}
+.badge-25.PAO {
+  background-position: -300px 0px;
+}
+.badge-25.PBG {
+  background-position: -300px -25px;
+}
+.badge-25.PET {
+  background-position: -300px -50px;
+}
+.badge-25.PLY {
+  background-position: -300px -75px;
+}
+.badge-25.PLZ {
+  background-position: -300px -100px;
+}
+.badge-25.PNE {
+  background-position: -300px -125px;
+}
+.badge-25.POR {
+  background-position: -300px -150px;
+}
+.badge-25.PSG {
+  background-position: -300px -175px;
+}
+.badge-25.PSV {
+  background-position: -300px -200px;
+}
+.badge-25.PTO {
+  background-position: -300px -225px;
+}
+.badge-25.PTV {
+  background-position: -300px -250px;
+}
+.badge-25.QAB {
+  background-position: -300px -275px;
+}
+.badge-25.QPR {
+  background-position: 0px -300px;
+}
+.badge-25.RAP {
+  background-position: -25px -300px;
+}
+.badge-25.RBL {
+  background-position: -50px -300px;
+}
+.badge-25.RDG {
+  background-position: -75px -300px;
+}
+.badge-25.RMA {
+  background-position: -100px -300px;
+}
+.badge-25.RMD {
+  background-position: -125px -300px;
+}
+.badge-25.ROC {
+  background-position: -150px -300px;
+}
+.badge-25.RSB {
+  background-position: -175px -300px;
+}
+.badge-25.RSO {
+  background-position: -200px -300px;
+}
+.badge-25.RSV {
+  background-position: -225px -300px;
+}
+.badge-25.RTH {
+  background-position: -250px -300px;
+}
+.badge-25.RUB {
+  background-position: -275px -300px;
+}
+.badge-25.S04 {
+  background-position: -300px -300px;
+}
+.badge-25.SBR {
+  background-position: -325px 0px;
+}
+.badge-25.SCL {
+  background-position: -325px -25px;
+}
+.badge-25.SCU {
+  background-position: -325px -50px;
+}
+.badge-25.SDK {
+  background-position: -325px -75px;
+}
+.badge-25.SEV {
+  background-position: -325px -100px;
+}
+.badge-25.SHR {
+  background-position: -325px -125px;
+}
+.badge-25.SHU {
+  background-position: -325px -150px;
+}
+.badge-25.SHW {
+  background-position: -325px -175px;
+}
+.badge-25.SIO {
+  background-position: -325px -200px;
+}
+.badge-25.SKE {
+  background-position: -325px -225px;
+}
+.badge-25.SOU {
+  background-position: -325px -250px;
+}
+.badge-25.SPP {
+  background-position: -325px -275px;
+}
+.badge-25.SPR {
+  background-position: -325px -300px;
+}
+.badge-25.SSL {
+  background-position: 0px -325px;
+}
+.badge-25.STE {
+  background-position: -25px -325px;
+}
+.badge-25.STK {
+  background-position: -50px -325px;
+}
+.badge-25.STO {
+  background-position: -75px -325px;
+}
+.badge-25.STU {
+  background-position: -100px -325px;
+}
+.badge-25.STV {
+  background-position: -125px -325px;
+}
+.badge-25.SUN {
+  background-position: -150px -325px;
+}
+.badge-25.SUT {
+  background-position: -175px -325px;
+}
+.badge-25.SWA {
+  background-position: -200px -325px;
+}
+.badge-25.SWI {
+  background-position: -225px -325px;
+}
+.badge-25.TOT-ALT {
+  background-position: -250px -325px;
+}
+.badge-25.TOT {
+  background-position: -275px -325px;
+}
+.badge-25.VAL {
+  background-position: -300px -325px;
+}
+.badge-25.VIL {
+  background-position: -325px -325px;
+}
+.badge-25.VIT {
+  background-position: -350px 0px;
+}
+.badge-25.VTG {
+  background-position: -350px -25px;
+}
+.badge-25.WAT {
+  background-position: -350px -50px;
+}
+.badge-25.WBA {
+  background-position: -350px -75px;
+}
+.badge-25.WHU {
+  background-position: -350px -100px;
+}
+.badge-25.WIG {
+  background-position: -350px -125px;
+}
+.badge-25.WIM {
+  background-position: -350px -150px;
+}
+.badge-25.WLS {
+  background-position: -350px -175px;
+}
+.badge-25.WOB {
+  background-position: -350px -200px;
+}
+.badge-25.WOL {
+  background-position: -350px -225px;
+}
+.badge-25.WYC {
+  background-position: -350px -250px;
+}
+.badge-25.YEO {
+  background-position: -350px -275px;
+}
+.badge-25.ZLN {
+  background-position: -350px -300px;
+}
+.badge-25.ZNT {
+  background-position: -350px -325px;
+}
+.badge-25.ZRL {
+  background-position: 0px -350px;
+}
+.badge-25.default {
+  background-position: -25px -350px;
+}
+.badge-25.t1003 {
+  background-position: -50px -350px;
+}
+.badge-25.t11937 {
+  background-position: -75px -350px;
+}
+.badge-25.t127 {
+  background-position: -100px -350px;
+}
+.badge-25.t135 {
+  background-position: -125px -350px;
+}
+.badge-25.t1409 {
+  background-position: -150px -350px;
+}
+.badge-25.t159 {
+  background-position: -175px -350px;
+}
+.badge-25.t160 {
+  background-position: -200px -350px;
+}
+.badge-25.t1748 {
+  background-position: -225px -350px;
+}
+.badge-25.t185 {
+  background-position: -250px -350px;
+}
+.badge-25.t1951 {
+  background-position: -275px -350px;
+}
+.badge-25.t1963 {
+  background-position: -300px -350px;
+}
+.badge-25.t1981 {
+  background-position: -325px -350px;
+}
+.badge-25.t2052 {
+  background-position: -350px -350px;
+}
+.badge-25.t2057 {
+  background-position: -375px 0px;
+}
+.badge-25.t211 {
+  background-position: -375px -25px;
+}
+.badge-25.t2273 {
+  background-position: -375px -50px;
+}
+.badge-25.t264 {
+  background-position: -375px -75px;
+}
+.badge-25.t2753 {
+  background-position: -375px -100px;
+}
+.badge-25.t2839 {
+  background-position: -375px -125px;
+}
+.badge-25.t2847 {
+  background-position: -375px -150px;
+}
+.badge-25.t3062 {
+  background-position: -375px -175px;
+}
+.badge-25.t310 {
+  background-position: -375px -200px;
+}
+.badge-25.t3492 {
+  background-position: -375px -225px;
+}
+.badge-25.t373 {
+  background-position: -375px -250px;
+}
+.badge-25.t383 {
+  background-position: -375px -275px;
+}
+.badge-25.t385 {
+  background-position: -375px -300px;
+}
+.badge-25.t4004 {
+  background-position: -375px -325px;
+}
+.badge-25.t401 {
+  background-position: -375px -350px;
+}
+.badge-25.t414 {
+  background-position: 0px -375px;
+}
+.badge-25.t428 {
+  background-position: -25px -375px;
+}
+.badge-25.t429 {
+  background-position: -50px -375px;
+}
+.badge-25.t452 {
+  background-position: -75px -375px;
+}
+.badge-25.t453 {
+  background-position: -100px -375px;
+}
+.badge-25.t463 {
+  background-position: -125px -375px;
+}
+.badge-25.t472 {
+  background-position: -150px -375px;
+}
+.badge-25.t491 {
+  background-position: -175px -375px;
+}
+.badge-25.t595 {
+  background-position: -200px -375px;
+}
+.badge-25.t857 {
+  background-position: -225px -375px;
+}
+.badge-25.t936 {
+  background-position: -250px -375px;
+}
+
+.badge-50 {
+  background-image: url("/images/badge-sprites/badges-50-sprite.png");
+  background-repeat: no-repeat;
+  width: 50px;
+  height: 50px;
+  display: block;
+  background-position: 0px -700px;
+}
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .badge-50 {
+    background-image: url("/images/badge-sprites/badges-50-sprite@x2.png");
+    background-size: 750px 750px;
+  }
+}
+.badge-50.ACM {
+  background-position: -50px 0px;
+}
+.badge-50.ADL {
+  background-position: -500px -300px;
+}
+.badge-50.AEK {
+  background-position: 0px -50px;
+}
+.badge-50.AFW {
+  background-position: -50px -50px;
+}
+.badge-50.AJA {
+  background-position: -100px 0px;
+}
+.badge-50.APO {
+  background-position: -100px -50px;
+}
+.badge-50.ARS {
+  background-position: 0px -100px;
+}
+.badge-50.ASI {
+  background-position: -50px -100px;
+}
+.badge-50.AST {
+  background-position: -100px -100px;
+}
+.badge-50.ASY {
+  background-position: -150px 0px;
+}
+.badge-50.ATA {
+  background-position: -150px -50px;
+}
+.badge-50.ATH {
+  background-position: -150px -100px;
+}
+.badge-50.ATM {
+  background-position: 0px -150px;
+}
+.badge-50.AUS {
+  background-position: -50px -150px;
+}
+.badge-50.AVL {
+  background-position: -100px -150px;
+}
+.badge-50.AZ {
+  background-position: -150px -150px;
+}
+.badge-50.B04 {
+  background-position: -200px 0px;
+}
+.badge-50.BAL {
+  background-position: -200px -50px;
+}
+.badge-50.BAR {
+  background-position: -200px -100px;
+}
+.badge-50.BAT {
+  background-position: -200px -150px;
+}
+.badge-50.BBV {
+  background-position: 0px -200px;
+}
+.badge-50.BCN {
+  background-position: -50px -200px;
+}
+.badge-50.BEF {
+  background-position: -100px -200px;
+}
+.badge-50.BEL {
+  background-position: -150px -200px;
+}
+.badge-50.BHA {
+  background-position: -200px -200px;
+}
+.badge-50.BIR {
+  background-position: -250px 0px;
+}
+.badge-50.BJK {
+  background-position: -250px -50px;
+}
+.badge-50.BLB {
+  background-position: -250px -100px;
+}
+.badge-50.BLP {
+  background-position: -250px -150px;
+}
+.badge-50.BMG {
+  background-position: -250px -200px;
+}
+.badge-50.BOL {
+  background-position: 0px -250px;
+}
+.badge-50.BOR {
+  background-position: -50px -250px;
+}
+.badge-50.BOU {
+  background-position: -100px -250px;
+}
+.badge-50.BRA {
+  background-position: -150px -250px;
+}
+.badge-50.BRE {
+  background-position: -200px -250px;
+}
+.badge-50.BRG {
+  background-position: -250px -250px;
+}
+.badge-50.BRI {
+  background-position: -300px 0px;
+}
+.badge-50.BRR {
+  background-position: -300px -50px;
+}
+.badge-50.BRU {
+  background-position: -300px -100px;
+}
+.badge-50.BRW {
+  background-position: -300px -150px;
+}
+.badge-50.BRY {
+  background-position: -300px -200px;
+}
+.badge-50.BSC {
+  background-position: -300px -250px;
+}
+.badge-50.BSL {
+  background-position: 0px -300px;
+}
+.badge-50.BUR {
+  background-position: -50px -300px;
+}
+.badge-50.BVB {
+  background-position: -100px -300px;
+}
+.badge-50.CAR {
+  background-position: -150px -300px;
+}
+.badge-50.CEL {
+  background-position: -200px -300px;
+}
+.badge-50.CHA {
+  background-position: -250px -300px;
+}
+.badge-50.CHE {
+  background-position: -300px -300px;
+}
+.badge-50.CHF {
+  background-position: -350px 0px;
+}
+.badge-50.CHT {
+  background-position: -350px -50px;
+}
+.badge-50.CLV {
+  background-position: -350px -100px;
+}
+.badge-50.CMU {
+  background-position: -350px -150px;
+}
+.badge-50.COU {
+  background-position: -350px -200px;
+}
+.badge-50.COV {
+  background-position: -350px -250px;
+}
+.badge-50.CPH {
+  background-position: -350px -300px;
+}
+.badge-50.CRE {
+  background-position: 0px -350px;
+}
+.badge-50.CRW {
+  background-position: -50px -350px;
+}
+.badge-50.CRY {
+  background-position: -100px -350px;
+}
+.badge-50.CSK {
+  background-position: -150px -350px;
+}
+.badge-50.CUT {
+  background-position: -200px -350px;
+}
+.badge-50.CZV {
+  background-position: -250px -350px;
+}
+.badge-50.DAG {
+  background-position: -300px -350px;
+}
+.badge-50.DER-new {
+  background-position: -350px -350px;
+}
+.badge-50.DER {
+  background-position: -400px 0px;
+}
+.badge-50.DMK {
+  background-position: -400px -50px;
+}
+.badge-50.DND {
+  background-position: -400px -100px;
+}
+.badge-50.DNR {
+  background-position: -400px -150px;
+}
+.badge-50.DON {
+  background-position: -400px -200px;
+}
+.badge-50.DYK {
+  background-position: -400px -250px;
+}
+.badge-50.DZG {
+  background-position: -400px -300px;
+}
+.badge-50.EAS {
+  background-position: -400px -350px;
+}
+.badge-50.EVE {
+  background-position: 0px -400px;
+}
+.badge-50.EXE {
+  background-position: -50px -400px;
+}
+.badge-50.FCA {
+  background-position: -100px -400px;
+}
+.badge-50.FCB {
+  background-position: -150px -400px;
+}
+.badge-50.FCL {
+  background-position: -200px -400px;
+}
+.badge-50.FCSM {
+  background-position: -250px -400px;
+}
+.badge-50.FEN {
+  background-position: -300px -400px;
+}
+.badge-50.FEY {
+  background-position: -350px -400px;
+}
+.badge-50.FGR {
+  background-position: -400px -400px;
+}
+.badge-50.FIO {
+  background-position: -450px 0px;
+}
+.badge-50.FKQ {
+  background-position: -450px -50px;
+}
+.badge-50.FKV {
+  background-position: -450px -100px;
+}
+.badge-50.FLE {
+  background-position: -450px -150px;
+}
+.badge-50.FUL {
+  background-position: -450px -200px;
+}
+.badge-50.GAL {
+  background-position: -450px -250px;
+}
+.badge-50.GIL {
+  background-position: -450px -300px;
+}
+.badge-50.GRI {
+  background-position: -450px -350px;
+}
+.badge-50.GRO {
+  background-position: -450px -400px;
+}
+.badge-50.HAL {
+  background-position: 0px -450px;
+}
+.badge-50.HBS {
+  background-position: -50px -450px;
+}
+.badge-50.HOF {
+  background-position: -100px -450px;
+}
+.badge-50.HUD {
+  background-position: -150px -450px;
+}
+.badge-50.HUL {
+  background-position: -200px -450px;
+}
+.badge-50.IBA {
+  background-position: -250px -450px;
+}
+.badge-50.IPS {
+  background-position: -300px -450px;
+}
+.badge-50.JUV {
+  background-position: -350px -450px;
+}
+.badge-50.KAA {
+  background-position: -400px -450px;
+}
+.badge-50.KOE {
+  background-position: -450px -450px;
+}
+.badge-50.KRA {
+  background-position: -500px 0px;
+}
+.badge-50.KYS {
+  background-position: -500px -50px;
+}
+.badge-50.LAZ {
+  background-position: -500px -100px;
+}
+.badge-50.LEE {
+  background-position: -500px -150px;
+}
+.badge-50.LEG {
+  background-position: -500px -200px;
+}
+.badge-50.LEI {
+  background-position: -500px -250px;
+}
+.badge-50.LEP {
+  background-position: 0px 0px;
+}
+.badge-50.LIB {
+  background-position: -500px -350px;
+}
+.badge-50.LIN {
+  background-position: -500px -400px;
+}
+.badge-50.LIV {
+  background-position: -500px -450px;
+}
+.badge-50.LKM {
+  background-position: 0px -500px;
+}
+.badge-50.LNO {
+  background-position: -50px -500px;
+}
+.badge-50.LOK {
+  background-position: -100px -500px;
+}
+.badge-50.LUD {
+  background-position: -150px -500px;
+}
+.badge-50.LUT {
+  background-position: -200px -500px;
+}
+.badge-50.LYN {
+  background-position: -250px -500px;
+}
+.badge-50.M05 {
+  background-position: -300px -500px;
+}
+.badge-50.MAN {
+  background-position: -350px -500px;
+}
+.badge-50.MAR {
+  background-position: -400px -500px;
+}
+.badge-50.MCH {
+  background-position: -450px -500px;
+}
+.badge-50.MCI {
+  background-position: -500px -500px;
+}
+.badge-50.MCO {
+  background-position: -550px 0px;
+}
+.badge-50.MFF {
+  background-position: -550px -50px;
+}
+.badge-50.MID {
+  background-position: -550px -100px;
+}
+.badge-50.MIL {
+  background-position: -550px -150px;
+}
+.badge-50.MKD {
+  background-position: -550px -200px;
+}
+.badge-50.MOL {
+  background-position: -550px -250px;
+}
+.badge-50.MOR {
+  background-position: -550px -300px;
+}
+.badge-50.MTA {
+  background-position: -550px -350px;
+}
+.badge-50.MUN {
+  background-position: -550px -400px;
+}
+.badge-50.NAP {
+  background-position: -550px -450px;
+}
+.badge-50.NEW {
+  background-position: -550px -500px;
+}
+.badge-50.NFO {
+  background-position: 0px -550px;
+}
+.badge-50.NHT {
+  background-position: -50px -550px;
+}
+.badge-50.NIC {
+  background-position: -100px -550px;
+}
+.badge-50.NKM {
+  background-position: -150px -550px;
+}
+.badge-50.NOR {
+  background-position: -200px -550px;
+}
+.badge-50.NOT {
+  background-position: -250px -550px;
+}
+.badge-50.NWP {
+  background-position: -300px -550px;
+}
+.badge-50.OFK {
+  background-position: -350px -550px;
+}
+.badge-50.OLD {
+  background-position: -400px -550px;
+}
+.badge-50.OLY {
+  background-position: -450px -550px;
+}
+.badge-50.OSM {
+  background-position: -500px -550px;
+}
+.badge-50.OXF {
+  background-position: -550px -550px;
+}
+.badge-50.PAO {
+  background-position: -600px 0px;
+}
+.badge-50.PBG {
+  background-position: -600px -50px;
+}
+.badge-50.PET {
+  background-position: -600px -100px;
+}
+.badge-50.PLY {
+  background-position: -600px -150px;
+}
+.badge-50.PLZ {
+  background-position: -600px -200px;
+}
+.badge-50.PNE {
+  background-position: -600px -250px;
+}
+.badge-50.POR {
+  background-position: -600px -300px;
+}
+.badge-50.PSG {
+  background-position: -600px -350px;
+}
+.badge-50.PSV {
+  background-position: -600px -400px;
+}
+.badge-50.PTO {
+  background-position: -600px -450px;
+}
+.badge-50.PTV {
+  background-position: -600px -500px;
+}
+.badge-50.QAB {
+  background-position: -600px -550px;
+}
+.badge-50.QPR {
+  background-position: 0px -600px;
+}
+.badge-50.RAP {
+  background-position: -50px -600px;
+}
+.badge-50.RBL {
+  background-position: -100px -600px;
+}
+.badge-50.RDG {
+  background-position: -150px -600px;
+}
+.badge-50.RMA {
+  background-position: -200px -600px;
+}
+.badge-50.RMD {
+  background-position: -250px -600px;
+}
+.badge-50.ROC {
+  background-position: -300px -600px;
+}
+.badge-50.RSB {
+  background-position: -350px -600px;
+}
+.badge-50.RSO {
+  background-position: -400px -600px;
+}
+.badge-50.RSV {
+  background-position: -450px -600px;
+}
+.badge-50.RTH {
+  background-position: -500px -600px;
+}
+.badge-50.RUB {
+  background-position: -550px -600px;
+}
+.badge-50.S04 {
+  background-position: -600px -600px;
+}
+.badge-50.SBR {
+  background-position: -650px 0px;
+}
+.badge-50.SCL {
+  background-position: -650px -50px;
+}
+.badge-50.SCU {
+  background-position: -650px -100px;
+}
+.badge-50.SDK {
+  background-position: -650px -150px;
+}
+.badge-50.SEV {
+  background-position: -650px -200px;
+}
+.badge-50.SHR {
+  background-position: -650px -250px;
+}
+.badge-50.SHU {
+  background-position: -650px -300px;
+}
+.badge-50.SHW {
+  background-position: -650px -350px;
+}
+.badge-50.SIO {
+  background-position: -650px -400px;
+}
+.badge-50.SKE {
+  background-position: -650px -450px;
+}
+.badge-50.SOU {
+  background-position: -650px -500px;
+}
+.badge-50.SPP {
+  background-position: -650px -550px;
+}
+.badge-50.SPR {
+  background-position: -650px -600px;
+}
+.badge-50.SSL {
+  background-position: 0px -650px;
+}
+.badge-50.STE {
+  background-position: -50px -650px;
+}
+.badge-50.STK {
+  background-position: -100px -650px;
+}
+.badge-50.STO {
+  background-position: -150px -650px;
+}
+.badge-50.STU {
+  background-position: -200px -650px;
+}
+.badge-50.STV {
+  background-position: -250px -650px;
+}
+.badge-50.SUN {
+  background-position: -300px -650px;
+}
+.badge-50.SUT {
+  background-position: -350px -650px;
+}
+.badge-50.SWA {
+  background-position: -400px -650px;
+}
+.badge-50.SWI {
+  background-position: -450px -650px;
+}
+.badge-50.TOT {
+  background-position: -500px -650px;
+}
+.badge-50.VAL {
+  background-position: -550px -650px;
+}
+.badge-50.VIL {
+  background-position: -600px -650px;
+}
+.badge-50.VIT {
+  background-position: -650px -650px;
+}
+.badge-50.VTG {
+  background-position: -700px 0px;
+}
+.badge-50.WAT {
+  background-position: -700px -50px;
+}
+.badge-50.WBA {
+  background-position: -700px -100px;
+}
+.badge-50.WHU {
+  background-position: -700px -150px;
+}
+.badge-50.WIG {
+  background-position: -700px -200px;
+}
+.badge-50.WIM {
+  background-position: -700px -250px;
+}
+.badge-50.WLS {
+  background-position: -700px -300px;
+}
+.badge-50.WOB {
+  background-position: -700px -350px;
+}
+.badge-50.WOL {
+  background-position: -700px -400px;
+}
+.badge-50.WYC {
+  background-position: -700px -450px;
+}
+.badge-50.YEO {
+  background-position: -700px -500px;
+}
+.badge-50.ZLN {
+  background-position: -700px -550px;
+}
+.badge-50.ZNT {
+  background-position: -700px -600px;
+}
+.badge-50.ZRL {
+  background-position: -700px -650px;
+}
+.badge-50.default {
+  background-position: 0px -700px;
+}
+.badge-50.t185 {
+  background-position: -50px -700px;
+}
+
+.badge-100 {
+  background-image: url("/images/badge-sprites/badges-100-sprite.png");
+  background-repeat: no-repeat;
+  width: 100px;
+  height: 100px;
+  display: block;
+  background-position: 0px -1400px;
+}
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .badge-100 {
+    background-image: url("/images/badge-sprites/badges-100-sprite@x2.png");
+    background-size: 1500px 1500px;
+  }
+}
+.badge-100.ACM {
+  background-position: -100px 0px;
+}
+.badge-100.ADL {
+  background-position: -1000px -600px;
+}
+.badge-100.AEK {
+  background-position: 0px -100px;
+}
+.badge-100.AFW {
+  background-position: -100px -100px;
+}
+.badge-100.AJA {
+  background-position: -200px 0px;
+}
+.badge-100.APO {
+  background-position: -200px -100px;
+}
+.badge-100.ARS {
+  background-position: 0px -200px;
+}
+.badge-100.ASI {
+  background-position: -100px -200px;
+}
+.badge-100.AST {
+  background-position: -200px -200px;
+}
+.badge-100.ASY {
+  background-position: -300px 0px;
+}
+.badge-100.ATA {
+  background-position: -300px -100px;
+}
+.badge-100.ATH {
+  background-position: -300px -200px;
+}
+.badge-100.ATM {
+  background-position: 0px -300px;
+}
+.badge-100.AUS {
+  background-position: -100px -300px;
+}
+.badge-100.AVL {
+  background-position: -200px -300px;
+}
+.badge-100.AZ {
+  background-position: -300px -300px;
+}
+.badge-100.B04 {
+  background-position: -400px 0px;
+}
+.badge-100.BAL {
+  background-position: -400px -100px;
+}
+.badge-100.BAR {
+  background-position: -400px -200px;
+}
+.badge-100.BAT {
+  background-position: -400px -300px;
+}
+.badge-100.BBV {
+  background-position: 0px -400px;
+}
+.badge-100.BCN {
+  background-position: -100px -400px;
+}
+.badge-100.BEF {
+  background-position: -200px -400px;
+}
+.badge-100.BEL {
+  background-position: -300px -400px;
+}
+.badge-100.BHA {
+  background-position: -400px -400px;
+}
+.badge-100.BIR {
+  background-position: -500px 0px;
+}
+.badge-100.BJK {
+  background-position: -500px -100px;
+}
+.badge-100.BLB {
+  background-position: -500px -200px;
+}
+.badge-100.BLP {
+  background-position: -500px -300px;
+}
+.badge-100.BMG {
+  background-position: -500px -400px;
+}
+.badge-100.BOL {
+  background-position: 0px -500px;
+}
+.badge-100.BOR {
+  background-position: -100px -500px;
+}
+.badge-100.BOU {
+  background-position: -200px -500px;
+}
+.badge-100.BRA {
+  background-position: -300px -500px;
+}
+.badge-100.BRE {
+  background-position: -400px -500px;
+}
+.badge-100.BRG {
+  background-position: -500px -500px;
+}
+.badge-100.BRI {
+  background-position: -600px 0px;
+}
+.badge-100.BRR {
+  background-position: -600px -100px;
+}
+.badge-100.BRU {
+  background-position: -600px -200px;
+}
+.badge-100.BRW {
+  background-position: -600px -300px;
+}
+.badge-100.BRY {
+  background-position: -600px -400px;
+}
+.badge-100.BSC {
+  background-position: -600px -500px;
+}
+.badge-100.BSL {
+  background-position: 0px -600px;
+}
+.badge-100.BUR {
+  background-position: -100px -600px;
+}
+.badge-100.BVB {
+  background-position: -200px -600px;
+}
+.badge-100.CAR {
+  background-position: -300px -600px;
+}
+.badge-100.CEL {
+  background-position: -400px -600px;
+}
+.badge-100.CHA {
+  background-position: -500px -600px;
+}
+.badge-100.CHE {
+  background-position: -600px -600px;
+}
+.badge-100.CHF {
+  background-position: -700px 0px;
+}
+.badge-100.CHT {
+  background-position: -700px -100px;
+}
+.badge-100.CLV {
+  background-position: -700px -200px;
+}
+.badge-100.CMU {
+  background-position: -700px -300px;
+}
+.badge-100.COU {
+  background-position: -700px -400px;
+}
+.badge-100.COV {
+  background-position: -700px -500px;
+}
+.badge-100.CPH {
+  background-position: -700px -600px;
+}
+.badge-100.CRE {
+  background-position: 0px -700px;
+}
+.badge-100.CRW {
+  background-position: -100px -700px;
+}
+.badge-100.CRY {
+  background-position: -200px -700px;
+}
+.badge-100.CSK {
+  background-position: -300px -700px;
+}
+.badge-100.CUT {
+  background-position: -400px -700px;
+}
+.badge-100.CZV {
+  background-position: -500px -700px;
+}
+.badge-100.DAG {
+  background-position: -600px -700px;
+}
+.badge-100.DER-new {
+  background-position: -700px -700px;
+}
+.badge-100.DER {
+  background-position: -800px 0px;
+}
+.badge-100.DMK {
+  background-position: -800px -100px;
+}
+.badge-100.DND {
+  background-position: -800px -200px;
+}
+.badge-100.DNR {
+  background-position: -800px -300px;
+}
+.badge-100.DON {
+  background-position: -800px -400px;
+}
+.badge-100.DYK {
+  background-position: -800px -500px;
+}
+.badge-100.DZG {
+  background-position: -800px -600px;
+}
+.badge-100.EAS {
+  background-position: -800px -700px;
+}
+.badge-100.EVE {
+  background-position: 0px -800px;
+}
+.badge-100.EXE {
+  background-position: -100px -800px;
+}
+.badge-100.FCA {
+  background-position: -200px -800px;
+}
+.badge-100.FCB {
+  background-position: -300px -800px;
+}
+.badge-100.FCL {
+  background-position: -400px -800px;
+}
+.badge-100.FCSM {
+  background-position: -500px -800px;
+}
+.badge-100.FEN {
+  background-position: -600px -800px;
+}
+.badge-100.FEY {
+  background-position: -700px -800px;
+}
+.badge-100.FGR {
+  background-position: -800px -800px;
+}
+.badge-100.FIO {
+  background-position: -900px 0px;
+}
+.badge-100.FKQ {
+  background-position: -900px -100px;
+}
+.badge-100.FKV {
+  background-position: -900px -200px;
+}
+.badge-100.FLE {
+  background-position: -900px -300px;
+}
+.badge-100.FUL {
+  background-position: -900px -400px;
+}
+.badge-100.GAL {
+  background-position: -900px -500px;
+}
+.badge-100.GIL {
+  background-position: -900px -600px;
+}
+.badge-100.GRI {
+  background-position: -900px -700px;
+}
+.badge-100.GRO {
+  background-position: -900px -800px;
+}
+.badge-100.HAL {
+  background-position: 0px -900px;
+}
+.badge-100.HBS {
+  background-position: -100px -900px;
+}
+.badge-100.HOF {
+  background-position: -200px -900px;
+}
+.badge-100.HUD {
+  background-position: -300px -900px;
+}
+.badge-100.HUL {
+  background-position: -400px -900px;
+}
+.badge-100.IBA {
+  background-position: -500px -900px;
+}
+.badge-100.IPS {
+  background-position: -600px -900px;
+}
+.badge-100.JUV {
+  background-position: -700px -900px;
+}
+.badge-100.KAA {
+  background-position: -800px -900px;
+}
+.badge-100.KOE {
+  background-position: -900px -900px;
+}
+.badge-100.KRA {
+  background-position: -1000px 0px;
+}
+.badge-100.KYS {
+  background-position: -1000px -100px;
+}
+.badge-100.LAZ {
+  background-position: -1000px -200px;
+}
+.badge-100.LEE {
+  background-position: -1000px -300px;
+}
+.badge-100.LEG {
+  background-position: -1000px -400px;
+}
+.badge-100.LEI {
+  background-position: -1000px -500px;
+}
+.badge-100.LEP {
+  background-position: 0px 0px;
+}
+.badge-100.LIB {
+  background-position: -1000px -700px;
+}
+.badge-100.LIN {
+  background-position: -1000px -800px;
+}
+.badge-100.LIV {
+  background-position: -1000px -900px;
+}
+.badge-100.LKM {
+  background-position: 0px -1000px;
+}
+.badge-100.LNO {
+  background-position: -100px -1000px;
+}
+.badge-100.LOK {
+  background-position: -200px -1000px;
+}
+.badge-100.LUD {
+  background-position: -300px -1000px;
+}
+.badge-100.LUT {
+  background-position: -400px -1000px;
+}
+.badge-100.LYN {
+  background-position: -500px -1000px;
+}
+.badge-100.M05 {
+  background-position: -600px -1000px;
+}
+.badge-100.MAN {
+  background-position: -700px -1000px;
+}
+.badge-100.MAR {
+  background-position: -800px -1000px;
+}
+.badge-100.MCH {
+  background-position: -900px -1000px;
+}
+.badge-100.MCI {
+  background-position: -1000px -1000px;
+}
+.badge-100.MCO {
+  background-position: -1100px 0px;
+}
+.badge-100.MFF {
+  background-position: -1100px -100px;
+}
+.badge-100.MID {
+  background-position: -1100px -200px;
+}
+.badge-100.MIL {
+  background-position: -1100px -300px;
+}
+.badge-100.MKD {
+  background-position: -1100px -400px;
+}
+.badge-100.MOL {
+  background-position: -1100px -500px;
+}
+.badge-100.MOR {
+  background-position: -1100px -600px;
+}
+.badge-100.MTA {
+  background-position: -1100px -700px;
+}
+.badge-100.MUN {
+  background-position: -1100px -800px;
+}
+.badge-100.NAP {
+  background-position: -1100px -900px;
+}
+.badge-100.NEW {
+  background-position: -1100px -1000px;
+}
+.badge-100.NFO {
+  background-position: 0px -1100px;
+}
+.badge-100.NHT {
+  background-position: -100px -1100px;
+}
+.badge-100.NIC {
+  background-position: -200px -1100px;
+}
+.badge-100.NKM {
+  background-position: -300px -1100px;
+}
+.badge-100.NOR {
+  background-position: -400px -1100px;
+}
+.badge-100.NOT {
+  background-position: -500px -1100px;
+}
+.badge-100.NWP {
+  background-position: -600px -1100px;
+}
+.badge-100.OFK {
+  background-position: -700px -1100px;
+}
+.badge-100.OLD {
+  background-position: -800px -1100px;
+}
+.badge-100.OLY {
+  background-position: -900px -1100px;
+}
+.badge-100.OSM {
+  background-position: -1000px -1100px;
+}
+.badge-100.OXF {
+  background-position: -1100px -1100px;
+}
+.badge-100.PAO {
+  background-position: -1200px 0px;
+}
+.badge-100.PBG {
+  background-position: -1200px -100px;
+}
+.badge-100.PET {
+  background-position: -1200px -200px;
+}
+.badge-100.PLY {
+  background-position: -1200px -300px;
+}
+.badge-100.PLZ {
+  background-position: -1200px -400px;
+}
+.badge-100.PNE {
+  background-position: -1200px -500px;
+}
+.badge-100.POR {
+  background-position: -1200px -600px;
+}
+.badge-100.PSG {
+  background-position: -1200px -700px;
+}
+.badge-100.PSV {
+  background-position: -1200px -800px;
+}
+.badge-100.PTO {
+  background-position: -1200px -900px;
+}
+.badge-100.PTV {
+  background-position: -1200px -1000px;
+}
+.badge-100.QAB {
+  background-position: -1200px -1100px;
+}
+.badge-100.QPR {
+  background-position: 0px -1200px;
+}
+.badge-100.RAP {
+  background-position: -100px -1200px;
+}
+.badge-100.RBL {
+  background-position: -200px -1200px;
+}
+.badge-100.RDG {
+  background-position: -300px -1200px;
+}
+.badge-100.RMA {
+  background-position: -400px -1200px;
+}
+.badge-100.RMD {
+  background-position: -500px -1200px;
+}
+.badge-100.ROC {
+  background-position: -600px -1200px;
+}
+.badge-100.RSB {
+  background-position: -700px -1200px;
+}
+.badge-100.RSO {
+  background-position: -800px -1200px;
+}
+.badge-100.RSV {
+  background-position: -900px -1200px;
+}
+.badge-100.RTH {
+  background-position: -1000px -1200px;
+}
+.badge-100.RUB {
+  background-position: -1100px -1200px;
+}
+.badge-100.S04 {
+  background-position: -1200px -1200px;
+}
+.badge-100.SBR {
+  background-position: -1300px 0px;
+}
+.badge-100.SCL {
+  background-position: -1300px -100px;
+}
+.badge-100.SCU {
+  background-position: -1300px -200px;
+}
+.badge-100.SDK {
+  background-position: -1300px -300px;
+}
+.badge-100.SEV {
+  background-position: -1300px -400px;
+}
+.badge-100.SHR {
+  background-position: -1300px -500px;
+}
+.badge-100.SHU {
+  background-position: -1300px -600px;
+}
+.badge-100.SHW {
+  background-position: -1300px -700px;
+}
+.badge-100.SIO {
+  background-position: -1300px -800px;
+}
+.badge-100.SKE {
+  background-position: -1300px -900px;
+}
+.badge-100.SOU {
+  background-position: -1300px -1000px;
+}
+.badge-100.SPP {
+  background-position: -1300px -1100px;
+}
+.badge-100.SPR {
+  background-position: -1300px -1200px;
+}
+.badge-100.SSL {
+  background-position: 0px -1300px;
+}
+.badge-100.STE {
+  background-position: -100px -1300px;
+}
+.badge-100.STK {
+  background-position: -200px -1300px;
+}
+.badge-100.STO {
+  background-position: -300px -1300px;
+}
+.badge-100.STU {
+  background-position: -400px -1300px;
+}
+.badge-100.STV {
+  background-position: -500px -1300px;
+}
+.badge-100.SUN {
+  background-position: -600px -1300px;
+}
+.badge-100.SUT {
+  background-position: -700px -1300px;
+}
+.badge-100.SWA {
+  background-position: -800px -1300px;
+}
+.badge-100.SWI {
+  background-position: -900px -1300px;
+}
+.badge-100.TOT {
+  background-position: -1000px -1300px;
+}
+.badge-100.VAL {
+  background-position: -1100px -1300px;
+}
+.badge-100.VIL {
+  background-position: -1200px -1300px;
+}
+.badge-100.VIT {
+  background-position: -1300px -1300px;
+}
+.badge-100.VTG {
+  background-position: -1400px 0px;
+}
+.badge-100.WAT {
+  background-position: -1400px -100px;
+}
+.badge-100.WBA {
+  background-position: -1400px -200px;
+}
+.badge-100.WHU {
+  background-position: -1400px -300px;
+}
+.badge-100.WIG {
+  background-position: -1400px -400px;
+}
+.badge-100.WIM {
+  background-position: -1400px -500px;
+}
+.badge-100.WLS {
+  background-position: -1400px -600px;
+}
+.badge-100.WOB {
+  background-position: -1400px -700px;
+}
+.badge-100.WOL {
+  background-position: -1400px -800px;
+}
+.badge-100.WYC {
+  background-position: -1400px -900px;
+}
+.badge-100.YEO {
+  background-position: -1400px -1000px;
+}
+.badge-100.ZLN {
+  background-position: -1400px -1100px;
+}
+.badge-100.ZNT {
+  background-position: -1400px -1200px;
+}
+.badge-100.ZRL {
+  background-position: -1400px -1300px;
+}
+.badge-100.default {
+  background-position: 0px -1400px;
+}
+.badge-100.t185 {
+  background-position: -100px -1400px;
+}

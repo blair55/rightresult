@@ -13,26 +13,26 @@ module FixtureSourcing =
     JsonProvider<Sample="HttpHandlers/PremFixturesSample.json">
 
   let private premFixturesUrl =
-    sprintf "https://fantasy.premierleague.com/drf/fixtures/?event=%i"
+    sprintf "https://fantasy.premierleague.com/api/fixtures/?event=%i"
 
   open Shared.Teams
 
   let private premTeamIdToName = function
     | 1 -> Arsenal
-    | 2 -> Bournemouth
-    | 3 -> Brighton
-    | 4 -> Burnley
-    | 5 -> Cardiff
+    | 2 -> AstonVilla
+    | 3 -> Bournemouth
+    | 4 -> Brighton
+    | 5 -> Burnley
     | 6 -> Chelsea
     | 7 -> CrystalPalace
     | 8 -> Everton
-    | 9 -> Fulham
-    | 10 -> Huddersfield
-    | 11 -> Leicester
-    | 12 -> Liverpool
-    | 13 -> ManCity
-    | 14 -> ManUtd
-    | 15 -> Newcastle
+    | 9 -> Leicester
+    | 10 -> Liverpool
+    | 11 -> ManCity
+    | 12 -> ManUtd
+    | 13 -> Newcastle
+    | 14 -> Norwich
+    | 15 -> SheffieldUtd
     | 16 -> Southampton
     | 17 -> Spurs
     | 18 -> Watford
@@ -45,7 +45,7 @@ module FixtureSourcing =
 
   let private getNewPremGwFixtures no =
     PremFixtures.Load(premFixturesUrl no)
-    |> Seq.map(fun f -> new DateTimeOffset(f.KickoffTime), f.TeamH |> premTeamIdToName, f.TeamA |> premTeamIdToName)
+    |> Seq.map(fun f -> f.KickoffTime, f.TeamH |> premTeamIdToName, f.TeamA |> premTeamIdToName)
     |> Seq.toList
 
   let getNewPremGwResults no =
@@ -62,12 +62,14 @@ module FixtureSourcing =
     | Some (GameweekNo gw) -> gw
     | _ -> 0
     |> (+) 1
+    |> fun i -> printfn "NewGameweekNo: %i" i; i
 
   let getNewFixtureSetViewModel (deps:Dependencies) =
     deps
     |> (getNewGameweekNo
       >> (fun gwno ->
       getNewPremGwFixtures gwno
+      |> fun a -> printfn "%A" a;a
       |> List.map (fun (ko, h, a) -> KickOff ko, KickOff.groupFormat (KickOff ko), Team h, Team a)
       |> fun items -> { NewFixtureSetViewModel.GameweekNo = GameweekNo gwno; Fixtures = items }))
 
@@ -139,4 +141,197 @@ module Whistler =
         |> function
         | Ok _ -> printfn "Fixture kicked off\n%A\n%A" f.Id f.TeamLine
         | Error e -> printfn "ERROR KICKING OFF\n%A" e)
+
+module HttpHandlers =
+
+  open Microsoft.AspNetCore.Http
+  open Giraffe
+  open Server.Elevated
+
+  [<CLIMutable>]
+  type FixtureSetHttp =
+    { GameweekNo : int
+      Fixtures : FixtureHttp list
+    }
+  and FixtureHttp =
+    { FixtureId : Guid
+      Home : string
+      Away : string
+      KickOff : DateTimeOffset
+    }
+
+  let createFixtureSet handleCommand next (ctx:HttpContext) =
+    let respond next ctx (result:Rresult<Unit>) =
+      match result with
+      | Ok () -> Successful.CREATED "Created" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
+    let getFixtureSetFromRequest (ctx:HttpContext) =
+      ctx.BindModelAsync<FixtureSetHttp>()
+    let createFixtureSetCmd (fs:FixtureSetHttp) =
+      fs.Fixtures
+      |> List.map (fun f ->
+          FixtureSetId (Guid.NewGuid())
+          |> fun fsId ->
+          { FixtureRecord.Id = FixtureId (Guid.NewGuid())
+            FixtureSetId = fsId
+            GameweekNo = GameweekNo fs.GameweekNo
+            KickOff = KickOff f.KickOff
+            TeamLine = TeamLine (Team f.Home, Team f.Away)
+            ScoreLine = None
+            SortOrder = 0 })
+      |> fun fixtures -> GameweekNo fs.GameweekNo, fixtures
+      |> CreateFixtureSet
+      |> fun fscmd -> FixtureSetCommand (FixtureSetId (Guid.NewGuid()), fscmd)
+    ctx
+    |> (getFixtureSetFromRequest
+    >> Task.toAsync
+    >> Async.map createFixtureSetCmd
+    >> Async.toTask (Async.bind handleCommand)
+    >> Task.bind (respond next ctx))
+
+  [<CLIMutable>]
+  type EditFixtureKoHttp =
+    { FixtureSetId : Guid
+      FixtureId : Guid
+      KickOff : DateTimeOffset
+    }
+
+  let editFixtureKo handleCommand next (ctx:HttpContext) =
+    let respond next ctx (result:Rresult<Unit>) =
+      match result with
+      | Ok () -> Successful.OK "Ok" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
+    let editFixtureKoCmd (e:EditFixtureKoHttp) =
+      (FixtureId e.FixtureId, KickOff e.KickOff)
+      |> EditFixtureKickOff
+      |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd)
+    ctx
+    |> (fun ctx -> ctx.BindModelAsync<EditFixtureKoHttp>()
+    >> Task.toAsync
+    >> Async.map editFixtureKoCmd
+    >> Async.toTask (Async.bind handleCommand)
+    >> Task.bind (respond next ctx))
+
+  [<CLIMutable>]
+  type FixtureClassificationHttp =
+    { HomeTeam : string
+      AwayTeam : string
+      HomeScore : int
+      AwayScore : int }
+
+  let classifyFixture (deps:Dependencies) handleCommand next (ctx:HttpContext) =
+    let respond next ctx (result:Rresult<Unit>) =
+      match result with
+      | Ok () -> Successful.CREATED "Created" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
+    let getClassificationFromRequest (ctx:HttpContext) =
+      ctx.BindModelAsync<FixtureClassificationHttp>()
+    let getFixtureFromRequest (fc:FixtureClassificationHttp) =
+      deps.Queries.getFixtureByTeams (Team fc.HomeTeam) (Team fc.AwayTeam)
+    let createClassifyFixtureCmd (fc:FixtureClassificationHttp, fr:FixtureRecord) =
+      ClassifyFixture (fr.Id, ScoreLine (Score fc.HomeScore, Score fc.AwayScore))
+      |> fun fscmd -> FixtureSetCommand (fr.FixtureSetId, fscmd)
+    ctx
+    |> (getClassificationFromRequest
+    >> Task.toAsync
+    >> Async.map (fun fc -> (fc, getFixtureFromRequest fc) |> createClassifyFixtureCmd)
+    >> Async.toTask (Async.bind handleCommand)
+    >> Task.bind (respond next ctx))
+
+  let classifyAllFixtures (deps:Dependencies) handleCommand =
+    Classifier.classifyAllFixtures handleCommand deps.Queries
+    Successful.OK "Ok"
+
+  let classifyFixturesAfterGameweek (deps:Dependencies) handleCommand gwno =
+    Classifier.classifyFixturesAfterGameweek handleCommand deps.Queries (GameweekNo gwno)
+    Successful.OK "Ok"
+
+  [<CLIMutable>]
+  type RemovePlayerHttp =
+    { PlayerId : string
+    }
+
+  let removePlayer handleCommand =
+    fun next (ctx:HttpContext) ->
+      ctx.BindModelAsync<RemovePlayerHttp>()
+      |> Task.map (fun p -> (PlayerId p.PlayerId, Remove) |> PlayerCommand)
+      |> Task.bind (Async.toTask handleCommand)
+      |> Task.bind (function
+      | Ok () -> Successful.OK "Ok" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
+
+  [<CLIMutable>]
+  type AddPlayerToLeagueHttp =
+    { PlayerId : string
+      LeagueId : Guid
+    }
+
+  let addPlayerToLeague handleCommand =
+    fun next (ctx:HttpContext) ->
+      ctx.BindModelAsync<AddPlayerToLeagueHttp>()
+      |> Task.map (fun p -> (PrivateLeagueId p.LeagueId, PlayerId p.PlayerId |> JoinLeague) |> PrivateLeagueCommand)
+      |> Task.bind (Async.toTask handleCommand)
+      |> Task.bind (function
+      | Ok () -> Successful.OK "Ok" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
+
+  [<CLIMutable>]
+  type RemovePlayerFromLeagueHttp =
+    { PlayerId : string
+      LeagueId : Guid
+    }
+
+  let removePlayerFromLeague handleCommand =
+    fun next (ctx:HttpContext) ->
+      ctx.BindModelAsync<RemovePlayerFromLeagueHttp>()
+      |> Task.map (fun p -> (PrivateLeagueId p.LeagueId, PlayerId p.PlayerId |> LeaveLeague) |> PrivateLeagueCommand)
+      |> Task.bind (Async.toTask handleCommand)
+      |> Task.bind (function
+      | Ok () -> Successful.OK "Ok" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
+
+
+  [<CLIMutable>]
+  type OverwritePredictionSetHttp =
+    { SourcePlayerId : string
+      DestinationPlayerId : string
+      FixtureSetId : Guid
+    }
+
+  let overwritePredictionSet handleCommand =
+    fun next (ctx:HttpContext) ->
+      ctx.BindModelAsync<OverwritePredictionSetHttp>()
+      |> Task.map (fun m ->
+        PlayerId m.SourcePlayerId
+        |> OverwritePredictionSet
+        |> fun cmd -> PredictionSetCommand (PlayerId m.DestinationPlayerId, FixtureSetId m.FixtureSetId, cmd))
+      |> Task.bind (Async.toTask handleCommand)
+      |> Task.bind (function
+      | Ok () -> Successful.OK "Ok" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
+
+  [<CLIMutable>]
+  type KickOffFixtureHttp =
+    { HomeTeam : string
+      AwayTeam : string
+    }
+
+  let kickOffFixture (deps:Dependencies) handleCommand next (ctx:HttpContext) =
+    let respond next ctx (result:Rresult<Unit>) =
+      match result with
+      | Ok () -> Successful.CREATED "Created" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
+    let getKoFromRequest (ctx:HttpContext) =
+      ctx.BindModelAsync<KickOffFixtureHttp>()
+    let getFixtureFromRequest (ko:KickOffFixtureHttp) =
+      deps.Queries.getFixtureByTeams (Team ko.HomeTeam) (Team ko.AwayTeam)
+    let createKoFixtureCmd (fr:FixtureRecord) =
+      KickOffFixture fr.Id
+      |> fun fscmd -> FixtureSetCommand (fr.FixtureSetId, fscmd)
+    ctx
+    |> (getKoFromRequest
+    >> Task.toAsync
+    >> Async.map (getFixtureFromRequest >> createKoFixtureCmd)
+    >> Async.toTask (Async.bind handleCommand)
+    >> Task.bind (respond next ctx))
 

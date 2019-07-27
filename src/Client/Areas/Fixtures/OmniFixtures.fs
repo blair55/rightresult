@@ -2,8 +2,8 @@ namespace Areas.Fixtures
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Shared
 open Fulma
@@ -51,14 +51,14 @@ module OmniFixtures =
     | Page of from:int
 
   let getFixturesCmd api player from =
-    Cmd.ofAsync
+    Cmd.OfAsync.either
       (api.getFixtures (from, pageSize))
       player.Token
       FixturesReceived
       (AsyncError >> Error >> Init)
 
   let getFixturesLengthCmd api player =
-    Cmd.ofAsync
+    Cmd.OfAsync.either
       api.getFixturesLength
       player.Token
       FixturesLengthReceived
@@ -80,7 +80,7 @@ module OmniFixtures =
       content
 
   let rowOf2 one two =
-    div [ Class TextAlignment.Classes.HasTextCentered ]
+    div [ Class (TextAlignment.Centered.ToString()) ]
       [ Columns.columns [ Columns.IsMobile; Columns.IsGapless ]
           [ Column.column [ Column.Width (Screen.All, Column.IsHalf) ] one
             Column.column [ Column.Width (Screen.All, Column.IsHalf) ] two
@@ -88,7 +88,7 @@ module OmniFixtures =
       ]
 
   let rowOf3 one two three =
-    div [ Class TextAlignment.Classes.HasTextCentered ]
+    div [ Class (TextAlignment.Centered.ToString()) ]
       [ Columns.columns [ Columns.IsMobile; Columns.IsGapless]
           [ Column.column [ Column.Width (Screen.All, Column.IsTwoFifths) ] one
             Column.column [ Column.Width (Screen.All, Column.IsOneFifth) ] two
@@ -97,7 +97,7 @@ module OmniFixtures =
       ]
 
   let rowOf5 one two three four five =
-    div [ Class TextAlignment.Classes.HasTextCentered ]
+    div [ Class (TextAlignment.Centered.ToString()) ]
       [ Columns.columns [ Columns.IsMobile; Columns.IsGapless ]
           [ Column.column [ Column.Width (Screen.All, Column.IsOneFifth) ] one
             Column.column [ Column.Width (Screen.All, Column.IsOneFifth) ] two
@@ -109,16 +109,16 @@ module OmniFixtures =
 
   let badgeAndScoreRow (f:FixturePredictionViewModel) predictionBox =
     let (TeamLine (homeTeam, awayTeam)) = f.TeamLine
-    div [ Style [ Position "relative" ] ]
-      [ div [ Style [ Position "relative" ] ]
+    div [ Style [ Position PositionOptions.Relative ] ]
+      [ div [ Style [ Position PositionOptions.Relative ] ]
           [ rowOf3
-              [ div [ Style [ Margin "0 auto"; Display "inline-block" ] ] [ badge L homeTeam ] ]
+              [ div [ Style [ Margin "0 auto"; Display DisplayOptions.InlineBlock ] ] [ badge L homeTeam ] ]
               []
-              [ div [ Style [ Margin "0 auto"; Display "inline-block" ] ] [ badge L awayTeam ] ]
+              [ div [ Style [ Margin "0 auto"; Display DisplayOptions.InlineBlock ] ] [ badge L awayTeam ] ]
             rowOf3
               [ Components.teamName homeTeam ] [] [ Components.teamName awayTeam ]
           ]
-        div [ Style [ Position "absolute"; Width "100%"; Top "0.6em" ] ]
+        div [ Style [ Position PositionOptions.Absolute; Width "100%"; Top "0.6em" ] ]
           [ rowOf3
               [ ]
               [ predictionBox ]
@@ -146,12 +146,7 @@ module OmniFixtures =
 
             (if isDoubleDown
             then
-              Text.span []
-                // [ Icon.faIcon [ Icon.Size IsSmall ] [ Fa.icon Fa.I.AngleDoubleDown ]
-                //   str "Double Down"
-                // ]
-                // [ Fa.i [ Fa.Solid.AngleDoubleDown; Fa.Size Fa.FaSmall ] [ str "Double Down" ] ]
-                [ smallIconWithText Fa.Solid.AngleDoubleDown "Double Down" ]
+              smallIconWithText Fa.Solid.AngleDoubleDown "Double Down"
 
             else Text.span [] [])
             Text.span [] rhs
@@ -168,16 +163,9 @@ module OmniFixtures =
       match homeScore, awayScore with
       | Some _, Some _ -> []
       | _ ->
-        // [ Icon.faIcon [ Icon.Size IsSmall ] [ Fa.icon Fa.I.AngleDoubleRight ]
-        //   str "Awaiting"
-        // ]
         [ smallIconWithText Fa.Solid.AngleDoubleRight "Awaiting" ]
 
     let disabledIcon i =
-      // Icon.faIcon
-      //   [ Icon.Modifiers
-      //       [ Modifier.TextColor IsGreyLight ]
-      //   ] [ Fa.icon i ]
       Fa.i [ i; Fa.Props [ Style [ Color "#b5b5b5" ] ] ] []
 
     let scoreIncButton dispatch (fsId, fId, team) =
@@ -195,7 +183,6 @@ module OmniFixtures =
 
     let doubleDownButton dispatch (f:FixturePredictionViewModel) =
       let icon i =
-        // [ Icon.faIcon [] [ Fa.icon i ] ]
         [ Fa.i [ i ] [] ]
       match f.IsDoubleDownAvailable, f.Prediction, f.IsDoubleDown with
       | true, Some _, false -> button [Button.Color IsLight] (if f.InProgress then ignore else fun _ -> SetDoubleDown (f.FixtureSetId, f.Id) |> dispatch) (icon Fa.Solid.AngleDoubleDown)
@@ -211,7 +198,7 @@ module OmniFixtures =
 
       Card.content
         [ Props
-            [ Style [ Position "relative"; Padding "1em 0" ]
+            [ Style [ Position PositionOptions.Relative; Padding "1em 0" ]
             ]
         ]
         [ badgeAndScoreRow f predictionBox
@@ -247,7 +234,6 @@ module OmniFixtures =
     (ScoreLine (Score homeScore, Score awayScore), points, category) =
     let s = if points = 1 then sprintf "%i point" points else sprintf "%i points" points
     let rhs =
-        // [ Icon.faIcon [ Icon.Size IsSmall ] [ Fa.icon Fa.I.AngleDoubleRight ]
         [ smallIconWithText Fa.Solid.AngleDoubleRight s
         ]
     let predictionBox =
@@ -309,7 +295,6 @@ module OmniFixtures =
               [ button [ Button.Size IsSmall; Button.Modifiers [ Modifier.IsPulledRight ] ]
                   (fun _ -> Page n |> dispatch)
                   [ str "Next"
-                    // Icon.faIcon [] [ Fa.icon Fa.I.AngleRight ]
                     Fa.i [ Fa.Solid.AngleRight ] []
                   ]
               ]
@@ -333,7 +318,7 @@ module OmniFixtures =
     | Prediction action ->
       let (PredictionAction (_, fId, _, _)) = action
       { model with Fixtures = model.Fixtures.Add(fId, { model.Fixtures.Item fId with InProgress = true }) },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.prediction player.Token)
         action
         PredictionAccepted
@@ -357,7 +342,7 @@ module OmniFixtures =
         { model with Fixtures = Map.map (fun k v -> { v with InProgress = false }) model.Fixtures }, alert e
     | SetDoubleDown (fsId, fId) ->
       model,
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.doubleDown player.Token)
         (fsId, fId)
         SetDoubleDownResponse
@@ -371,7 +356,7 @@ module OmniFixtures =
       | Error e -> model, alert e
     | RemoveDoubleDown fsId ->
       model,
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.removeDoubleDown player.Token)
         fsId
         RemoveDoubleDownResponse

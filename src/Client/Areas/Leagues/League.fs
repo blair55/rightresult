@@ -2,9 +2,10 @@ namespace Areas.Leagues
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 open Fable.Import
+open Fable.Core.JS
 
 open Areas
 open Shared
@@ -30,12 +31,12 @@ module League =
 
   let init api player privateleagueId =
     Cmd.batch
-      [ Cmd.ofAsync
+      [ Cmd.OfAsync.either
           (api.getLeagueTable (PrivateLeague privateleagueId) Full)
           player.Token
           LeagueReceived
           (Error >> Init)
-        Cmd.ofAsync
+        Cmd.OfAsync.either
           api.getMaxGameweekNo
           player.Token
           MaxGwnoReceived
@@ -50,13 +51,13 @@ module League =
 
   let buildInviteLink (PrivateLeagueId leagueId) =
     sprintf "%s//%s%s/%s"
-      Browser.window.location.protocol
-      Browser.window.location.hostname
-      (if Browser.window.location.port = ":80" then "" else sprintf ":%s" Browser.window.location.port)
+      Browser.Dom.window.location.protocol
+      Browser.Dom.window.location.hostname
+      (if Browser.Dom.window.location.port = ":80" then "" else sprintf ":%s" Browser.Dom.window.location.port)
       (string leagueId |> Routes.joinLeaguePath)
 
   let whatsAppLink =
-    JS.encodeURI
+    encodeURI
     >> fun uri ->
       a [ Href <| sprintf "whatsapp://send?text=%s" uri ]
         [ span [ Class "icon" ] [ i [ Class "fab fa-whatsapp fa-lg" ] [] ]
@@ -64,7 +65,7 @@ module League =
         ]
 
   let facebookLink =
-    JS.encodeURI
+    encodeURI
     >> fun uri ->
       a [ Href <| sprintf "https://www.facebook.com/sharer/sharer.php?u=%s" uri ]
         [ span [ Class "icon" ] [ i [ Class "fab fa-facebook fa-lg" ] [] ]
@@ -72,7 +73,7 @@ module League =
         ]
 
   let twitterLink =
-    JS.encodeURI
+    encodeURI
     >> fun uri ->
       a [ Href <| sprintf "https://twitter.com/intent/tweet?text=%s" uri ]
         [ span [ Class "icon" ] [ i [ Class "fab fa-twitter fa-lg" ] [] ]

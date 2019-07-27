@@ -2,8 +2,8 @@ namespace Areas.Leagues
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 open Fable.Import
 
 open Shared
@@ -28,12 +28,12 @@ module GlobalLeague =
 
   let init api player =
     Cmd.batch
-      [ Cmd.ofAsync
+      [ Cmd.OfAsync.either
           (api.getLeagueTable GlobalLeague Full)
           player.Token
           LeagueReceived
           (Error >> Init)
-        Cmd.ofAsync
+        Cmd.OfAsync.either
           api.getMaxGameweekNo
           player.Token
           MaxGwnoReceived

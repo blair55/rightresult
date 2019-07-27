@@ -2,8 +2,8 @@ namespace Areas.Players
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Shared
 open Fulma
@@ -25,7 +25,7 @@ module AllPlayers =
   let init api p =
     { Players = Fetching
     },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         api.getAllPlayers
         p.Token
         PlayersReceived
@@ -52,7 +52,9 @@ module AllPlayers =
   let view (model:Model) dispatch =
     match model.Players with
     | Success players -> fullView dispatch players
-    | _ -> div [] []
+    | _ ->
+      printfn "^^^^^^^^^^^^^ %A" model
+      div [] []
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with

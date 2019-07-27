@@ -2,12 +2,11 @@ namespace Areas.Leagues
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Shared
 open Fulma
-open Fable
 open Routes
 open Areas
 
@@ -25,12 +24,14 @@ module Leagues =
     | NavTo of Route
 
   let init api player =
+    printfn "************* initing"
     Fetching,
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         api.getPlayerLeagues
         player.Token
         LeaguesReceived
-        (Error >> Init)
+        (fun a -> printfn "************ %A" a; Ok "???" |> Init)
+        // (Error >> Init)
 
   let leaguesList dispatch (model:LeagueList) =
     model
@@ -74,12 +75,15 @@ module Leagues =
         (match model with
         | Success l when Map.isEmpty l -> noLeaguesView dispatch
         | Success l -> leaguesList dispatch l
-        | _ -> div [] [])
+        | _ ->
+          printfn "************* %A" model
+          div [] [])
       ]
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with
     | Init _ -> model, []
-    | LeaguesReceived r -> resultToWebData r, []
+    | LeaguesReceived r ->
+      resultToWebData r, []
     | NavTo r ->
       model, Routes.navTo r

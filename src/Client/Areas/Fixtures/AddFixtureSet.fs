@@ -2,8 +2,8 @@ namespace Areas.Fixtures
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open System
 open Shared
@@ -28,7 +28,7 @@ module AddFixtureSet =
   let init api player : Model * Cmd<Msg> =
     { FixtureSet = Fetching
       IsSubmitting = false
-    }, Cmd.ofAsync
+    }, Cmd.OfAsync.either
         api.getNewFixtureSet
         player.Token
         GetNewFixtureSetResult
@@ -117,14 +117,14 @@ module AddFixtureSet =
       { model with FixtureSet = resultToWebData r }, []
     | SubmitFixtureSet ->
       { model with IsSubmitting = true },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         api.addNewFixtureSet
         player.Token
         SubmitFixtureSetResult
         (Error >> Init)
     | SubmitFixtureSetResult r ->
       match r with
-      | Ok () -> model, Cmd.ofPromise delay (FixtureRoute OmniFixturesRoute) NavTo (Error >> Init)
+      | Ok () -> model, Cmd.OfPromise.either delay (FixtureRoute OmniFixturesRoute) NavTo (Error >> Init)
       | Error e -> model, alert e
     | NavTo r ->
       model, (Routes.navTo r)

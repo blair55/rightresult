@@ -2,8 +2,8 @@ namespace Areas.Leagues
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Shared
 open Fulma
@@ -28,7 +28,7 @@ module LeaveLeague =
     { PrivateLeagueId = privateLeagueId
       League = Fetching
       IsLoading = false },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.getLeagueTable (PrivateLeague privateLeagueId) Full)
         player.Token
         LeagueReceived
@@ -79,7 +79,7 @@ module LeaveLeague =
     | LeagueReceived r -> { model with League = resultToWebData r }, []
     | Confirm privateLeagueId ->
       { model with IsLoading = true },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.leaveLeague player.Token)
         privateLeagueId
         ConfirmResult
@@ -89,5 +89,5 @@ module LeaveLeague =
     | ConfirmResult r ->
       match r with
       | Ok () ->
-        model, Cmd.ofPromise delay (PlayerLeaguesRoute |> LeaguesRoute) NavTo (Error >> Init)
+        model, Cmd.OfPromise.either delay (PlayerLeaguesRoute |> LeaguesRoute) NavTo (Error >> Init)
       | Error e -> model, alert e

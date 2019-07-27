@@ -4,8 +4,8 @@ open Elmish
 open Elmish.React
 open Thoth.Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Shared
 open Fulma
@@ -97,17 +97,17 @@ module HomeArea =
               ]
           ]
 
-        Components.cardWithFooter
-          [ Message.message [ Message.Color IsInfo ]
-              [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-                  [ str "We are a work in progress so tell us your ideas and watch out for new features!"
-                  ]
-              ]
-          ]
-          [ Card.Footer.a [ Props [ OnClick (fun _ -> dispatch ShowFeedbackModal) ] ]
-              [ str "Feedback"
-              ]
-          ]
+        // Components.cardWithFooter
+        //   [ Message.message [ Message.Color IsInfo ]
+        //       [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
+        //           [ str "We are a work in progress so tell us your ideas and watch out for new features!"
+        //           ]
+        //       ]
+        //   ]
+        //   [ Card.Footer.a [ Props [ OnClick (fun _ -> dispatch ShowFeedbackModal) ] ]
+        //       [ str "Feedback"
+        //       ]
+        //   ]
 
         (match model.LeagueTable, model.TotalPoints with
         | Success league, Success points ->
@@ -131,12 +131,12 @@ module HomeArea =
       ShowFeedbackModal = false
       FeedbackText = ""
     }, Cmd.batch
-        [ Cmd.ofAsync
+        [ Cmd.OfAsync.either
             (api.getPlayerPointsTotal player.Id)
             player.Token
             PlayerPointsTotalRecieved
             (Error >> Init)
-          Cmd.ofAsync
+          Cmd.OfAsync.either
             (api.getLeagueTable GlobalLeague Full)
             player.Token
             LeagueTableReceived
@@ -153,7 +153,7 @@ module HomeArea =
     | EditFeedback s -> { model with FeedbackText = s }, []
     | SubmitFeedback ->
       { model with ShowFeedbackModal = false; FeedbackText = "" },
-        Cmd.ofAsync
+        Cmd.OfAsync.either
           (api.submitFeedback model.FeedbackText)
           player.Token
           (fun _ -> AlertInfo "Thanks for your feedback!")

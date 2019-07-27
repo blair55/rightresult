@@ -2,8 +2,8 @@ namespace Areas.Leagues
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open System
 open Shared
@@ -40,12 +40,12 @@ module LeagueHistory =
       Months = Fetching
     },
     Cmd.batch
-      ( [ Cmd.ofAsync
+      ( [ Cmd.OfAsync.either
             (api.getLeagueHistoryFixtureSets leagueId)
             player.Token
             FixtureSetsReceived
             (Error >> Init)
-          Cmd.ofAsync
+          Cmd.OfAsync.either
             (api.getLeagueHistoryMonths leagueId)
             player.Token
             MonthsReceived
@@ -54,7 +54,7 @@ module LeagueHistory =
         (match leagueId with
         | GlobalLeague -> []
         | PrivateLeague privateLeagueId ->
-          [ Cmd.ofAsync
+          [ Cmd.OfAsync.either
               (api.getPrivateLeagueInfo privateLeagueId)
               player.Token
               PrivateLeagueInfoReceived

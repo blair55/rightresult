@@ -2,8 +2,8 @@ namespace Areas.Players
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Areas
 open Shared
@@ -11,7 +11,6 @@ open Fulma
 open Fable
 open Routes
 open Elmish.React
-open Fable.Helpers.Isomorphic
 open Areas.Components
 
 module Player =
@@ -34,17 +33,17 @@ module Player =
       PointsTotal = Fetching
       PlayerFixtureSets = None
     }, Cmd.batch
-        [ Cmd.ofAsync
+        [ Cmd.OfAsync.either
             (api.getPlayerInfo playerId)
             p.Token
             PlayerReceived
             (Error >> Init)
-          Cmd.ofAsync
+          Cmd.OfAsync.either
             (api.getPlayerPointsTotal playerId)
             p.Token
             PlayerPointsTotalReceived
             (Error >> Init)
-          Cmd.ofAsync
+          Cmd.OfAsync.either
             (api.getPlayerFixtureSets playerId)
             p.Token
             PlayerFixtureSetsReceived

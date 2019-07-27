@@ -2,8 +2,8 @@ namespace Areas.Leagues
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Areas
 open Shared
@@ -29,7 +29,7 @@ module LeagueMatrix =
       GameweekNo = gwno
       Matrix = Fetching
     },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.getLeagueMatrix leagueId gwno)
         player.Token
         LeagueMatrixReceived

@@ -2,8 +2,8 @@ namespace Areas.Players
 
 open Elmish
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 
 open Shared
 open Fulma
@@ -13,7 +13,6 @@ open Routes
 open Components
 open Elmish.ReactNative
 open Elmish.React
-open Fable.Helpers.Isomorphic
 
 module PlayerFixtureSet =
 
@@ -29,7 +28,7 @@ module PlayerFixtureSet =
   let init api p playerId fsId =
     { FixtureSet = Fetching
     },
-      Cmd.ofAsync
+      Cmd.OfAsync.either
         (api.getPlayerFixtureSet playerId fsId)
         p.Token
         FixtureSetReceived

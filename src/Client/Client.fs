@@ -3,12 +3,12 @@ module Client
 open System
 open Elmish
 open Elmish.React
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
-open Fable.PowerPack
+open Fable.React
+open Fable.React.Props
 open Fable.Import
 open Fable.Remoting.Client
 open Fable.FontAwesome
+open Fable.Core
 open Fulma
 open Thoth.Elmish
 open Thoth.Elmish.Toast
@@ -55,7 +55,7 @@ let update msg (model:Model) : Model * Cmd<Msg> =
   | _, _, NavTo r -> model, navTo r
 
   | Some _, HomeArea _, HomeMsg (HomeArea.Msg.Logout) ->
-    BrowserLocalStorage.delete "player"
+    Browser.WebStorage.localStorage.removeItem "player"
     { model with Player = None }, navTo LoginRoute
 
   | Some p, HomeArea m, HomeMsg msg ->
@@ -76,7 +76,7 @@ let update msg (model:Model) : Model * Cmd<Msg> =
 
   | _ -> model, alert (LoginProblem "No user found")
 
-let footabs model dispatch : React.ReactElement =
+let footabs model dispatch : ReactElement =
   let desc s =
     Text.span [ Modifiers [ Modifier.IsHidden (Screen.Mobile, true) ] ] [ str s ]
 
@@ -172,14 +172,19 @@ open Elmish.Debug
 open Elmish.HMR
 #endif
 
-open Elmish.Browser.UrlParser
-open Elmish.Browser.Navigation
+// open Elmish.Browser.UrlParser
+open Elmish.UrlParser
+// open Elmish.Browser.Navigation
+open Elmish.Navigation
+open Thoth.Json
 
 let clearFragment () =
-  Browser.window.location.hash <- ""
+  Browser.Dom.window.location.hash <- ""
 
 let loadPlayerFromBrowserStorage() =
-  BrowserLocalStorage.load Decoders.decodeClientSafePlayer "player"
+  Browser.WebStorage.localStorage.getItem "player"
+  |> Decode.fromString Decoders.decodeClientSafePlayer
+  // BrowserLocalStorage.load Decoders.decodeClientSafePlayer "player"
   |> function
   | Ok p -> Some p
   | _ -> None
@@ -192,8 +197,8 @@ let urlUpdate route model =
       let loginInAndRedirect playerString nav =
         playerString
         |> JS.decodeURIComponent
-        |> Browser.window.atob
-        |> fun p -> Browser.localStorage.setItem("player", p)
+        |> Browser.Dom.window.atob
+        |> fun p -> Browser.WebStorage.localStorage.setItem("player", p)
         { model with Player = loadPlayerFromBrowserStorage() }, nav
       match getFragmentValue "player", getFragmentValue "redirectPath" with
       | Some playerString, Some path when path <> "" ->
@@ -219,13 +224,13 @@ let urlUpdate route model =
     { model with Area = PlayersArea m }, Cmd.map PlayersMsg cmd
 
   | _ ->
-    let redirectPath = Browser.window.location.pathname
+    let redirectPath = Browser.Dom.window.location.pathname
     (model, Navigation.modifyUrl (sprintf "/%s?%s=%s" Routes.loginPath redirectPathKey redirectPath))
 
 let init route =
   let player =
     try loadPlayerFromBrowserStorage()
-    with _ -> BrowserLocalStorage.delete "player"; None
+    with _ -> Browser.WebStorage.localStorage.removeItem "player"; None
   urlUpdate route
     { Player = player
       ErrorMsg = None
@@ -236,9 +241,8 @@ Program.mkProgram init update view
 |> Toast.Program.withToast Toast.render
 #if DEBUG
 |> Program.withConsoleTrace
-|> Program.withHMR
 #endif
-|> Program.withReact "elmish-app"
+|> Program.withReactBatched "elmish-app"
 #if DEBUG
 |> Program.withDebugger
 #endif
