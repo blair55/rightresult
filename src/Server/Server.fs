@@ -433,8 +433,7 @@ module Server =
       POST >=> route  "/api/kickoffFixture" >=> kickOffFixture deps handleCommand
       GET  >=> route  "/api/printDocstore" >=> printDocstore deps
       buildProtocol handleCommand deps appConfig
-      // htmlFile "index.html"
-
+      htmlFile "index.html"
     ]
 
   let inf =

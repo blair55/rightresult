@@ -29,6 +29,11 @@ var CONFIG = {
     '/api/*': {
       target: 'http://localhost:' + (process.env.SERVER_PROXY_PORT || "8085"),
       changeOrigin: true
+    },
+    // redirect websocket requests that start with /socket/* to the server on the port 8085
+    '/socket/*': {
+      target: 'http://localhost:' + (process.env.SERVER_PROXY_PORT || "8085"),
+      ws: true
     }
   },
   // Use babel-preset-env to generate JS compatible with most-used browsers.
@@ -91,7 +96,7 @@ module.exports = {
   //      - HotModuleReplacementPlugin: Enables hot reloading when code changes without refreshing
   plugins: isProduction ?
     commonPlugins.concat([
-      new MiniCssExtractPlugin({ filename: 'style.css' }),
+      new MiniCssExtractPlugin({ filename: 'style.[hash].css' }),
       new CopyWebpackPlugin([{ from: resolve(CONFIG.assetsDir) }]),
     ])
     : commonPlugins.concat([

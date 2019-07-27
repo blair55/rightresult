@@ -107,7 +107,7 @@ Target.create "Bundle" (fun _ ->
     let publishArgs = sprintf "publish -c Release -o \"%s\"" serverDir
     runDotNet publishArgs serverPath
 
-    Shell.copyDir publicDir "src/Client/public" FileFilter.allFiles
+    Shell.copyDir publicDir clientDeployPath FileFilter.allFiles
 )
 
 open Fake.Core.TargetOperators

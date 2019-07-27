@@ -47,6 +47,9 @@ let api : IProtocol =
   |> Remoting.withRouteBuilder Routes.builder
   |> Remoting.buildProxy<IProtocol>
 
+let playerStorageKey =
+  "player-19/20"
+
 let update msg (model:Model) : Model * Cmd<Msg> =
   // printfn "m %A" model
   // printfn "msg %A" msg
@@ -55,7 +58,7 @@ let update msg (model:Model) : Model * Cmd<Msg> =
   | _, _, NavTo r -> model, navTo r
 
   | Some _, HomeArea _, HomeMsg (HomeArea.Msg.Logout) ->
-    Browser.WebStorage.localStorage.removeItem "player"
+    Browser.WebStorage.localStorage.removeItem playerStorageKey
     { model with Player = None }, navTo LoginRoute
 
   | Some p, HomeArea m, HomeMsg msg ->
@@ -182,9 +185,8 @@ let clearFragment () =
   Browser.Dom.window.location.hash <- ""
 
 let loadPlayerFromBrowserStorage() =
-  Browser.WebStorage.localStorage.getItem "player"
+  Browser.WebStorage.localStorage.getItem playerStorageKey
   |> Decode.fromString Decoders.decodeClientSafePlayer
-  // BrowserLocalStorage.load Decoders.decodeClientSafePlayer "player"
   |> function
   | Ok p -> Some p
   | _ -> None
@@ -198,7 +200,7 @@ let urlUpdate route model =
         playerString
         |> JS.decodeURIComponent
         |> Browser.Dom.window.atob
-        |> fun p -> Browser.WebStorage.localStorage.setItem("player", p)
+        |> fun p -> Browser.WebStorage.localStorage.setItem(playerStorageKey, p)
         { model with Player = loadPlayerFromBrowserStorage() }, nav
       match getFragmentValue "player", getFragmentValue "redirectPath" with
       | Some playerString, Some path when path <> "" ->
@@ -230,7 +232,7 @@ let urlUpdate route model =
 let init route =
   let player =
     try loadPlayerFromBrowserStorage()
-    with _ -> Browser.WebStorage.localStorage.removeItem "player"; None
+    with _ -> Browser.WebStorage.localStorage.removeItem playerStorageKey; None
   urlUpdate route
     { Player = player
       ErrorMsg = None
