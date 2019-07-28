@@ -8,7 +8,6 @@ open Fable.React.Props
 open Shared
 open Fulma
 open Fable.FontAwesome
-open Fable
 open Routes
 open Areas
 open Components
@@ -194,7 +193,7 @@ module OmniFixtures =
       | Some p -> ScoreBox.openScoreBox p
       | None -> ScoreBox.emptyScoreBox()
 
-    [ fixtureTitleBar (ko.DateTime.ToString("HH:mm"), IsWhite, IsPrimary, f.IsDoubleDown, rhs)
+    [ fixtureTitleBar (ko.ToString("HH:mm"), IsWhite, IsPrimary, f.IsDoubleDown, rhs)
 
       Card.content
         [ Props
@@ -284,9 +283,8 @@ module OmniFixtures =
             | Some p ->
               [ button [ Button.Size IsSmall; Button.Modifiers [ Modifier.IsPulledLeft ] ]
                   (fun _ -> Page p |> dispatch)
-                  [ Fa.i [ Fa.Solid.AngleRight ] []
-                  // [ Icon.faIcon [] [ Fa.icon Fa.I.AngleLeft ]
-                    str "Prev"
+                  [ Fa.i [ Fa.Solid.AngleLeft ] []
+                    str " Prev"
                   ]
               ]
             | None -> [])
@@ -294,7 +292,7 @@ module OmniFixtures =
             | Some n ->
               [ button [ Button.Size IsSmall; Button.Modifiers [ Modifier.IsPulledRight ] ]
                   (fun _ -> Page n |> dispatch)
-                  [ str "Next"
+                  [ str "Next "
                     Fa.i [ Fa.Solid.AngleRight ] []
                   ]
               ]

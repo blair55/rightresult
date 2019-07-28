@@ -327,7 +327,7 @@ module Server =
         getPlayerPointsTotal = fun playerId t -> t |> (vt >> Result.bind (fun _ -> getPlayerPointsTotal playerId) >> Async.retn)
         getPlayerFixtureSets = fun playerId t -> t |> (vt >> Result.bind (fun _ -> getPlayerFixtureSets playerId) >> Async.retn)
         getPlayerFixtureSet = fun playerId fsId t -> t |> (vt >> Result.bind (fun _ -> getPlayerFixtureSet playerId fsId) >> Async.retn)
-        getNewFixtureSet = vt >> (fun _ -> printfn "SFSDFSDFS"; FixtureSourcing.getNewFixtureSetViewModel deps) >> AsyncResult.retn
+        getNewFixtureSet = vt >> (fun _ -> FixtureSourcing.getNewFixtureSetViewModel deps) >> AsyncResult.retn
         getLeagueHistoryFixtureSets = fun leagueId t -> t |> (vt >> Result.bind (fun _ -> getLeagueHistoryFixtureSets leagueId) >> Async.retn)
         getLeagueHistoryMonths = fun leagueId t -> t |> (vt >> Result.bind (fun _ -> getLeagueHistoryMonths leagueId) >> Async.retn)
         getDateFormat = fun dateTime format t -> t |> (vt >> Result.map (fun _ -> dateTime.ToString(format)) >> Async.retn)
@@ -342,9 +342,13 @@ module Server =
         leaveLeague = leaveLeague
       }
 
-    // FableGiraffeAdapter.httpHandlerWithBuilderFor protocol Routes.builder
+    let errorHandler (ex: Exception) (routeInfo: RouteInfo<Http.HttpContext>) =
+      printfn "Error at %s on method %s" routeInfo.path routeInfo.methodName
+      Propagate ex
+
     Remoting.createApi()
     |> Remoting.withRouteBuilder Routes.builder
+    |> Remoting.withErrorHandler errorHandler
     |> Remoting.fromValue protocol
     |> Remoting.buildHttpHandler
 

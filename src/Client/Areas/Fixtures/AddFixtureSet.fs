@@ -58,7 +58,7 @@ module AddFixtureSet =
   let fixtureView (KickOff ko, _, home, away) =
     rowOf3
       [ Components.teamName home ]
-      [ Tag.tag [] [ str (ko.DateTime.ToString("HH:mm")) ] ]
+      [ Tag.tag [] [ str (ko.ToString("HH:mm")) ] ]
       [ Components.teamName away ]
 
   let fixtureGroup (koStr, fixtures) =

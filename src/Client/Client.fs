@@ -81,7 +81,11 @@ let update msg (model:Model) : Model * Cmd<Msg> =
 
 let footabs model dispatch : ReactElement =
   let desc s =
-    Text.span [ Modifiers [ Modifier.IsHidden (Screen.Mobile, true) ] ] [ str s ]
+    Text.span
+      [ Modifiers [ Modifier.IsHidden (Screen.Mobile, true) ]
+        Props [ Style [ MarginLeft "5px" ] ]
+      ]
+      [ str s ]
 
   let home =
     [ a [ OnClick (fun _ -> NavTo HomeRoute |> dispatch) ]

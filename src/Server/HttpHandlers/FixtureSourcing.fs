@@ -43,9 +43,17 @@ module FixtureSourcing =
   let private toTeam =
     premTeamIdToName >> Team
 
+  let tz =
+    TimeZoneInfo.FindSystemTimeZoneById("Europe/London")
+
+  let toUkTime (date:DateTime) =
+    tz.GetUtcOffset date
+    |> date.Add
+    |> fun d -> new DateTimeOffset(d)
+
   let private getNewPremGwFixtures no =
     PremFixtures.Load(premFixturesUrl no)
-    |> Seq.map(fun f -> f.KickoffTime, f.TeamH |> premTeamIdToName, f.TeamA |> premTeamIdToName)
+    |> Seq.map(fun f -> toUkTime f.KickoffTime, f.TeamH |> premTeamIdToName, f.TeamA |> premTeamIdToName)
     |> Seq.toList
 
   let getNewPremGwResults no =
@@ -62,14 +70,12 @@ module FixtureSourcing =
     | Some (GameweekNo gw) -> gw
     | _ -> 0
     |> (+) 1
-    |> fun i -> printfn "NewGameweekNo: %i" i; i
 
   let getNewFixtureSetViewModel (deps:Dependencies) =
     deps
     |> (getNewGameweekNo
       >> (fun gwno ->
       getNewPremGwFixtures gwno
-      |> fun a -> printfn "%A" a;a
       |> List.map (fun (ko, h, a) -> KickOff ko, KickOff.groupFormat (KickOff ko), Team h, Team a)
       |> fun items -> { NewFixtureSetViewModel.GameweekNo = GameweekNo gwno; Fixtures = items }))
 

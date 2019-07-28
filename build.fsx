@@ -91,7 +91,8 @@ Target.create "Run" (fun _ ->
     let tasks =
         [ if not safeClientOnly then yield server
           yield client
-          if not vsCodeSession then yield browser ]
+          // if not vsCodeSession then yield browser
+        ]
 
     tasks
     |> Async.Parallel
