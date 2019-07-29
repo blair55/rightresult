@@ -50,10 +50,10 @@ module League =
     }, cmds
 
   let buildInviteLink (PrivateLeagueId leagueId) =
-    sprintf "%s//%s%s/%s"
+    sprintf "%s//%s/%s"
       Browser.Dom.window.location.protocol
       Browser.Dom.window.location.hostname
-      (if Browser.Dom.window.location.port = ":80" then "" else sprintf ":%s" Browser.Dom.window.location.port)
+      // (if Browser.Dom.window.location.port = "80" then "" else sprintf ":%s" Browser.Dom.window.location.port)
       (string leagueId |> Routes.joinLeaguePath)
 
   let whatsAppLink =
@@ -61,7 +61,7 @@ module League =
     >> fun uri ->
       a [ Href <| sprintf "whatsapp://send?text=%s" uri ]
         [ span [ Class "icon" ] [ i [ Class "fab fa-whatsapp fa-lg" ] [] ]
-          span [] [ str "Facebook" ]
+          span [] [ str "Whatsapp" ]
         ]
 
   let facebookLink =
