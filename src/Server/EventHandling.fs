@@ -29,6 +29,9 @@ module EventHandling =
     | LeagueCreated (leagueId, leagueName, playerId) ->
       CreateLeagueSubscribers.all
       |> List.iter (fun f -> f deps created (leagueId, leagueName, playerId))
+    | LeagueRenamed (leagueId, leagueName) ->
+      LeagueRenamedSubscribers.all
+      |> List.iter (fun f -> f deps (leagueId, leagueName))
     | LeagueJoined (leagueId, playerId) ->
       LeagueJoinedSubscribers.all
       |> List.iter (fun f -> f deps created (leagueId, playerId))

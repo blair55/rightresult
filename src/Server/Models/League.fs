@@ -15,6 +15,8 @@ module League =
     match league, event with
     | Init, LeagueCreated _ ->
       Active Set.empty |> Ok
+    | Active players, LeagueRenamed _ ->
+      Active players |> Ok
     | Active players, LeagueJoined (_, pId) ->
       Active (players.Add pId) |> Ok
     | Active players, LeagueLeft (_, pId) ->
@@ -32,6 +34,8 @@ module League =
     | Init, CreateLeague (playerId, leagueName) ->
       [ LeagueCreated (leagueId, leagueName, playerId)
         LeagueJoined (leagueId, playerId) ] |> Ok
+    | Active _, RenameLeague leagueName ->
+      Ok [ LeagueRenamed (leagueId, leagueName) ]
     | Active players, JoinLeague playerId ->
       if players.Contains playerId
       then Ok []

@@ -67,7 +67,6 @@ module Server =
     let q =
       deps.Queries
 
-
     let validateToken =
       Jwt.appTokenToJwtPlayer config.encryptionKey >> Ok
 
@@ -131,7 +130,7 @@ module Server =
 
     let createLeague (appToken:AppToken) leagueName : Ars<PrivateLeagueId> =
       let newLeagueId =
-         PrivateLeagueId (Guid.NewGuid())
+        PrivateLeagueId (Guid.NewGuid())
       let createCreateLeagueCommand leagueId (jwtPlayer:Jwt.JwtPlayer) =
         PrivateLeagueCommand(leagueId, CreateLeague(PlayerId jwtPlayer.playerId, leagueName))
       appToken |> (
@@ -433,6 +432,7 @@ module Server =
       POST >=> routef "/api/classifyFixturesAfterGameweek/%i" (classifyFixturesAfterGameweek deps handleCommand)
       POST >=> route  "/api/addPlayerToLeague" >=> addPlayerToLeague handleCommand
       POST >=> route  "/api/removePlayerFromLeague" >=> removePlayerFromLeague handleCommand
+      POST >=> route  "/api/renameLeague" >=> renameLeague handleCommand
       POST >=> route  "/api/overwritePredictionSet" >=> overwritePredictionSet handleCommand
       POST >=> route  "/api/kickoffFixture" >=> kickOffFixture deps handleCommand
       GET  >=> route  "/api/printDocstore" >=> printDocstore deps

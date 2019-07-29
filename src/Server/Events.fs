@@ -12,6 +12,7 @@ module Events =
     | PlayerRemoved of PlayerId
     // league
     | LeagueCreated of PrivateLeagueId * LeagueName * PlayerId
+    | LeagueRenamed of PrivateLeagueId * LeagueName
     | LeagueJoined of PrivateLeagueId * PlayerId
     | LeagueLeft of PrivateLeagueId * PlayerId
     | LeagueRemoved of PrivateLeagueId

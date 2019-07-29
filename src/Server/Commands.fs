@@ -14,6 +14,7 @@ module Commands =
     | Remove
   and PrivateLeagueCommand =
     | CreateLeague of PlayerId * LeagueName
+    | RenameLeague of LeagueName
     | JoinLeague of PlayerId
     | LeaveLeague of PlayerId
     | RemoveLeague of PlayerId

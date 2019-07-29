@@ -157,14 +157,12 @@ module HttpHandlers =
   [<CLIMutable>]
   type FixtureSetHttp =
     { GameweekNo : int
-      Fixtures : FixtureHttp list
-    }
+      Fixtures : FixtureHttp list }
   and FixtureHttp =
     { FixtureId : Guid
       Home : string
       Away : string
-      KickOff : DateTimeOffset
-    }
+      KickOff : DateTimeOffset }
 
   let createFixtureSet handleCommand next (ctx:HttpContext) =
     let respond next ctx (result:Rresult<Unit>) =
@@ -199,8 +197,7 @@ module HttpHandlers =
   type EditFixtureKoHttp =
     { FixtureSetId : Guid
       FixtureId : Guid
-      KickOff : DateTimeOffset
-    }
+      KickOff : DateTimeOffset }
 
   let editFixtureKo handleCommand next (ctx:HttpContext) =
     let respond next ctx (result:Rresult<Unit>) =
@@ -254,8 +251,7 @@ module HttpHandlers =
 
   [<CLIMutable>]
   type RemovePlayerHttp =
-    { PlayerId : string
-    }
+    { PlayerId : string }
 
   let removePlayer handleCommand =
     fun next (ctx:HttpContext) ->
@@ -269,8 +265,7 @@ module HttpHandlers =
   [<CLIMutable>]
   type AddPlayerToLeagueHttp =
     { PlayerId : string
-      LeagueId : Guid
-    }
+      LeagueId : Guid }
 
   let addPlayerToLeague handleCommand =
     fun next (ctx:HttpContext) ->
@@ -284,8 +279,7 @@ module HttpHandlers =
   [<CLIMutable>]
   type RemovePlayerFromLeagueHttp =
     { PlayerId : string
-      LeagueId : Guid
-    }
+      LeagueId : Guid }
 
   let removePlayerFromLeague handleCommand =
     fun next (ctx:HttpContext) ->
@@ -298,11 +292,25 @@ module HttpHandlers =
 
 
   [<CLIMutable>]
+  type RenameLeagueHttp =
+    { LeagueName : string
+      LeagueId : Guid }
+
+  let renameLeague handleCommand =
+    fun next (ctx:HttpContext) ->
+      ctx.BindModelAsync<RenameLeagueHttp>()
+      |> Task.map (fun r -> PrivateLeagueCommand(PrivateLeagueId r.LeagueId, RenameLeague (LeagueName r.LeagueName)))
+      |> Task.bind (Async.toTask handleCommand)
+      |> Task.bind (function
+        | Ok () -> Successful.OK "Ok" next ctx
+        | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
+
+
+  [<CLIMutable>]
   type OverwritePredictionSetHttp =
     { SourcePlayerId : string
       DestinationPlayerId : string
-      FixtureSetId : Guid
-    }
+      FixtureSetId : Guid }
 
   let overwritePredictionSet handleCommand =
     fun next (ctx:HttpContext) ->

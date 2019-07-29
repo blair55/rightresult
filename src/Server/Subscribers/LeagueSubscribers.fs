@@ -27,6 +27,19 @@ module CreateLeagueSubscribers =
     [ createLeagueGraph
       createLeagueLatestTableDoc ]
 
+module LeagueRenamedSubscribers =
+
+  let private renameLeagueGraph (deps:Dependencies) (PrivateLeagueId leagueId, LeagueName leagueName) =
+    deps.Graph.Cypher
+      .Match("(l:League)")
+      .Where(fun (l:LeagueNode) -> l.Id = string leagueId)
+      .Set("l.Name = {name}")
+      .WithParam("name", leagueName)
+      .ExecuteWithoutResults()
+
+  let all =
+    [ renameLeagueGraph ]
+
 module LeagueJoinedSubscribers =
 
   let private joinLeagueGraph (deps:Dependencies) created (PrivateLeagueId leagueId, PlayerId playerId) =
