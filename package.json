@@ -28,6 +28,8 @@
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.14",
-    "whatwg-fetch": "^3.0.0"
+    "webpack-pwa-manifest": "^4.0.0",
+    "whatwg-fetch": "^3.0.0",
+    "workbox-webpack-plugin": "^4.3.1"
   }
 }

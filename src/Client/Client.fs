@@ -50,6 +50,10 @@ let api : IProtocol =
 let playerStorageKey =
   "player-19/20"
 
+[<Emit("window.navigator.standalone === true")>]
+let isIosStandalone : bool =
+  jsNative
+
 let update msg (model:Model) : Model * Cmd<Msg> =
   // printfn "m %A" model
   // printfn "msg %A" msg
@@ -87,6 +91,13 @@ let footabs model dispatch : ReactElement =
       ]
       [ str s ]
 
+  let back =
+    [ a [ Href "javascript:history.back();" ]
+        [ Fa.i [ Fa.Solid.ChevronLeft ] []
+          desc "Back"
+        ]
+    ]
+
   let home =
     [ a [ OnClick (fun _ -> NavTo HomeRoute |> dispatch) ]
         [ Fa.i [ Fa.Solid.Home ] []
@@ -111,7 +122,14 @@ let footabs model dispatch : ReactElement =
           desc "Players"
         ]
     ]
-  let tabs = Tabs.tabs [ Tabs.IsCentered; Tabs.IsFullWidth ]
+
+  let tabs tabList =
+    let backButtonTab =
+      Tabs.tab [ Tabs.Tab.CustomClass "back-button" ] back
+    Tabs.tabs
+      [ Tabs.IsCentered; Tabs.IsFullWidth ]
+      ((if isIosStandalone then [ backButtonTab ] else []) @ tabList)
+
   match model.Area with
   | LoginArea _ -> div [] []
   | HomeArea _ ->

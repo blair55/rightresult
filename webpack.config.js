@@ -11,6 +11,8 @@ var webpack = require("webpack");
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var MiniCssExtractPlugin = require("mini-css-extract-plugin");
+var WebpackPwaManifest = require('webpack-pwa-manifest');
+var WorkboxPlugin = require('workbox-webpack-plugin');
 
 var CONFIG = {
   // The tags to include the generated JS and CSS will be automatically injected in the HTML template
@@ -21,6 +23,7 @@ var CONFIG = {
   badgeCssEntry: "./src/Client/badges.css",
   outputDir: "./src/Client/deploy",
   assetsDir: "./src/Client/public",
+  logoPath: "./src/Client/assets/logo.png",
   devServerPort: 8080,
   // When using webpack-dev-server, you may need to redirect some calls
   // to a external API server. See https://webpack.js.org/configuration/dev-server/#devserver-proxy
@@ -61,7 +64,30 @@ var commonPlugins = [
   new HtmlWebpackPlugin({
     filename: 'index.html',
     template: resolve(CONFIG.indexHtmlTemplate)
-  })
+  }),
+  new WebpackPwaManifest({
+    name: 'Right Result',
+    background_color: '#00d1b2',
+    theme_color: '#00d1b2',
+    orientation: 'omit',
+    ios: true,
+    icons: [{
+      src: resolve(CONFIG.logoPath),
+      sizes: [96, 128, 192, 256, 384, 512],
+      destination: path.join('icons', 'android')
+    }, {
+      src: resolve(CONFIG.logoPath),
+      sizes: [120, 152, 167, 180, 512],
+      destination: path.join('icons', 'ios'),
+      ios: true
+    }, {
+      src: resolve(CONFIG.logoPath),
+      size: 512,
+      destination: path.join('icons', 'ios'),
+      ios: 'startup'
+    }]
+  }),
+  new WorkboxPlugin.GenerateSW()
 ];
 
 module.exports = {
