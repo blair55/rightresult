@@ -92,7 +92,7 @@ module HomeArea =
               [ Text.p [ Modifiers [ Modifier.TextWeight TextWeight.SemiBold ] ]
                   [ str model.Player.Name ]
                 Text.p [ Modifiers [ ] ]
-                  [ str "Welcome to the 2018/19 season"
+                  [ str "Welcome to the 2019/20 season"
                   ]
               ]
           ]
