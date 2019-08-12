@@ -509,3 +509,13 @@ module Persistence =
       NonQueries : NonQueries
       ElasticSearch : Unit
     }
+
+module Time =
+
+  let private tz =
+    TimeZoneInfo.FindSystemTimeZoneById("Europe/London")
+
+  let toUkTime (date:DateTime) =
+    tz.GetUtcOffset date
+    |> date.Add
+    |> fun d -> new DateTimeOffset(d)

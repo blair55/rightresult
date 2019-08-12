@@ -62,6 +62,10 @@ module Server =
       twitterConsumerSecret = env "TWITTERCONSUMERSECRET"
       feedbackFilePath     = env "FEEDBACKFILEPATH" }
 
+  let now () =
+    DateTime.UtcNow
+    |> Time.toUkTime
+
   let buildProtocol handleCommand (deps:Dependencies) (config:ApplicationConfiguration) : HttpHandler =
 
     let q =
@@ -71,9 +75,6 @@ module Server =
       Jwt.appTokenToJwtPlayer config.encryptionKey >> Ok
 
     let getFixturesForPlayer (from, size) (jwtPlayer:Jwt.JwtPlayer) : Map<FixtureId, FixturePredictionViewModel> =
-
-      let now =
-        DateTimeOffset.UtcNow
 
       let fixturesAndPredictions =
         q.getPlayerPredictionsByFixture (PlayerId jwtPlayer.playerId)
@@ -86,7 +87,7 @@ module Server =
         fixturesAndPredictions
         |> List.exists (fun (f, pred) ->
           match pred with
-          | Some p when p.IsDoubleDown && f.GameweekNo = gwno && now > f.KickOff -> true
+          | Some p when p.IsDoubleDown && f.GameweekNo = gwno && (now()) > f.KickOff -> true
           | _ -> false)
 
       let getClassifiedInfo (pred:PredictionNode option) (result:ScoreLine) =
@@ -109,7 +110,7 @@ module Server =
           State =
             match f.HasResult with
             | true -> ScoreLine (Score f.HomeScore, Score f.AwayScore) |> getClassifiedInfo pred
-            | _ when now < f.KickOff -> FixtureState.Open
+            | _ when (now()) < f.KickOff -> FixtureState.Open
             | _ -> FixtureState.KickedOff
           Prediction = pred |> Option.map (fun p -> ScoreLine (Score p.HomeScore, Score p.AwayScore))
           IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
@@ -167,7 +168,7 @@ module Server =
         | Away, Inc -> SimplePredictionCommand IncAwayScore
         | Away, Dec -> SimplePredictionCommand DecAwayScore
         |> fun c ->
-          DatedPredictionCommand (c, fId, PredictionEditDate DateTimeOffset.UtcNow)
+          DatedPredictionCommand (c, fId, PredictionEditDate (now()))
           |> fun cmd -> PredictionSetCommand (PlayerId jwtPlayer.playerId, fsId, cmd)
       appToken |> (
         validateToken
@@ -178,7 +179,7 @@ module Server =
 
     let doDoubleDown (appToken:AppToken) (fsId, fId) =
       let buildCmd (jwtPlayer:Jwt.JwtPlayer) =
-        DatedPredictionCommand (DoubleDown, fId, PredictionEditDate DateTimeOffset.UtcNow)
+        DatedPredictionCommand (DoubleDown, fId, PredictionEditDate (now()))
         |> fun cmd -> PredictionSetCommand (PlayerId jwtPlayer.playerId, fsId, cmd)
       appToken |> (
         validateToken
@@ -189,7 +190,7 @@ module Server =
 
     let removeDownDown (appToken:AppToken) fsId =
       let buildCmd (jwtPlayer:Jwt.JwtPlayer) =
-        PredictionSetCommand (PlayerId jwtPlayer.playerId, fsId, PredictionEditDate DateTimeOffset.UtcNow |> RemoveDoubleDown)
+        PredictionSetCommand (PlayerId jwtPlayer.playerId, fsId, PredictionEditDate (now()) |> RemoveDoubleDown)
       appToken |> (
         validateToken
         >> Async.retn
@@ -198,7 +199,7 @@ module Server =
         >> AsyncResult.bind (fun _ -> AsyncResult.retn fsId))
 
     let submitFeedback (config:ApplicationConfiguration) feedback (jwtPlayer:Jwt.JwtPlayer) =
-      let now = DateTime.UtcNow.ToString("s")
+      let now = (now()).ToString("s")
       sprintf "%s\nPLAYER: %s (%s)\n%s\n----------------\n\n" now jwtPlayer.name jwtPlayer.playerId feedback
       |> fun s -> File.AppendAllText(config.feedbackFilePath, s)
 
@@ -228,8 +229,6 @@ module Server =
         |> List.ofSeq
       let fixtureSet =
         q.getFixtureSet fsId
-      let now =
-        DateTimeOffset.UtcNow
       // let sumPoints =
       if List.isEmpty fixturesAndPredictionsInFixtureSet then
         ValidationError "could not get playerfixture set" |> Error
@@ -244,10 +243,10 @@ module Server =
             TotalPoints = PredictionPointsMonoid.Init
             Rows =
               fixturesAndPredictionsInFixtureSet
-              |> List.filter (fun (f, _) -> KickOff.isLessThan f.KickOff now)
+              |> List.filter (fun (f, _) -> KickOff.isLessThan f.KickOff (now()))
               |> List.map (fun (f, pred) ->
                 let predictionDd =
-                  if KickOff.isLessThan f.KickOff now then
+                  if KickOff.isLessThan f.KickOff (now()) then
                     Option.map (fun (p:PredictionRecord) -> p.ScoreLine, p.IsDoubleDown) pred
                   else None
                 let resultAndPoints =
@@ -436,6 +435,10 @@ module Server =
       POST >=> route  "/api/overwritePredictionSet" >=> overwritePredictionSet handleCommand
       POST >=> route  "/api/kickoffFixture" >=> kickOffFixture deps handleCommand
       GET  >=> route  "/api/printDocstore" >=> printDocstore deps
+
+
+      GET  >=> route  "/api/now" >=> warbler (fun _ -> now().ToString("s") |> text)
+      GET  >=> route  "/api/utcnow" >=> warbler (fun _ -> DateTime.UtcNow.ToString("s") |> text)
       buildProtocol handleCommand deps appConfig
       htmlFile "index.html"
     ]
@@ -466,7 +469,7 @@ module Server =
         let (_, _, _, _, queries, _, handleCommand) = inf
         async {
           while not ct.IsCancellationRequested do
-            Whistler.kickOffFixtures handleCommand queries DateTimeOffset.Now
+            Whistler.kickOffFixtures handleCommand queries (now())
             Classifier.classifyKickedOffFixtures handleCommand queries
             return! Async.Sleep 60000
         } |> Async.StartAsTask :> Tasks.Task

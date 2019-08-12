@@ -6,6 +6,7 @@ open Server.Commands
 open Server.Queries
 open Shared
 open Server.Infrastructure.Persistence
+open Server.Infrastructure.Time
 
 module FixtureSourcing =
 
@@ -42,14 +43,6 @@ module FixtureSourcing =
 
   let private toTeam =
     premTeamIdToName >> Team
-
-  let tz =
-    TimeZoneInfo.FindSystemTimeZoneById("Europe/London")
-
-  let toUkTime (date:DateTime) =
-    tz.GetUtcOffset date
-    |> date.Add
-    |> fun d -> new DateTimeOffset(d)
 
   let private getNewPremGwFixtures no =
     PremFixtures.Load(premFixturesUrl no)

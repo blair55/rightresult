@@ -36,6 +36,9 @@ module Twitter =
     HttpUtility.ParseQueryString
     >> fun nvc -> nvc.AllKeys |> Seq.map (fun k -> k, nvc.[k]) |> Map.ofSeq
 
+  let timestamp () =
+    DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()
+
   let iniateRedirectHandler (config:Configuration) next ctx =
     let method = "POST"
     let requestTokenUrl = "https://api.twitter.com/oauth/request_token"
@@ -46,15 +49,12 @@ module Twitter =
     let nonce =
       Guid.NewGuid().ToString("N")
 
-    let timestamp =
-      DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()
-
     let auth callbackUrl =
       [ "oauth_callback", callbackUrl
         "oauth_consumer_key", config.consumerKey
         "oauth_nonce", nonce
         "oauth_signature_method", "HMAC-SHA1"
-        "oauth_timestamp", timestamp
+        "oauth_timestamp", timestamp ()
         "oauth_version", "1.0" ]
 
     let oAuthParamsForSigning =
@@ -100,12 +100,11 @@ module Twitter =
     let method = "POST"
     let accessTokenUrl = "https://api.twitter.com/oauth/access_token"
     let nonce = Guid.NewGuid().ToString("N")
-    let timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()
     let auth =
       [ "oauth_consumer_key", config.consumerKey
         "oauth_nonce", nonce
         "oauth_signature_method", "HMAC-SHA1"
-        "oauth_timestamp", timestamp
+        "oauth_timestamp", timestamp ()
         "oauth_token", token
         "oauth_verifier", verifier
         "oauth_version", "1.0" ]
