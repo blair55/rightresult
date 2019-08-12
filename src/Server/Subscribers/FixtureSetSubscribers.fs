@@ -137,20 +137,23 @@ module FixtureKickedOffSubscribers =
                 |> Option.map (fun p ->
                   { MatrixPrediction.Prediction = ScoreLine (Score p.HomeScore, Score p.AwayScore)
                     IsDoubleDown = p.IsDoubleDown
-                    Points = None
-                  }
-                  |> fun mPrediction ->
-                    match m.Rows.TryFind pId with
-                    | Some mPlayer ->
-                      pId, { mPlayer with Predictions = mPlayer.Predictions.Add(fId, mPrediction) }
-                    | None ->
-                      [ fId, mPrediction ]
-                      |> Map.ofList
-                      |> fun predictions ->
-                        pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = predictions; TotalPoints = 0 }
-                  )
+                    Points = None })
+                |> fun mPrediction ->
+                m.Rows.TryFind pId
+                |> fun mPlayer ->
+                match mPlayer, mPrediction with
+                | Some pl, Some pr ->
+                  pId, { pl with Predictions = pl.Predictions.Add(fId, pr) }
+                | Some pl, None ->
+                  pId, pl
+                | None, Some pr ->
+                  [ fId, pr ]
+                  |> Map.ofList
+                  |> fun predictions ->
+                  pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = predictions; TotalPoints = 0 }
+                | _ ->
+                  pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = Map.empty; TotalPoints = 0 }
                 )
-                |> List.choose id
                 |> Map.ofList
           })
         |> repo.Edit (Matrix (leagueId, GameweekNo fs.GameweekNo))
