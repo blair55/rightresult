@@ -29,15 +29,22 @@ table.table th.text-left
   text-align: left !important
 
 .matrix
-  .matrix-header-container
+  .matrix-head-container
     position: relative
-    height: 42px
-    .matrix-header
-      position: absolute
-    .matrix-header.home
-      left: 17px
-    .matrix-header.away
-      right: 17px
+    width: 64px
+    height: 36px
+    margin: 0 auto
+  .matrix-head
+    position: absolute
+    width: 30px
+    height: 30px
+    align-items: center
+    display: inline-flex
+    justify-content: center
+  .matrix-head-left
+    left: 1px
+  .matrix-head-right
+    right: 1px
   .matrix-player-row td
     padding: .5em .75em .3em
   .matrix-player-name, .matrix-player-score

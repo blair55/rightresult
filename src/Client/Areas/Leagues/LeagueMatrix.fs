@@ -50,16 +50,11 @@ module LeagueMatrix =
 
     sortedMatrixCols
     |> List.map (fun (_, { TeamLine = TeamLine (home, away); State = state; KickOff = ko }) ->
-      // match state with
-      // | Open -> FixtureTags.openn ko
-      // | KickedOff -> FixtureTags.openn ko
-      // | Classified scoreLine -> FixtureTags.classifed scoreLine
-      // |> fun tag ->
-      th [ Class "matrix-header-container"; Style [ FontWeight "normal" ] ] [
-          span [ Class "matrix-header home" ] [ badge M home ]
-          span [ Class "matrix-header away" ] [ badge M away ]
-          // div [ Style [ MarginBottom ".5em" ] ] [ badge S away ]
-          // div [ Style [ Display "table" ; Margin "0 auto" ] ] [ tag ]
+      th [] [
+          div [ Class "matrix-head-container" ]
+            [ div [ Class "matrix-head matrix-head-left" ] [ badge M home ]
+              div [ Class "matrix-head matrix-head-right" ] [ badge M away ]
+            ]
         ])
     |> fun cols -> ((th [] [])::cols) @ [ th [] [] ]
     |> fun cols ->
