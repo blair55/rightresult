@@ -23,9 +23,37 @@ module CreateLeagueSubscribers =
         (LeagueTableDocument (PrivateLeague leagueId, Full))
         (LeagueTableDoc.Init leagueName)
 
+  let private createLeagueMatrixDoc (deps:Dependencies) created (leagueId, leagueName, _) =
+    deps.Queries.getFixturesInLatestFixtureSet ()
+    |> function
+    | Some (fsId, gwno, fixtures) ->
+      let columns =
+        fixtures
+        |> List.ofSeq
+        |> List.map (fun f ->
+          f.Id,
+          { MatrixFixture.TeamLine = f.TeamLine
+            KickOff = f.KickOff
+            State = MatrixFixtureState.Open
+            SortOrder = f.SortOrder })
+        |> Map.ofList
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo ->
+          { FixtureSetId = fsId
+            LeagueName = leagueName
+            LeagueId = PrivateLeague leagueId
+            GameweekNo = gwno
+            Columns = columns
+            Rows = Map.empty }
+          |> repo.Insert (Matrix (PrivateLeague leagueId, gwno))
+    | None ->
+      ()
+
   let all =
     [ createLeagueGraph
-      createLeagueLatestTableDoc ]
+      createLeagueLatestTableDoc
+      createLeagueMatrixDoc ]
+
 
 module LeagueRenamedSubscribers =
 

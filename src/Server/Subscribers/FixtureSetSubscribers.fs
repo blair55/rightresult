@@ -147,10 +147,7 @@ module FixtureKickedOffSubscribers =
                 | Some pl, None ->
                   pId, pl
                 | None, Some pr ->
-                  [ fId, pr ]
-                  |> Map.ofList
-                  |> fun predictions ->
-                  pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = predictions; TotalPoints = 0 }
+                  pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = [ fId, pr ] |> Map.ofList; TotalPoints = 0 }
                 | _ ->
                   pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = Map.empty; TotalPoints = 0 }
                 )

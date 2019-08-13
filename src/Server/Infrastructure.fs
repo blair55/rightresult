@@ -97,6 +97,17 @@ module Graph =
           .Results
         |> Seq.map buildFixtureRecord
 
+      getFixturesInLatestFixtureSet = fun () ->
+        gc.Cypher
+          .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet)")
+          .With("f, fs, fs.Id as fsId")
+          .Return(fun f fsId -> f.CollectAs<FixtureNode>(), fsId.As<Guid>(), Return.As<int>("max(fs.GameweekNo)"))
+          .Limit(Nullable<int>(1))
+          .Results
+        |> Seq.tryHead
+        |> Option.map (fun (fixtures, fixtureSetId, maxGwno) ->
+            FixtureSetId fixtureSetId, GameweekNo maxGwno, fixtures |> Seq.map buildFixtureRecord)
+
       getFixturesAwaitingResults = fun () ->
         gc.Cypher
           .Match("(f:Fixture)")
