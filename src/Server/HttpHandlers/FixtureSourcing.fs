@@ -5,6 +5,7 @@ open FSharp.Data
 open Server.Commands
 open Server.Queries
 open Shared
+open Server.Infrastructure
 open Server.Infrastructure.Persistence
 open Server.Infrastructure.Time
 
@@ -342,3 +343,25 @@ module HttpHandlers =
     >> Async.toTask (Async.bind handleCommand)
     >> Task.bind (respond next ctx))
 
+
+  [<CLIMutable>]
+  type TestNotifyHttp =
+    { Text : string
+    }
+
+  let getPlayerPushSubscriptions (deps:Dependencies) : List<PlayerId * PushSubscription> =
+    ElasticSearch.repo deps.ElasticSearch
+    |> fun repo -> repo.Read PlayerPushSubscriptions
+    |> Option.defaultValue []
+    |> List.distinct
+
+  let testNotify keys (deps:Dependencies) =
+    fun next (ctx:HttpContext) ->
+      ctx.BindModelAsync<TestNotifyHttp>()
+      |> Task.map (
+          fun t ->
+            let subs = getPlayerPushSubscriptions deps
+            do subs |> List.iter (fun (_, ps) -> PushNotifications.send keys t.Text ps)
+            Successful.OK "Ok" next ctx)
+      |> Task.toAsync
+      |> Async.RunSynchronously

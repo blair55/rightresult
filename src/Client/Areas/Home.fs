@@ -4,6 +4,7 @@ open Elmish
 open Elmish.React
 open Thoth.Elmish
 
+open Fable.Core
 open Fable.React
 open Fable.React.Props
 
@@ -19,6 +20,7 @@ module HomeArea =
       LeagueTable : LeagueTableDoc WebData
       ShowFeedbackModal : bool
       FeedbackText : string
+      IsSubscribable : bool
     }
 
   type Msg =
@@ -32,6 +34,9 @@ module HomeArea =
     | EditFeedback of string
     | HideFeedbackModal
     | SubmitFeedback
+    | InitIsSubscribableReceived of bool
+    | Subscribe
+    | Subscribed of PushSubscription
 
   let button txt onClick =
     Button.button
@@ -83,6 +88,14 @@ module HomeArea =
           []
       ]
 
+  [<Emit("isSubscribableToPush()")>]
+  let isSubscribableToPush () : JS.Promise<bool> =
+    jsNative
+
+  [<Emit("subscribeToPush()")>]
+  let subscribeToPush () : JS.Promise<PushSubscription> =
+    jsNative
+
   let view model dispatch =
     div []
       [ Components.pageTitle "Right Result"
@@ -108,6 +121,20 @@ module HomeArea =
         //       [ str "Feedback"
         //       ]
         //   ]
+        (if model.IsSubscribable then
+          Components.cardWithFooter
+            [ Message.message [ Message.Color IsInfo ]
+                [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
+                    [ str "Subscribe to notifications!"
+                    ]
+                ]
+            ]
+            [ Card.Footer.a [ Props [ OnClick (fun _ -> dispatch Subscribe) ] ]
+                [ str "Subscribe"
+                ]
+            ]
+        else
+          div [] [])
 
         (match model.LeagueTable, model.TotalPoints with
         | Success league, Success points ->
@@ -130,6 +157,7 @@ module HomeArea =
       LeagueTable = Fetching
       ShowFeedbackModal = false
       FeedbackText = ""
+      IsSubscribable = false
     }, Cmd.batch
         [ Cmd.OfAsync.either
             (api.getPlayerPointsTotal player.Id)
@@ -141,6 +169,9 @@ module HomeArea =
             player.Token
             LeagueTableReceived
             (Error >> Init)
+          Cmd.OfPromise.perform
+            isSubscribableToPush ()
+            InitIsSubscribableReceived
         ]
 
   let update (api:IProtocol) player msg model : Model * Cmd<Msg> =
@@ -162,3 +193,15 @@ module HomeArea =
     | AlertInfo s ->
       model, (Toast.message >> Toast.position Toast.TopCenter >> Toast.info) s
     | Logout _ -> model, []
+    | InitIsSubscribableReceived isSubscribable ->
+      { model with IsSubscribable = isSubscribable && player.Id = (PlayerId "fb-1396199664027786") }, []
+    | Subscribe ->
+      model,
+        Cmd.OfPromise.perform
+          subscribeToPush ()
+          Subscribed
+    | Subscribed sub ->
+      { model with IsSubscribable = false },
+        Cmd.OfAsync.perform
+          (api.subscribeToPush player.Token) sub
+          (fun _ -> AlertInfo "Thanks for subscribing!")

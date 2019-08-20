@@ -11,6 +11,7 @@ module Commands =
     | PredictionSetCommand of PlayerId * FixtureSetId * PredictionSetCommand
   and PlayerCommand =
     | Login of PlayerName * email:string
+    | SubscribeToPush of PushSubscription
     | Remove
   and PrivateLeagueCommand =
     | CreateLeague of PlayerId * LeagueName

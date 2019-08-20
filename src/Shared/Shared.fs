@@ -86,6 +86,14 @@ type ClientSafePlayer =
     Id : PlayerId
     Token : AppToken }
 
+type PushSubscription =
+  { Endpoint : string
+    Keys : PushSubscriptionKeys }
+and PushSubscriptionKeys =
+  { P256dh : string
+    Auth : string }
+
+
 // view model types
 
 type DocumentId =
@@ -285,6 +293,7 @@ type Document =
   | LeagueAllFixtureSetHistory of LeagueId
   | LeagueAllMonthHistory of LeagueId
   | PlayerFixtureSetsDocument of PlayerId
+  | PlayerPushSubscriptions
   | Matrix of LeagueId * GameweekNo
 
 type IProtocol =
@@ -312,6 +321,7 @@ type IProtocol =
     createLeague : AppToken -> LeagueName -> Ars<PrivateLeagueId>
     joinLeague : AppToken -> PrivateLeagueId -> Ars<PrivateLeagueId>
     leaveLeague : AppToken -> PrivateLeagueId -> Ars<Unit>
+    subscribeToPush : AppToken -> PushSubscription -> Ars<Unit>
   }
 
 module Routes =

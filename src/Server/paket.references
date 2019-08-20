@@ -10,3 +10,4 @@ group Server
     Newtonsoft.Json
     EventStore.ClientAPI.NetCore
     Neo4jClient
+    WebPush

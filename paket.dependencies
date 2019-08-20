@@ -16,6 +16,7 @@ group Server
     nuget Newtonsoft.Json
     nuget EventStore.ClientAPI.NetCore
     nuget Neo4jClient
+    nuget WebPush
 
 group Client
     source https://api.nuget.org/v3/index.json

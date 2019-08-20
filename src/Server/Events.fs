@@ -10,6 +10,8 @@ module Events =
     | PlayerCreated of PlayerId * PlayerName * email:string
     | PlayerLoggedIn of PlayerId
     | PlayerRemoved of PlayerId
+    | PlayerSubscribedToPush of PlayerId * PushSubscription
+
     // league
     | LeagueCreated of PrivateLeagueId * LeagueName * PlayerId
     | LeagueRenamed of PrivateLeagueId * LeagueName

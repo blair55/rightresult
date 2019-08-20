@@ -1,10 +1,10 @@
 ﻿namespace Server.Subscribers
 
-open FSharp.Core
+open System
 open Shared
+open FSharp.Core
 open Server.Infrastructure
 open Persistence
-open System
 
 module PlayerCreatedSubscribers =
 
@@ -72,4 +72,18 @@ module PlayerRemovedSubscribers =
   let all =
     [ removePlayerFromGraph
       removePlayerFromFullTables
+    ]
+
+module PlayerSubscribedToPushSubscribers =
+
+  let private saveSubscription (deps:Dependencies) created (playerId, subscription) =
+    let repo =
+      ElasticSearch.repo deps.ElasticSearch
+    repo.Upsert
+      PlayerPushSubscriptions
+      []
+      (fun l -> (playerId, subscription) :: l)
+
+  let all =
+    [ saveSubscription
     ]

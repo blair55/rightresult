@@ -25,6 +25,7 @@
     <Compile Include="Subscribers/PredictionSubscribers.fs" />
     <Compile Include="Subscribers/PlayerCreatedSubscribers.fs" />
     <Compile Include="Subscribers/LeagueSubscribers.fs" />
+    <Compile Include="HttpHandlers/PushNotifications.fs" />
     <Compile Include="HttpHandlers/FixtureSourcing.fs" />
     <None Include="HttpHandlers/PremFixturesSample.json" />
     <Compile Include="EventHandling.fs" />

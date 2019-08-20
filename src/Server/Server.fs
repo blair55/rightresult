@@ -24,6 +24,7 @@ open Server.HttpHandlers
 open Server.HttpHandlers.HttpHandlers
 open Shared.Routes
 open Persistence
+open PushNotifications
 
 
 
@@ -47,20 +48,24 @@ module Server =
       facebookClientSecret : string
       twitterConsumerKey : string
       twitterConsumerSecret : string
-      feedbackFilePath : string }
+      feedbackFilePath : string
+      pushSubscriptionPublicKey : string
+      pushSubscriptionPrivateKey : string }
 
   let buildAppConfig (env:string -> string) =
-    { neo4jUrl             = env "NEO4JURL"
-      eventStoreUrl        = env "EVENTSTOREURL"
-      eventStoreUsername   = env "EVENTSTOREUSERNAME"
-      eventStorePassword   = env "EVENTSTOREPASSWORD"
-      clientHost           = env "CLIENTHOST"
-      encryptionKey        = env "ENCRYPTIONKEY" |> Jwt.EncryptionSecretBase64
-      facebookClientId     = env "FACEBOOKCLIENTID"
-      facebookClientSecret = env "FACEBOOKCLIENTSECRET"
-      twitterConsumerKey   = env "TWITTERCONSUMERKEY"
-      twitterConsumerSecret = env "TWITTERCONSUMERSECRET"
-      feedbackFilePath     = env "FEEDBACKFILEPATH" }
+    { neo4jUrl                   = env "NEO4JURL"
+      eventStoreUrl              = env "EVENTSTOREURL"
+      eventStoreUsername         = env "EVENTSTOREUSERNAME"
+      eventStorePassword         = env "EVENTSTOREPASSWORD"
+      clientHost                 = env "CLIENTHOST"
+      encryptionKey              = env "ENCRYPTIONKEY" |> Jwt.EncryptionSecretBase64
+      facebookClientId           = env "FACEBOOKCLIENTID"
+      facebookClientSecret       = env "FACEBOOKCLIENTSECRET"
+      twitterConsumerKey         = env "TWITTERCONSUMERKEY"
+      twitterConsumerSecret      = env "TWITTERCONSUMERSECRET"
+      feedbackFilePath           = env "FEEDBACKFILEPATH"
+      pushSubscriptionPublicKey  = env "PUSHSUBSCRIPTIONPUBLICKEY"
+      pushSubscriptionPrivateKey = env "PUSHSUBSCRIPTIONPRIVATEKEY" }
 
   let now () =
     DateTime.UtcNow
@@ -197,6 +202,15 @@ module Server =
         >> AsyncResult.map buildCmd
         >> AsyncResult.bind handleCommand
         >> AsyncResult.bind (fun _ -> AsyncResult.retn fsId))
+
+    let subscribeToPush (appToken:AppToken) subscription : Ars<Unit> =
+      let buildCmd (jwtPlayer:Jwt.JwtPlayer) =
+        PlayerCommand (PlayerId jwtPlayer.playerId, SubscribeToPush subscription)
+      appToken |> (
+        validateToken
+        >> Async.retn
+        >> AsyncResult.map buildCmd
+        >> AsyncResult.bind handleCommand)
 
     let submitFeedback (config:ApplicationConfiguration) feedback (jwtPlayer:Jwt.JwtPlayer) =
       let now = (now()).ToString("s")
@@ -338,6 +352,7 @@ module Server =
         createLeague = createLeague
         joinLeague = joinLeague
         leaveLeague = leaveLeague
+        subscribeToPush = subscribeToPush
       }
 
     let errorHandler (ex: Exception) (routeInfo: RouteInfo<Http.HttpContext>) =
@@ -420,6 +435,11 @@ module Server =
         authError = ServerErrors.INTERNAL_ERROR
         authOk = authOk "tw" }
 
+    let pushKeys =
+      { Subject = "https://rightresu.lt"
+        Public = appConfig.pushSubscriptionPublicKey
+        Private = appConfig.pushSubscriptionPrivateKey }
+
     choose [
       Login.Facebook.handler facebookConfig
       Login.Twitter.handler twitterConfig
@@ -434,9 +454,9 @@ module Server =
       POST >=> route  "/api/renameLeague" >=> renameLeague handleCommand
       POST >=> route  "/api/overwritePredictionSet" >=> overwritePredictionSet handleCommand
       POST >=> route  "/api/kickoffFixture" >=> kickOffFixture deps handleCommand
+      POST >=> route  "/api/testNotify" >=> testNotify pushKeys deps
+      GET  >=> route  "/api/vapidPublicKey" >=> text pushKeys.Public
       GET  >=> route  "/api/printDocstore" >=> printDocstore deps
-
-
       GET  >=> route  "/api/now" >=> warbler (fun _ -> now().ToString("s") |> text)
       GET  >=> route  "/api/utcnow" >=> warbler (fun _ -> DateTime.UtcNow.ToString("s") |> text)
       buildProtocol handleCommand deps appConfig

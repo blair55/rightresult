@@ -15,6 +15,7 @@ module Player =
     | Init, PlayerCreated (playerId, _, _) -> Active playerId |> Ok
     | Active playerId, PlayerLoggedIn _ -> Active playerId |> Ok
     | Active _, PlayerRemoved _ -> Init |> Ok
+    | Active _, PlayerSubscribedToPush (playerId, _) -> Active playerId |> Ok
     | _ -> HandlerHelper.eventErr event player
 
   let folder =
@@ -29,4 +30,6 @@ module Player =
       [ PlayerLoggedIn playerId ] |> Ok
     | Active playerId, Remove ->
       [ PlayerRemoved playerId ] |> Ok
+    | Active playerId, SubscribeToPush sub ->
+      [ PlayerSubscribedToPush (playerId, sub) ] |> Ok
     | _ -> HandlerHelper.cmdErr command player

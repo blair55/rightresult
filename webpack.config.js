@@ -13,17 +13,20 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var MiniCssExtractPlugin = require("mini-css-extract-plugin");
 var WebpackPwaManifest = require('webpack-pwa-manifest');
 var WorkboxPlugin = require('workbox-webpack-plugin');
+var { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
 
 var CONFIG = {
   // The tags to include the generated JS and CSS will be automatically injected in the HTML template
   // See https://github.com/jantimon/html-webpack-plugin
   indexHtmlTemplate: "./src/Client/index.html",
+  serviceWorkerTemplate: "./src/Client/sw.js",
   fsharpEntry: "./src/Client/Client.fsproj",
   cssEntry: "./src/Client/style.sass",
   badgeCssEntry: "./src/Client/badges.css",
   outputDir: "./src/Client/deploy",
   assetsDir: "./src/Client/public",
-  logoPath: "./src/Client/assets/logo.png",
+  logoPath: "./src/Client/logo.png",
   devServerPort: 8080,
   // When using webpack-dev-server, you may need to redirect some calls
   // to a external API server. See https://webpack.js.org/configuration/dev-server/#devserver-proxy
@@ -61,6 +64,8 @@ console.log("Bundling for " + (isProduction ? "production" : "development") + ".
 // The HtmlWebpackPlugin allows us to use a template for the index.html page
 // and automatically injects <script> or <link> tags for generated bundles.
 var commonPlugins = [
+  new webpack.ProgressPlugin(),
+  new CleanWebpackPlugin(),
   new HtmlWebpackPlugin({
     filename: 'index.html',
     template: resolve(CONFIG.indexHtmlTemplate)
@@ -86,9 +91,19 @@ var commonPlugins = [
       destination: path.join('icons', 'ios'),
       ios: 'startup'
     }]
-  }),
-  new WorkboxPlugin.GenerateSW()
-];
+  })];
+
+var modePlugins = isProduction ? [
+  new MiniCssExtractPlugin({ filename: 'style.[hash].css' }),
+  new CopyWebpackPlugin([{ from: resolve(CONFIG.assetsDir) }])
+] : [
+    new webpack.HotModuleReplacementPlugin()
+  ];
+
+var commonPluginsLast = new WorkboxPlugin.InjectManifest({
+  swSrc: resolve(CONFIG.serviceWorkerTemplate),
+  swDest: 'service-worker.js'
+});
 
 module.exports = {
   // In development, bundle styles together with the code so they can also
@@ -120,14 +135,7 @@ module.exports = {
   //      - CopyWebpackPlugin: Copies static assets to output directory
   // DEVELOPMENT
   //      - HotModuleReplacementPlugin: Enables hot reloading when code changes without refreshing
-  plugins: isProduction ?
-    commonPlugins.concat([
-      new MiniCssExtractPlugin({ filename: 'style.[hash].css' }),
-      new CopyWebpackPlugin([{ from: resolve(CONFIG.assetsDir) }]),
-    ])
-    : commonPlugins.concat([
-      new webpack.HotModuleReplacementPlugin(),
-    ]),
+  plugins: commonPlugins.concat(modePlugins, commonPluginsLast),
   resolve: {
     // See https://github.com/fable-compiler/Fable/issues/1490
     symlinks: false
