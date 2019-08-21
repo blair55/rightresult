@@ -29,7 +29,16 @@ module FixtureSubscribersAssistance =
     List.map (fun (p:PlayerNode) -> PlayerId p.Id)
     >> fun allPlayerIds -> (GlobalLeague, Global.leagueName, allPlayerIds) :: getPrivateLeaguesAndLeagueMembers deps
 
+  let getPlayerPushSubscriptions (deps:Dependencies) : List<PlayerId * PushSubscription> =
+    ElasticSearch.repo deps.ElasticSearch
+    |> fun repo -> repo.Read PlayerPushSubscriptions
+    |> Option.defaultValue []
+    |> List.distinct
+
+
 module FixtureSetCreatedSubscribers =
+
+  open Infrastructure.PushNotifications
 
   let createFixtureSet (deps:Dependencies) created (FixtureSetId fsId, GameweekNo gwno, fixtures:FixtureRecord list) =
     fixtures
@@ -88,9 +97,17 @@ module FixtureSetCreatedSubscribers =
         |> repo.Insert (Matrix (leagueId, gwno))
       )
 
+  let notifyPlayers (deps:Dependencies) created (fsId, GameweekNo gwno, _) =
+    sprintf "Gameweek #%i fixtures added!" gwno
+    |> PushMessage
+    |> fun m ->
+    FixtureSubscribersAssistance.getPlayerPushSubscriptions deps
+    |> List.iter (fun (_, ps) -> deps.PushNotify m ps)
+
   let all =
     [ createFixtureSet
       createMatrix
+      notifyPlayers
     ]
 
 module FixtureKoEditedSubscribers =

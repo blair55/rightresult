@@ -510,16 +510,40 @@ module EventStore =
       | :? EventStore.ClientAPI.Exceptions.WrongExpectedVersionException as ex ->
         fun _ -> WrongEventVersionError ex.Message |> Result.Error
 
+module PushNotifications =
+
+  type PushKeys =
+    { Subject : string
+      Public : string
+      Private : string }
+
+  type PushMessage =
+    PushMessage of String
+
+  type PushNotify =
+    PushMessage -> PushSubscription -> Unit
+
+  let mutable semaphore =
+    false
+
+  let send (keys:PushKeys) (PushMessage message) (push:PushSubscription) =
+    if semaphore then
+      try
+        let client = WebPush.WebPushClient ()
+        let vapidKeys = WebPush.VapidDetails (keys.Subject, keys.Public, keys.Private)
+        let ps = new WebPush.PushSubscription (push.Endpoint, push.Keys.P256dh, push.Keys.Auth)
+        client.SendNotification (ps, message, vapidKeys)
+      with ex ->
+        printfn "%s" ex.Message
+
 module Persistence =
 
-  open Neo4jClient
-
   type Dependencies =
-    { Graph : IGraphClient
+    { Graph : Neo4jClient.IGraphClient
       Queries : Queries
       NonQueries : NonQueries
       ElasticSearch : Unit
-    }
+      PushNotify : PushNotifications.PushNotify }
 
 module Time =
 

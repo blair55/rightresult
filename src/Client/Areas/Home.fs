@@ -11,6 +11,8 @@ open Fable.React.Props
 open Shared
 open Fulma
 open Routes
+open System
+open Browser.WebStorage
 
 module HomeArea =
 
@@ -21,6 +23,7 @@ module HomeArea =
       ShowFeedbackModal : bool
       FeedbackText : string
       IsSubscribable : bool
+      IsSubscribing : bool
     }
 
   type Msg =
@@ -35,13 +38,13 @@ module HomeArea =
     | HideFeedbackModal
     | SubmitFeedback
     | InitIsSubscribableReceived of bool
+    | DismissSubscribePrompt
     | Subscribe
     | Subscribed of PushSubscription
 
-  let button txt onClick =
+  let button attr txt onClick =
     Button.button
-      [ Button.IsFullWidth
-        Button.OnClick onClick ]
+      ([ Button.OnClick onClick ] @ attr)
       [ str txt ]
 
   let globalLeaguePositionView (model:Model) (league:LeagueTableDoc) dispatch =
@@ -62,6 +65,12 @@ module HomeArea =
         [ Components.pointsTotalView points
         ]
     ]
+
+
+  let subscribeButton (model:Model) dispatch =
+    match model.IsSubscribing with
+    | false -> button [Button.Color IsInfo] "Enable Notifications" (fun _ -> dispatch Subscribe)
+    | true  -> button [Button.Color IsWhite; Button.IsLoading true] "" ignore
 
   let feedbackModal dispatch (model:Model) =
     Modal.modal [ Modal.IsActive model.ShowFeedbackModal ]
@@ -123,15 +132,19 @@ module HomeArea =
         //   ]
         (if model.IsSubscribable then
           Components.cardWithFooter
-            [ Message.message [ Message.Color IsInfo ]
-                [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-                    [ str "Subscribe to notifications!"
+            [ Message.message [ Message.Color IsInfo ] [
+                  Message.header [ ]
+                    [ str "Notifications"
+                      Delete.delete [ Delete.OnClick (fun _ -> dispatch DismissSubscribePrompt) ] []
+                    ]
+                  Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
+                    [ str "Receive notifications on this device when fixtures are added and more news!"
                     ]
                 ]
             ]
-            [ Card.Footer.a [ Props [ OnClick (fun _ -> dispatch Subscribe) ] ]
-                [ str "Subscribe"
-                ]
+            [
+              Card.Footer.a []
+                [ subscribeButton model dispatch ]
             ]
         else
           div [] [])
@@ -158,21 +171,31 @@ module HomeArea =
       ShowFeedbackModal = false
       FeedbackText = ""
       IsSubscribable = false
+      IsSubscribing = false
     }, Cmd.batch
-        [ Cmd.OfAsync.either
+        [ Cmd.OfAsync.perform
             (api.getPlayerPointsTotal player.Id)
             player.Token
             PlayerPointsTotalRecieved
-            (Error >> Init)
-          Cmd.OfAsync.either
+          Cmd.OfAsync.perform
             (api.getLeagueTable GlobalLeague Full)
             player.Token
             LeagueTableReceived
-            (Error >> Init)
           Cmd.OfPromise.perform
             isSubscribableToPush ()
             InitIsSubscribableReceived
         ]
+
+  let safeDateTimeToString s =
+    match DateTime.TryParse s with
+    | true, d -> d
+    | _ -> DateTime.MinValue
+
+  let isOver60Days (d:DateTime) =
+    d.Date.AddDays 60. < DateTime.Now.Date
+
+  let dismissSubscriptionStorageKey =
+    "dismiss-subscription"
 
   let update (api:IProtocol) player msg model : Model * Cmd<Msg> =
     match msg with
@@ -184,24 +207,31 @@ module HomeArea =
     | EditFeedback s -> { model with FeedbackText = s }, []
     | SubmitFeedback ->
       { model with ShowFeedbackModal = false; FeedbackText = "" },
-        Cmd.OfAsync.either
+        Cmd.OfAsync.perform
           (api.submitFeedback model.FeedbackText)
           player.Token
           (fun _ -> AlertInfo "Thanks for your feedback!")
-          (Error >> Init)
     | NavTo r -> model, navTo r
     | AlertInfo s ->
       model, (Toast.message >> Toast.position Toast.TopCenter >> Toast.info) s
     | Logout _ -> model, []
     | InitIsSubscribableReceived isSubscribable ->
-      { model with IsSubscribable = isSubscribable && player.Id = (PlayerId "fb-1396199664027786") }, []
+      localStorage.getItem dismissSubscriptionStorageKey
+      |> safeDateTimeToString
+      |> isOver60Days
+      |> fun isDismissExpired ->
+      { model with IsSubscribable = isSubscribable && isDismissExpired }, []
+    | DismissSubscribePrompt ->
+      localStorage.setItem(dismissSubscriptionStorageKey, DateTime.Now.Date.ToString("yyyy-MM-dd"))
+      { model with IsSubscribable = false }, []
     | Subscribe ->
-      model,
+      { model with IsSubscribing = true },
         Cmd.OfPromise.perform
           subscribeToPush ()
           Subscribed
     | Subscribed sub ->
-      { model with IsSubscribable = false },
+      localStorage.removeItem dismissSubscriptionStorageKey
+      { model with IsSubscribing = false; IsSubscribable = false },
         Cmd.OfAsync.perform
           (api.subscribeToPush player.Token) sub
           (fun _ -> AlertInfo "Thanks for subscribing!")

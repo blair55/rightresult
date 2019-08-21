@@ -26,7 +26,7 @@ var CONFIG = {
   badgeCssEntry: "./src/Client/badges.css",
   outputDir: "./src/Client/deploy",
   assetsDir: "./src/Client/public",
-  logoPath: "./src/Client/logo.png",
+  logoPath: "./src/Client/public/logo.png",
   devServerPort: 8080,
   // When using webpack-dev-server, you may need to redirect some calls
   // to a external API server. See https://webpack.js.org/configuration/dev-server/#devserver-proxy

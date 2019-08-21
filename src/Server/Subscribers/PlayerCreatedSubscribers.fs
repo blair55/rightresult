@@ -76,14 +76,29 @@ module PlayerRemovedSubscribers =
 
 module PlayerSubscribedToPushSubscribers =
 
-  let private saveSubscription (deps:Dependencies) created (playerId, subscription) =
+  open Server.Infrastructure.PushNotifications
+
+  let private saveSubscriptionDoc (deps:Dependencies) created (playerId, subscription) =
     let repo =
       ElasticSearch.repo deps.ElasticSearch
     repo.Upsert
       PlayerPushSubscriptions
       []
       (fun l -> (playerId, subscription) :: l)
+    deps.PushNotify
+      (PushMessage "Notifications are working!")
+      subscription
+
+  let private saveSubscriptionGraph (deps:Dependencies) created (PlayerId playerId, subscription:PushSubscription) =
+    deps.Graph.Cypher
+      .Match("(p:Player)")
+      .Where(fun (p:PlayerNode) -> p.Id = playerId)
+      .Create("(p)-[:SUBSCRIBED {rel}]->(s:Subscription {sub})")
+      .WithParam("sub", dict [ "auth", subscription.Endpoint ])
+      .WithParam("rel", dict [ "Subscribed", created ])
+      .ExecuteWithoutResults()
 
   let all =
-    [ saveSubscription
+    [ saveSubscriptionDoc
+      saveSubscriptionGraph
     ]

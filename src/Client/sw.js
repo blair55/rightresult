@@ -5,8 +5,8 @@ self.addEventListener('push', event => {
   console.log(event.data.text());
   const options = {
     body: event.data.text(),
-    icon: '/logo.png'
-    // badge: '/images/demos/badge-128x128.png'
+    icon: '/logo.png',
+    badge: '/notify-badge.png'
   };
   event.waitUntil(self.registration.showNotification('Right Result', options));
 });

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -25,7 +24,6 @@
     <Compile Include="Subscribers/PredictionSubscribers.fs" />
     <Compile Include="Subscribers/PlayerCreatedSubscribers.fs" />
     <Compile Include="Subscribers/LeagueSubscribers.fs" />
-    <Compile Include="HttpHandlers/PushNotifications.fs" />
     <Compile Include="HttpHandlers/FixtureSourcing.fs" />
     <None Include="HttpHandlers/PremFixturesSample.json" />
     <Compile Include="EventHandling.fs" />

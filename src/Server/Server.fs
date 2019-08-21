@@ -435,11 +435,6 @@ module Server =
         authError = ServerErrors.INTERNAL_ERROR
         authOk = authOk "tw" }
 
-    let pushKeys =
-      { Subject = "https://rightresu.lt"
-        Public = appConfig.pushSubscriptionPublicKey
-        Private = appConfig.pushSubscriptionPrivateKey }
-
     choose [
       Login.Facebook.handler facebookConfig
       Login.Twitter.handler twitterConfig
@@ -454,8 +449,8 @@ module Server =
       POST >=> route  "/api/renameLeague" >=> renameLeague handleCommand
       POST >=> route  "/api/overwritePredictionSet" >=> overwritePredictionSet handleCommand
       POST >=> route  "/api/kickoffFixture" >=> kickOffFixture deps handleCommand
-      POST >=> route  "/api/testNotify" >=> testNotify pushKeys deps
-      GET  >=> route  "/api/vapidPublicKey" >=> text pushKeys.Public
+      POST >=> route  "/api/testNotify" >=> testNotify deps
+      GET  >=> route  "/api/vapidPublicKey" >=> text appConfig.pushSubscriptionPublicKey
       GET  >=> route  "/api/printDocstore" >=> printDocstore deps
       GET  >=> route  "/api/now" >=> warbler (fun _ -> now().ToString("s") |> text)
       GET  >=> route  "/api/utcnow" >=> warbler (fun _ -> DateTime.UtcNow.ToString("s") |> text)
@@ -476,17 +471,22 @@ module Server =
       Graph.queries graphClient
     let nonQueries =
       Graph.nonQueries graphClient
+    let pushNotify =
+      PushNotifications.send
+        { Subject = "https://rightresu.lt"
+          Public = appConfig.pushSubscriptionPublicKey
+          Private = appConfig.pushSubscriptionPrivateKey }
     let handleCommand =
       CommandHandler.handle
         (EventStore.readStreamEvents eventStore)
         (EventStore.store eventStore)
-    appConfig, elasticSearch, eventStore, graphClient, queries, nonQueries, handleCommand
+    appConfig, elasticSearch, eventStore, graphClient, queries, nonQueries, pushNotify, handleCommand
 
   type RecurringTasks () =
     interface IHostedService with
       member __.StartAsync ct =
         printfn "STARTING RECURRING TASKS"
-        let (_, _, _, _, queries, _, handleCommand) = inf
+        let (_, _, _, _, queries, _, _, handleCommand) = inf
         async {
           while not ct.IsCancellationRequested do
             Whistler.kickOffFixtures handleCommand queries (now())
@@ -498,15 +498,20 @@ module Server =
         Tasks.Task.CompletedTask
 
   let configureApp (app:IApplicationBuilder) =
-    let (appConfig, elasticSearch, eventStore, graphClient, queries, nonQueries, handleCommand) =
+    let (appConfig, elasticSearch, eventStore, graphClient, queries, nonQueries, pushNotify, handleCommand) =
       inf
-    { Dependencies.Graph = graphClient; Queries = queries; NonQueries = nonQueries; ElasticSearch = elasticSearch }
+    { Graph = graphClient
+      Queries = queries
+      NonQueries = nonQueries
+      ElasticSearch = elasticSearch
+      PushNotify = pushNotify }
     |> fun deps ->
     EventHandling.onEvent deps
     |> fun onEvent ->
     Graph.deleteAll graphClient
     // ElasticSearch.setUpIndicies appConfig.elasticSearchUrl elasticSearch
     EventStore.readFromBeginningAndSubscribeFromEnd eventStore onEvent
+    PushNotifications.semaphore <- true
     app
       .UseStaticFiles()
       .UseGiraffe(webApp handleCommand deps appConfig)

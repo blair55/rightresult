@@ -8,6 +8,7 @@ open Shared
 open Server.Infrastructure
 open Server.Infrastructure.Persistence
 open Server.Infrastructure.Time
+open Server.Infrastructure.PushNotifications
 
 module FixtureSourcing =
 
@@ -355,13 +356,13 @@ module HttpHandlers =
     |> Option.defaultValue []
     |> List.distinct
 
-  let testNotify keys (deps:Dependencies) =
+  let testNotify (deps:Dependencies) =
     fun next (ctx:HttpContext) ->
       ctx.BindModelAsync<TestNotifyHttp>()
       |> Task.map (
           fun t ->
-            let subs = getPlayerPushSubscriptions deps
-            do subs |> List.iter (fun (_, ps) -> PushNotifications.send keys t.Text ps)
+            getPlayerPushSubscriptions deps
+            |> List.iter (fun (_, ps) -> deps.PushNotify (PushMessage t.Text) ps)
             Successful.OK "Ok" next ctx)
       |> Task.toAsync
       |> Async.RunSynchronously
