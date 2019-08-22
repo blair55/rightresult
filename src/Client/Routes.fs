@@ -152,6 +152,9 @@ let alert = function
   | WrongEventVersionError s ->
     warningAlert s
 
+let infoAlert s =
+  (Toast.message >> Toast.position Toast.TopCenter >> Toast.info) s
+
 open Fable.Import
 
 let getQsValueFromString key (src:string) =
