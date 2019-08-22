@@ -98,8 +98,8 @@ module FixtureSetCreatedSubscribers =
       )
 
   let notifyPlayers (deps:Dependencies) created (fsId, GameweekNo gwno, _) =
-    sprintf "Gameweek #%i fixtures added!" gwno
-    |> PushMessage
+    { PushMessage.Title = sprintf "GW #%i fixtures added" gwno
+      Body = "Get your predictions in!" }
     |> fun m ->
     FixtureSubscribersAssistance.getPlayerPushSubscriptions deps
     |> List.iter (fun (_, ps) -> deps.PushNotify m ps)

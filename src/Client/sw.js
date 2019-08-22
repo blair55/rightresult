@@ -2,13 +2,14 @@ workbox.core.skipWaiting();
 workbox.core.clientsClaim();
 
 self.addEventListener('push', event => {
-  console.log(event.data.text());
+  var notification = event.data.json();
+  console.log(notification);
   const options = {
-    body: event.data.text(),
+    body: notification.Body,
     icon: '/logo.png',
     badge: '/notify-badge.png'
   };
-  event.waitUntil(self.registration.showNotification('Right Result', options));
+  event.waitUntil(self.registration.showNotification(notification.Title, options));
 });
 
 self.addEventListener('notificationclick', function (event) {

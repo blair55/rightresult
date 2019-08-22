@@ -347,8 +347,9 @@ module HttpHandlers =
 
   [<CLIMutable>]
   type TestNotifyHttp =
-    { Text : string
-    }
+    { Title : string
+      Body : string
+      PlayerId : string }
 
   let getPlayerPushSubscriptions (deps:Dependencies) : List<PlayerId * PushSubscription> =
     ElasticSearch.repo deps.ElasticSearch
@@ -362,7 +363,8 @@ module HttpHandlers =
       |> Task.map (
           fun t ->
             getPlayerPushSubscriptions deps
-            |> List.iter (fun (_, ps) -> deps.PushNotify (PushMessage t.Text) ps)
+            |> List.filter (fun (pId, _) -> pId = PlayerId t.PlayerId)
+            |> List.iter (fun (_, ps) -> deps.PushNotify { PushMessage.Title = t.Title; Body = t.Body } ps)
             Successful.OK "Ok" next ctx)
       |> Task.toAsync
       |> Async.RunSynchronously

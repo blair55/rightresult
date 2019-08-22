@@ -234,4 +234,4 @@ module HomeArea =
       { model with IsSubscribing = false; IsSubscribable = false },
         Cmd.OfAsync.perform
           (api.subscribeToPush player.Token) sub
-          (fun _ -> AlertInfo "Thanks for subscribing!")
+          (fun _ -> AlertInfo "Notifications enabled")

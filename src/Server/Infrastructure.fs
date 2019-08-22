@@ -518,7 +518,8 @@ module PushNotifications =
       Private : string }
 
   type PushMessage =
-    PushMessage of String
+    { Title : string
+      Body : string }
 
   type PushNotify =
     PushMessage -> PushSubscription -> Unit
@@ -526,13 +527,13 @@ module PushNotifications =
   let mutable semaphore =
     false
 
-  let send (keys:PushKeys) (PushMessage message) (push:PushSubscription) =
+  let send (keys:PushKeys) (message:PushMessage) (push:PushSubscription) =
     if semaphore then
       try
         let client = WebPush.WebPushClient ()
         let vapidKeys = WebPush.VapidDetails (keys.Subject, keys.Public, keys.Private)
         let ps = new WebPush.PushSubscription (push.Endpoint, push.Keys.P256dh, push.Keys.Auth)
-        client.SendNotification (ps, message, vapidKeys)
+        client.SendNotification (ps, Json.srlzToString message, vapidKeys)
       with ex ->
         printfn "%s" ex.Message
 

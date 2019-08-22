@@ -86,7 +86,8 @@ module PlayerSubscribedToPushSubscribers =
       []
       (fun l -> (playerId, subscription) :: l)
     deps.PushNotify
-      (PushMessage "Notifications are working!")
+      { PushMessage.Title = "Heads up!"
+        Body = "Notifications are working" }
       subscription
 
   let private saveSubscriptionGraph (deps:Dependencies) created (PlayerId playerId, subscription:PushSubscription) =
