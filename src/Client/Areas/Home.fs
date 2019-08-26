@@ -142,8 +142,7 @@ module HomeArea =
                     ]
                 ]
             ]
-            [
-              Card.Footer.a []
+            [ Card.Footer.a []
                 [ subscribeButton model dispatch ]
             ]
         else
