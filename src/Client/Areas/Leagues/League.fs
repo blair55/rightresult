@@ -1,6 +1,7 @@
 namespace Areas.Leagues
 
 open Elmish
+open System
 
 open Fable.React
 open Fable.React.Props
@@ -109,6 +110,10 @@ module League =
         Modal.close [ Modal.Close.Size IsLarge
                       Modal.Close.OnClick (fun _ -> dispatch HideModal) ] [ ] ]
 
+  let showPaymentPrompt (now:DateTime) leagueId =
+    now.Date < new DateTime(2019, 9, 2)
+      && leagueId = (Guid.Parse("f27fc62e-ab47-48f5-9b19-0569176704a2") |> PrivateLeagueId)
+
   let leagueView (league:LeagueTableDoc) (GameweekNo gwno) model dispatch =
     let (LeagueName name) =
       league.LeagueName
@@ -137,6 +142,24 @@ module League =
         ]
     div [ ClassName "block" ]
       [ Components.pageTitle name
+        (if showPaymentPrompt DateTime.UtcNow model.PrivateLeagueId then
+            Components.card
+              [ Message.message [ Message.Color IsDanger ]
+                  [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
+                      [ str "The payment deadline for PL1 is 1st September."
+                        str " "
+                        str "Please transfer £25 to"
+                        str " "
+                        span [ Style [ CSSProp.WhiteSpace "nowrap" ] ] [ str "39138556" ]
+                        str " "
+                        span [ Style [ CSSProp.WhiteSpace "nowrap" ] ] [ str "07-04-36" ]
+                        str " "
+                        str "to continue playing. All money received will be paid out as prize money. Cheers, Nick."
+                      ]
+                  ]
+              ]
+          else
+            div [] [])
         Components.subHeading "Standings"
         Card.card [ CustomClass "card-footer-only"; Props [ Style [ MarginBottom "2em" ] ] ]
           [ div [] [ standingsFooter ]
