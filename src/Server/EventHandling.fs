@@ -50,6 +50,10 @@ module EventHandling =
       FixtureSetCreatedSubscribers.all
       |> List.iter (fun f -> f deps created (fsId, gwno, fixtures))
 
+    | FixtureSetConcluded (fsId, gwno) ->
+      FixtureSetConcludedSubscribers.all
+      |> List.iter (fun f -> f deps created (fsId, gwno))
+
     | FixtureKoEdited (fsId, fId, ko) ->
       FixtureKoEditedSubscribers.all
       |> List.iter (fun f -> f deps created (fsId, fId, ko))

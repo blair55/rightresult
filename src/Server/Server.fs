@@ -324,6 +324,12 @@ module Server =
       |> fun repo -> repo.Read (Matrix (leagueId, gwno))
       |> resultOfOption (ValidationError "League matrix not found")
 
+    let getGlobalGameweekWinner () =
+      let x : GlobalGameweekWinner option =
+        ElasticSearch.repo deps.ElasticSearch
+        |> fun repo -> repo.Read GlobalGameweekWinner
+      Ok x
+
     let vt =
       validateToken
 
@@ -344,6 +350,7 @@ module Server =
         getLeagueHistoryMonths = fun leagueId t -> t |> (vt >> Result.bind (fun _ -> getLeagueHistoryMonths leagueId) >> Async.retn)
         getDateFormat = fun dateTime format t -> t |> (vt >> Result.map (fun _ -> dateTime.ToString(format)) >> Async.retn)
         getLeagueMatrix = fun leagueId gwno t -> t |> (vt >> Result.bind (fun _ -> getLeagueMatrixForGameweek leagueId gwno) >> Async.retn)
+        getGlobalGameweekWinner = vt >> fun _ -> getGlobalGameweekWinner () |> Async.retn
         submitFeedback = fun fb t -> t |> (vt >> Result.map (submitFeedback config fb) >> Async.retn)
         addNewFixtureSet = vt >> (fun _ -> FixtureSourcing.addNewFixtureSet deps) >> handleCommand
         prediction = makePrediction
@@ -490,6 +497,7 @@ module Server =
         async {
           while not ct.IsCancellationRequested do
             Whistler.kickOffFixtures handleCommand queries (now())
+            Classifier.concludeGameweek handleCommand queries
             Classifier.classifyKickedOffFixtures handleCommand queries
             return! Async.Sleep 60000
         } |> Async.StartAsTask :> Tasks.Task

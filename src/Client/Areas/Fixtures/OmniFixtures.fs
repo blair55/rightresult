@@ -349,7 +349,7 @@ module OmniFixtures =
       | Ok (fsId, fId) ->
         model.Fixtures
         |> Map.map (fun _ f -> if f.FixtureSetId = fsId then { f with IsDoubleDown = false } else f)
-        |> fun m -> { model with Fixtures = m.Add(fId, { m.[fId] with IsDoubleDown = true }) }, infoAlert "Double down set"
+        |> fun m -> { model with Fixtures = m.Add(fId, { m.[fId] with IsDoubleDown = true }) }, infoAlert "Double Down set"
       | Error e -> model, alert e
     | RemoveDoubleDown fsId ->
       model,
@@ -363,7 +363,7 @@ module OmniFixtures =
       | Ok fsId ->
         model.Fixtures
         |> Map.map (fun _ f -> if f.FixtureSetId = fsId then { f with IsDoubleDown = false } else f)
-        |> fun m -> { model with Fixtures = m }, infoAlert "Double down removed"
+        |> fun m -> { model with Fixtures = m }, infoAlert "Double Down removed"
       | Error e -> model, alert e
     | Page from ->
       { model with Page = buildPage from model.Length }, getFixturesCmd api player from

@@ -20,6 +20,7 @@ module HomeArea =
     { Player : ClientSafePlayer
       TotalPoints : PredictionPointsMonoid WebData
       LeagueTable : LeagueTableDoc WebData
+      GlobalGwWinner : WebData<GlobalGameweekWinner option>
       ShowFeedbackModal : bool
       FeedbackText : string
       IsSubscribable : bool
@@ -31,6 +32,7 @@ module HomeArea =
     | AlertInfo of string
     | PlayerPointsTotalRecieved of Rresult<PredictionPointsMonoid>
     | LeagueTableReceived of Rresult<LeagueTableDoc>
+    | GlobalGwWinnerReceived of Rresult<GlobalGameweekWinner option>
     | NavTo of Route
     | Logout
     | ShowFeedbackModal
@@ -47,6 +49,24 @@ module HomeArea =
       ([ Button.OnClick onClick ] @ attr)
       [ str txt ]
 
+  let heroBar (model:Model) points =
+    Hero.hero
+      [ Hero.Color IsPrimary
+        Hero.IsBold
+        Hero.IsLarge
+        Hero.Props
+          [ Style [ MarginBottom "1em" ] ]
+      ]
+      [ Hero.body []
+          [ Container.container [ Container.IsFluid ]
+              [ Heading.h1 [ Heading.Is3 ]
+                  [ a [ Href "/"; Style [ Color "#fff" ] ] [ str "Right Result" ]
+                    str " "
+                    span [ ClassName "is-size-6" ] [ str "2019/20" ]
+                  ]
+                Components.pointsTotalView points
+              ] ] ]
+
   let globalLeaguePositionView (model:Model) (league:LeagueTableDoc) dispatch =
     let (_, membr) =
       league.Members |> List.filter (fun (pId, _) -> pId = model.Player.Id) |> List.head
@@ -54,48 +74,72 @@ module HomeArea =
       [ str <| sprintf "Position %i" membr.Position
       ]
 
-  let loadedView model (league, points) dispatch =
-    [ Components.cardWithFooter
-        [ globalLeaguePositionView model league dispatch
+  let gwWinner dispatch = function
+    | Some
+      { GameweekNo = GameweekNo gwno
+        PlayerId = PlayerId playerId
+        Member = { LeagueTableMember.PlayerName = (PlayerName playerName); Points = m }
+      } ->
+      Hero.hero
+        [ Hero.Color IsInfo
+          Hero.IsBold
+          Hero.Props
+            [ Style [ MarginBottom "1em" ]
+              OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch)
+            ]
         ]
-        [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] ]
-            [ str "Global League" ]
+        [ Hero.body [ ]
+            [ Container.container
+                [ Container.IsFluid ]
+                [ Heading.h3 []
+                    [ str playerName ]
+                  Heading.h5 []
+                    [ str <| sprintf "Wins GW%i with %i points" gwno m.Points ] ] ] ]
+    | None ->
+      div [] []
+
+  let notificationPrompt model dispatch =
+    let subscribeButton (model:Model) dispatch =
+      match model.IsSubscribing with
+      | false -> button [Button.Color IsInfo] "Enable Notifications" (fun _ -> dispatch Subscribe)
+      | true  -> button [Button.Color IsWhite; Button.IsLoading true] "" ignore
+    if model.IsSubscribable then
+      Components.cardWithFooter
+        [ Message.message [ Message.Color IsInfo ] [
+              Message.header [ ]
+                [ str "Notifications"
+                  Delete.delete [ Delete.OnClick (fun _ -> dispatch DismissSubscribePrompt) ] []
+                ]
+              Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
+                [ str "Receive notifications on this device when fixtures are added and more news!"
+                ]
+            ]
         ]
-      Components.card
-        [ Components.pointsTotalView points
+        [ Card.Footer.a []
+            [ subscribeButton model dispatch ]
         ]
-    ]
+    else
+      div [] []
 
-
-  let subscribeButton (model:Model) dispatch =
-    match model.IsSubscribing with
-    | false -> button [Button.Color IsInfo] "Enable Notifications" (fun _ -> dispatch Subscribe)
-    | true  -> button [Button.Color IsWhite; Button.IsLoading true] "" ignore
-
-  let feedbackModal dispatch (model:Model) =
-    Modal.modal [ Modal.IsActive model.ShowFeedbackModal ]
-      [ Modal.background [ Props [ OnClick (fun _ -> dispatch HideFeedbackModal) ] ]
-          []
-        Modal.content []
-          [ Box.box' []
-              [ Heading.h5 [ Heading.IsSubtitle ]
-                  [ str "Feedback" ]
-                Textarea.textarea
-                  [ Textarea.Props [ Style [ MarginBottom "1em" ] ]
-                    Textarea.OnChange (fun e -> e.Value |> EditFeedback |> dispatch)
-                    Textarea.Placeholder "Comments, suggestions etc"
-                    Textarea.Value model.FeedbackText
-                  ] []
-                Button.button
-                  [ Button.Color IsPrimary
-                    Button.OnClick (fun _ -> SubmitFeedback |> dispatch)
-                  ]
-                  [ str "Submit" ]
+  let homeMenu model dispatch =
+    let (PlayerId playerId) =
+      model.Player.Id
+    Components.card
+      [ Menu.menu []
+          [ Menu.list []
+              [ Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] [ str "Global League" ]
+                Menu.Item.li [ Menu.Item.OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ] [ str model.Player.Name ]
+                Menu.Item.li [ Menu.Item.OnClick (fun _ -> Logout |> dispatch) ] [ str "Log out" ]
               ]
           ]
-        Modal.close [ Modal.Close.Size IsLarge; Modal.Close.OnClick (fun _ -> dispatch HideFeedbackModal) ]
-          []
       ]
+
+  let loadedView (model:Model) (league, points, winner) dispatch =
+    [ heroBar model points
+      notificationPrompt model dispatch
+      gwWinner dispatch winner
+      homeMenu model dispatch
+    ]
 
   [<Emit("isSubscribableToPush()")>]
   let isSubscribableToPush () : JS.Promise<bool> =
@@ -105,68 +149,31 @@ module HomeArea =
   let subscribeToPush () : JS.Promise<PushSubscription> =
     jsNative
 
-  let view model dispatch =
-    div []
-      [ Components.pageTitle "Right Result"
-
-        Components.card
-          [ div []
-              [ Text.p [ Modifiers [ Modifier.TextWeight TextWeight.SemiBold ] ]
-                  [ str model.Player.Name ]
-                Text.p [ Modifiers [ ] ]
-                  [ str "Welcome to the 2019/20 season"
-                  ]
+  let noNetworkView model =
+    Components.card
+      [ Message.message [ Message.Color IsWarning ] [
+            Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
+              [ str "No network!"
               ]
           ]
-
-        // Components.cardWithFooter
-        //   [ Message.message [ Message.Color IsInfo ]
-        //       [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-        //           [ str "We are a work in progress so tell us your ideas and watch out for new features!"
-        //           ]
-        //       ]
-        //   ]
-        //   [ Card.Footer.a [ Props [ OnClick (fun _ -> dispatch ShowFeedbackModal) ] ]
-        //       [ str "Feedback"
-        //       ]
-        //   ]
-        (if model.IsSubscribable then
-          Components.cardWithFooter
-            [ Message.message [ Message.Color IsInfo ] [
-                  Message.header [ ]
-                    [ str "Notifications"
-                      Delete.delete [ Delete.OnClick (fun _ -> dispatch DismissSubscribePrompt) ] []
-                    ]
-                  Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-                    [ str "Receive notifications on this device when fixtures are added and more news!"
-                    ]
-                ]
-            ]
-            [ Card.Footer.a []
-                [ subscribeButton model dispatch ]
-            ]
-        else
-          div [] [])
-
-        (match model.LeagueTable, model.TotalPoints with
-        | Success league, Success points ->
-          div [] (loadedView model (league, points) dispatch)
-        | _ ->
-          div [] [])
-
-        Components.cardWithFooter []
-          [ Card.Footer.a [ Props [ OnClick (fun _ -> dispatch Logout) ] ]
-              [ str "Logout"
-              ]
-          ]
-
-        feedbackModal dispatch model
       ]
+
+  let view model dispatch =
+    match model.LeagueTable, model.TotalPoints, model.GlobalGwWinner with
+    | Success league, Success points, Success winner ->
+      div [] (loadedView model (league, points, winner) dispatch)
+    | WebError _, _, _
+    | _, WebError _, _
+    | _, _, WebError _ ->
+      noNetworkView model
+    | _ ->
+      div [] []
 
   let init api player =
     { Player = player
       TotalPoints = Fetching
       LeagueTable = Fetching
+      GlobalGwWinner = Fetching
       ShowFeedbackModal = false
       FeedbackText = ""
       IsSubscribable = false
@@ -180,6 +187,10 @@ module HomeArea =
             (api.getLeagueTable GlobalLeague Full)
             player.Token
             LeagueTableReceived
+          Cmd.OfAsync.perform
+            api.getGlobalGameweekWinner
+            player.Token
+            GlobalGwWinnerReceived
           Cmd.OfPromise.perform
             isSubscribableToPush ()
             InitIsSubscribableReceived
@@ -201,6 +212,7 @@ module HomeArea =
     | Init _ -> model, []
     | PlayerPointsTotalRecieved r -> { model with TotalPoints = resultToWebData r }, []
     | LeagueTableReceived r -> { model with LeagueTable = resultToWebData r }, []
+    | GlobalGwWinnerReceived r -> { model with GlobalGwWinner = resultToWebData r }, []
     | ShowFeedbackModal -> { model with ShowFeedbackModal = true }, []
     | HideFeedbackModal -> { model with ShowFeedbackModal = false }, []
     | EditFeedback s -> { model with FeedbackText = s }, []

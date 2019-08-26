@@ -57,7 +57,7 @@ let isIosStandalone : bool =
 let update msg (model:Model) : Model * Cmd<Msg> =
   // printfn "m %A" model
   // printfn "msg %A" msg
-  // printfn "p %A" model.Player
+// printfn "p %A" model.Player
   match model.Player, model.Area, msg with
   | _, _, NavTo r -> model, navTo r
 
@@ -127,7 +127,7 @@ let footabs model dispatch : ReactElement =
     let backButtonTab =
       Tabs.tab [ Tabs.Tab.CustomClass "back-button" ] back
     Tabs.tabs
-      [ Tabs.IsCentered; Tabs.IsFullWidth ]
+      [ Tabs.IsCentered; Tabs.IsFullWidth; Tabs.IsToggle; Tabs.Size IsMedium ]
       ((if isIosStandalone then [ backButtonTab ] else []) @ tabList)
 
   match model.Area with
@@ -168,6 +168,11 @@ let logoBar =
         ]
     ]
 
+let title model =
+  match model.Area with
+  | HomeArea m -> div [] []
+  | _          -> logoBar
+
 let navBar model dispatch =
   Navbar.navbar [ Navbar.IsFixedBottom; Navbar.HasShadow ]
     [ footabs model dispatch ]
@@ -184,7 +189,7 @@ let view (model:Model) dispatch =
   Container.container [ ]
     [ Columns.columns [Columns.IsDesktop; Columns.IsGapless]
         [ Column.column [ Column.Width (Screen.All, Column.Is6) ]
-            [ logoBar
+            [ title model
               div [ Style [ CSSProp.MarginBottom "100px" ] ]
                 [ area model dispatch ]
               navBar model dispatch

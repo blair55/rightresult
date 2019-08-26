@@ -20,6 +20,7 @@ module Events =
     | LeagueRemoved of PrivateLeagueId
     //fixture set
     | FixtureSetCreated of FixtureSetId * GameweekNo * FixtureRecord list
+    | FixtureSetConcluded of FixtureSetId * GameweekNo
     | FixtureKoEdited of FixtureSetId * FixtureId * KickOff
     | FixtureKickedOff of FixtureSetId * FixtureId
     | FixtureClassified of FixtureSetId * FixtureId * ScoreLine

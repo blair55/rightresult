@@ -19,6 +19,7 @@ module Queries =
       getPlayersInPrivateLeague : PrivateLeagueId -> PlayerNode list
       getAllPlayers : unit -> PlayerNode list
       getFixtureSet : FixtureSetId -> FixtureSetNode
+      getUnconcludedFixtureSets : unit -> (FixtureSetId * GameweekNo * FixtureRecord list) seq
       getPrivateLeagues : unit -> LeagueNode seq
       getPrivateLeaguesAndMembers : unit -> (LeagueNode * (PlayerNode seq)) seq
 
@@ -39,4 +40,5 @@ module Queries =
       classifyFixture : FixtureId * ScoreLine -> unit
       createPrediction : PredictionRecord -> unit
       deletePredictionSet : PlayerId * FixtureSetId -> unit
+      concludeFixtureSet : FixtureSetId -> unit
     }

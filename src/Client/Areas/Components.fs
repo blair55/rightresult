@@ -43,7 +43,7 @@ module Components =
 
   let pageTitle s =
     div [ Style [ MarginLeft "1em"; MarginTop "1em"; MarginBottom "1em" ] ]
-      [ Heading.h3 [] [ str s ] ]
+      [ Heading.h1 [ Heading.Is3 ] [ str s ] ]
 
   let subHeading s =
     Heading.h5 [ Heading.IsSubtitle; Heading.Props [ Style [ MarginLeft "1em" ] ] ] [ str s ]
@@ -82,7 +82,7 @@ module Components =
   let toShortPoints (m:PredictionPointsMonoid) =
     m.Points, m.CorrectResults + m.DoubleDownCorrectResults, m.CorrectScores + m.DoubleDownCorrectScores
 
-  let table (league:LeagueTableDoc) (playerClick:PlayerId -> Unit) =
+  let table (league:LeagueTableDoc) activePlayerId (playerClick:PlayerId -> Unit) =
     let playerLink pId (m:LeagueTableMember) =
       let (PlayerName name) = m.PlayerName
       a [ OnClick (fun _ -> playerClick pId) ] [ str name ]
@@ -98,7 +98,7 @@ module Components =
           league.Members
           |> List.map (fun (pId, m) ->
             let (p, cr, cs) = toShortPoints m.Points
-            tr []
+            tr [ ClassName (if activePlayerId = pId then "is-selected" else "") ]
                [ td [ Class CustomClasses.TextRight ] [ str (string m.Position) ]
                  td [] [ playerLink pId m ]
                  td [ Class CustomClasses.TextRight ] [ str (string cr) ]
@@ -199,3 +199,16 @@ module Components =
 
     let resultScoreBox (ScoreLine (Score h, Score a)) =
       boxes "result" (string h) (string a) false
+
+  open Routes
+
+  let leagueMenu leagueId gwno nav =
+    card
+      [ Menu.menu []
+          [ Menu.list []
+              [ Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeagueTableRoute leagueId |> LeaguesRoute |> nav) ] [ str "Table" ]
+                Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeagueMatrixRoute (leagueId, gwno) |> LeaguesRoute |> nav) ] [ str "Latest Matrix" ]
+                Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeagueHistoryRoute leagueId |> LeaguesRoute |> nav) ] [ str "History" ]
+              ]
+          ]
+      ]

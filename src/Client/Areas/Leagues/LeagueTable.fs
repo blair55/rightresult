@@ -15,6 +15,7 @@ module LeagueTable =
   type Model =
     { LeagueId : LeagueId
       League : LeagueTableDoc WebData
+      Player : ClientSafePlayer
     }
 
   type Msg =
@@ -25,6 +26,7 @@ module LeagueTable =
   let init api player leagueId =
     { LeagueId = leagueId
       League = Fetching
+      Player = player
     },
       Cmd.OfAsync.either
         (api.getLeagueTable leagueId Full)
@@ -40,7 +42,7 @@ module LeagueTable =
     div [ ClassName "block" ]
       [ Components.pageTitle name
         Card.card []
-          [ Components.table league playerClick
+          [ Components.table league model.Player.Id playerClick
           ]
       ]
 

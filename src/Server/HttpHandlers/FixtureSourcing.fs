@@ -128,6 +128,17 @@ module Classifier =
   let classifyFixturesAfterGameweek (handle:Command -> Ars<Unit>) (q:Queries) (GameweekNo gwno) =
     classifyFixtures handle q (fun q -> q.getAllFixtures () |> Seq.filter(fun { GameweekNo = GameweekNo g } -> g > gwno))
 
+  let concludeGameweek (handle:Command -> Ars<Unit>) (q:Queries) =
+    q.getUnconcludedFixtureSets ()
+    |> Seq.iter (fun (fsId, gwno, fixtures) ->
+      if fixtures |> Seq.forall (fun f -> f.ScoreLine.IsSome) then
+        printfn "CONCLUDING GW %A %A" fsId gwno
+        FixtureSetCommand (fsId, ConcludeFixtureSet gwno)
+        |> handle
+        |> Async.RunSynchronously
+        |> ignore
+      else ())
+
 module Whistler =
 
   let kickOffFixtures (handle:Command -> Ars<Unit>) (q:Queries) (now:DateTimeOffset) =

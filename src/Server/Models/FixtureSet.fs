@@ -16,6 +16,9 @@ module FixtureSet =
       fixtures
       |> List.map (fun f -> f.Id, f) |> Map.ofList |> Ok
 
+    | FixtureSetConcluded (_, _) ->
+      Ok fixtures
+
     | FixtureKoEdited (_, fId, ko) ->
       fixtures.[fId]
       |> fun f -> fixtures.Add (fId, { f with KickOff = ko }) |> Ok
@@ -42,6 +45,9 @@ module FixtureSet =
 
     | CreateFixtureSet (gwno, fixtures) ->
       [ FixtureSetCreated (fsId, gwno, fixtures) ] |> Ok
+
+    | ConcludeFixtureSet gwno ->
+      [ FixtureSetConcluded (fsId, gwno) ] |> Ok
 
     | EditFixtureKickOff (fId, ko) ->
       fixtures.[fId] |> (makeSureFixtureIsOpen >> Result.map (fun () -> [ FixtureKoEdited (fsId, fId, ko) ]))

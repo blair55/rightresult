@@ -53,7 +53,6 @@ module AllPlayers =
     match model.Players with
     | Success players -> fullView dispatch players
     | _ ->
-      printfn "^^^^^^^^^^^^^ %A" model
       div [] []
 
   let update api player msg model : Model * Cmd<Msg> =

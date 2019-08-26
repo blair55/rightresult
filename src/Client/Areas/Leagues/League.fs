@@ -120,24 +120,14 @@ module League =
     let (PrivateLeagueId leagueId) =
       model.PrivateLeagueId
     let standingsFooter =
-      Card.footer []
-        [ Card.Footer.a [ Props [ OnClick (fun _ -> LeagueTableRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] ]
-            [ str "Table"
-            ]
-          Card.Footer.a [ Props [ OnClick (fun _ -> LeagueMatrixRoute (string leagueId, gwno) |> LeaguesRoute |> NavTo |> dispatch) ] ]
-            [ str "Latest Matrix"
-            ]
-          Card.Footer.a [ Props [ OnClick (fun _ -> LeagueHistoryRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] ]
-            [ str "History"
-            ]
-        ]
+      Components.leagueMenu (string leagueId) gwno (NavTo >> dispatch)
     let membershipFooter =
-      Card.footer []
-        [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaveLeagueRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] ]
-            [ str "Leave"
-            ]
-          Card.Footer.a [ Props [ OnClick (fun _ -> dispatch ShowModal) ] ]
-            [ str "Invite"
+      Components.card
+        [ Menu.menu []
+            [ Menu.list []
+                [ Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaveLeagueRoute (string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] [ str "Leave" ]
+                  Menu.Item.li [ Menu.Item.OnClick (fun _ -> dispatch ShowModal) ] [ str "Invite" ]
+                ]
             ]
         ]
     div [ ClassName "block" ]

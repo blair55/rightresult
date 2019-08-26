@@ -93,7 +93,6 @@ and PushSubscriptionKeys =
   { P256dh : string
     Auth : string }
 
-
 // view model types
 
 type DocumentId =
@@ -113,7 +112,8 @@ and [<CLIMutable>] FixtureSetNode =
     GameweekNo : int
     Year : int
     Month : int
-    Created : DateTimeOffset }
+    Created : DateTimeOffset
+    IsConcluded : bool }
 and [<CLIMutable>] PredictionNode =
   { PlayerId : string
     FixtureId : string
@@ -288,6 +288,13 @@ type PrivateLeagueInfo =
   { LeagueName : LeagueName
   }
 
+type GlobalGameweekWinner =
+  { PlayerId : PlayerId
+    GameweekNo : GameweekNo
+    Member : LeagueTableMember
+  }
+
+
 type Document =
   | LeagueTableDocument of LeagueId * LeagueWindow
   | LeagueAllFixtureSetHistory of LeagueId
@@ -295,6 +302,7 @@ type Document =
   | PlayerFixtureSetsDocument of PlayerId
   | PlayerPushSubscriptions
   | Matrix of LeagueId * GameweekNo
+  | GlobalGameweekWinner
 
 type IProtocol =
   { getFixtures : int * int -> AppToken -> Ars<Map<FixtureId, FixturePredictionViewModel>>
@@ -313,6 +321,7 @@ type IProtocol =
     getLeagueHistoryMonths : LeagueId -> AppToken -> Ars<LeagueHistoryDoc>
     getDateFormat : DateTime -> String -> AppToken -> Ars<String>
     getLeagueMatrix : LeagueId -> GameweekNo -> AppToken -> Ars<MatrixDoc>
+    getGlobalGameweekWinner : AppToken -> Ars<GlobalGameweekWinner option>
     submitFeedback : string -> AppToken -> Ars<Unit>
     addNewFixtureSet : AppToken -> Ars<Unit>
     prediction : AppToken -> PredictionAction -> Ars<PredictionAction>

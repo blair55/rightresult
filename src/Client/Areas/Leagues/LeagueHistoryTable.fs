@@ -17,6 +17,7 @@ module LeagueHistoryTable =
     { Window : LeagueWindow
       WindowDescription : string WebData
       LeagueTable : LeagueTableDoc WebData
+      Player : ClientSafePlayer
     }
 
   type Msg =
@@ -33,6 +34,7 @@ module LeagueHistoryTable =
         | Week w -> sprintf "Gameweek %i" w |> Success
         | Month _ -> Fetching
       LeagueTable = Fetching
+      Player = player
     }, Cmd.batch
         ([ Cmd.OfAsync.either
             (api.getLeagueTable leagueId window)
@@ -52,7 +54,7 @@ module LeagueHistoryTable =
           ]
         )
 
-  let leagueView (league:LeagueTableDoc) desc model dispatch =
+  let leagueView (league:LeagueTableDoc) desc (model:Model) dispatch =
     let playerClick (PlayerId pId) =
       pId |> (PlayerRoute >> PlayersRoute >> NavTo >> dispatch)
     let (LeagueName name) =
@@ -61,7 +63,7 @@ module LeagueHistoryTable =
       [ Components.pageTitle name
         Components.subHeading desc
         Card.card []
-          [ Components.table league playerClick
+          [ Components.table league model.Player.Id playerClick
           ]
       ]
 

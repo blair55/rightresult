@@ -51,9 +51,12 @@ module Graph =
       .DetachDelete("n")
       .ExecuteWithoutResults()
 
+  let private buildFixtureSetId (s:string) =
+    FixtureSetId (Guid.Parse s)
+
   let private buildFixtureRecord (f:FixtureNode) =
     { Id = FixtureId (Guid.Parse f.Id)
-      FixtureSetId = FixtureSetId (Guid.Parse f.FixtureSetId)
+      FixtureSetId = buildFixtureSetId f.FixtureSetId
       GameweekNo = GameweekNo f.GameweekNo
       KickOff = KickOff f.KickOff
       TeamLine = TeamLine (Team f.HomeTeam, Team f.AwayTeam)
@@ -196,6 +199,17 @@ module Graph =
           .Return<FixtureSetNode>("fs")
           .Results
         |> Seq.head
+
+      getUnconcludedFixtureSets = fun () ->
+        gc.Cypher
+          .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet)")
+          .Where(fun (fs:FixtureSetNode) -> fs.IsConcluded = false)
+          .Return(fun fs f -> fs.As<FixtureSetNode>(), f.CollectAs<FixtureNode>())
+          .Results
+        |> Seq.map (fun (fs, fixtures) ->
+            fs.Id |> buildFixtureSetId,
+            fs.GameweekNo |> GameweekNo,
+            fixtures |> List.ofSeq |> List.map buildFixtureRecord)
 
       getPrivateLeagues = fun () ->
         gc.Cypher
@@ -347,6 +361,13 @@ module Graph =
           .Where(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
           .AndWhere(fun (player:PlayerNode) -> player.Id = playerId)
           .Delete("pred")
+          .ExecuteWithoutResults()
+
+      concludeFixtureSet = fun (FixtureSetId fsId) ->
+        gc.Cypher
+          .Match("(fs:FixtureSet)")
+          .Where(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
+          .Set("fs.IsConcluded = true")
           .ExecuteWithoutResults()
     }
 

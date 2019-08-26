@@ -21,6 +21,7 @@ module Commands =
     | RemoveLeague of PlayerId
   and FixtureSetCommand =
     | CreateFixtureSet of GameweekNo * FixtureRecord list
+    | ConcludeFixtureSet of GameweekNo
     | EditFixtureKickOff of FixtureId * KickOff
     | KickOffFixture of FixtureId
     | ClassifyFixture of FixtureId * ScoreLine

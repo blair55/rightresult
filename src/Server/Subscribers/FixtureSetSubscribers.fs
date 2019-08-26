@@ -48,7 +48,8 @@ module FixtureSetCreatedSubscribers =
       GameweekNo = gwno
       Year = minKo.DateTime.Year
       Month = minKo.DateTime.Month
-      Created = created }
+      Created = created
+      IsConcluded = false }
     |> deps.NonQueries.createFixtureSet
 
     fixtures
@@ -98,7 +99,7 @@ module FixtureSetCreatedSubscribers =
       )
 
   let notifyPlayers (deps:Dependencies) created (fsId, GameweekNo gwno, _) =
-    { PushMessage.Title = sprintf "GW #%i fixtures added" gwno
+    { PushMessage.Title = sprintf "GW %i fixtures added" gwno
       Body = "Get your predictions in!" }
     |> fun m ->
     FixtureSubscribersAssistance.getPlayerPushSubscriptions deps
@@ -109,6 +110,33 @@ module FixtureSetCreatedSubscribers =
       createMatrix
       notifyPlayers
     ]
+
+module FixtureSetConcludedSubscribers =
+
+  let concludeFixtureSet (deps:Dependencies) _ (fsId, _) =
+    deps.NonQueries.concludeFixtureSet fsId
+
+  let calculateGlobalGameweekWinner (deps:Dependencies) created (fsId, GameweekNo gwno) =
+    ElasticSearch.repo deps.ElasticSearch
+    |> fun repo ->
+    LeagueTableDocument (GlobalLeague, Week gwno)
+    |> repo.Read
+    |> Option.bind (fun table -> table.Members |> List.tryHead)
+    |> Option.map (fun (playerId, m) ->
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo ->
+        repo.Insert
+          GlobalGameweekWinner
+          { GlobalGameweekWinner.PlayerId = playerId
+            GameweekNo = GameweekNo gwno
+            Member = m })
+    |> ignore
+
+  let all =
+    [ concludeFixtureSet
+      calculateGlobalGameweekWinner
+    ]
+
 
 module FixtureKoEditedSubscribers =
 
