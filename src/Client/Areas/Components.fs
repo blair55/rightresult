@@ -9,8 +9,8 @@ open Fulma
 
 module CustomClasses =
 
-  let [<Literal>] TextRight = "text-right"
-  let [<Literal>] TextLeft = "text-left"
+  let [<Literal>] TextRight = "has-text-right"
+  let [<Literal>] TextLeft = "has-text-left"
 
 module Components =
 
