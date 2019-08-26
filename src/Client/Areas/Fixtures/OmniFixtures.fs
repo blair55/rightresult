@@ -35,7 +35,6 @@ module OmniFixtures =
       Prev = if current + pageSize < length then Some (current + pageSize) else None
       Next = if current > 0 then Some (current - pageSize) else None
     }
-    |> fun p -> printfn "%A" p; p
 
   type Msg =
     | Init of Rresult<Unit>

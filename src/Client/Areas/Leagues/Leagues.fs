@@ -24,14 +24,11 @@ module Leagues =
     | NavTo of Route
 
   let init api player =
-    printfn "************* initing"
     Fetching,
-      Cmd.OfAsync.either
+      Cmd.OfAsync.perform
         api.getPlayerLeagues
         player.Token
         LeaguesReceived
-        (fun a -> printfn "************ %A" a; Ok "???" |> Init)
-        // (Error >> Init)
 
   let leaguesList dispatch (model:LeagueList) =
     model
@@ -56,16 +53,15 @@ module Leagues =
     |> div []
 
   let noLeaguesView dispatch =
-    Card.card []
+    Components.cardWithFooter
       [ Message.message [ Message.Color IsInfo ]
           [ Message.body []
-              [ str "You are not in any private leagues."
+              [ str "You are not in any private leagues"
               ]
           ]
-        Card.footer []
-          [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute CreateLeagueRoute |> NavTo |> dispatch) ] ]
-              [ str "Create League"
-              ]
+      ]
+      [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute CreateLeagueRoute |> NavTo |> dispatch) ] ]
+          [ str "Create League"
           ]
       ]
 
@@ -75,9 +71,7 @@ module Leagues =
         (match model with
         | Success l when Map.isEmpty l -> noLeaguesView dispatch
         | Success l -> leaguesList dispatch l
-        | _ ->
-          printfn "************* %A" model
-          div [] [])
+        | _ -> div [] [])
       ]
 
   let update api player msg model : Model * Cmd<Msg> =

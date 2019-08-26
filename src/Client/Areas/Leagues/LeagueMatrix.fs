@@ -38,7 +38,15 @@ module LeagueMatrix =
   let matrixComponent
     (mCols:Map<FixtureId, MatrixFixture>)
     (mRows:Map<PlayerId, MatrixPlayer>)
-    (playerClick:PlayerId -> Unit) =
+    (playerClick:PlayerId -> Unit)
+    (GameweekNo gwno)
+    leagueId
+    dispatch =
+
+    let leagueIdStr =
+      match leagueId with
+      | GlobalLeague -> Global.identifier
+      | PrivateLeague (PrivateLeagueId id) -> string id
 
     let playerLink pId (PlayerName playerName) =
       a [ OnClick (fun _ -> playerClick pId) ] [ str playerName ]
@@ -86,12 +94,28 @@ module LeagueMatrix =
       tr [ Class "matrix-player-row" ] ((td [ Class "matrix-player-name" ] [ playerLink playerId playerName ]) :: buildPlayerColumns predictions @ [ td [ Class "matrix-player-score" ] [ str <| sprintf "%i pts" totalPoints ] ]))
     |> fun rws ->
 
-    Table.table [ Table.IsHoverable; Table.IsFullWidth; Table.CustomClass "matrix" ]
-      [ thead []
-          [ tr [] cols
+    div []
+      [ Table.table [ Table.IsHoverable; Table.IsFullWidth; Table.CustomClass "matrix"; Table.Props [ Style [ MarginBottom "1em" ] ] ]
+          [ thead []
+              [ tr [] cols
+              ]
+            tbody [] rws
           ]
-        tbody [] rws
+
+        (if List.isEmpty rws then
+          Components.cardWithFooter
+            [ Message.message [ Message.Color IsWarning ]
+                [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
+                    [ str (sprintf "GW%i fixtures have not kicked off yet! View past matrices in league history" gwno) ]
+                ]
+            ]
+            [ Card.Footer.a [ Props [ OnClick (fun _ -> LeagueHistoryRoute leagueIdStr |> LeaguesRoute |> NavTo |> dispatch) ] ]
+                [ str "League History" ]
+            ]
+        else
+          div [] [])
       ]
+
 
   let matrixView
     { FixtureSetId = fixtureSetId
@@ -107,7 +131,7 @@ module LeagueMatrix =
       [ Components.pageTitle leagueName
         Components.subHeading <| sprintf "Gameweek %i Matrix" gwno
         Card.card []
-          [ matrixComponent mCols mRows playerClick
+          [ matrixComponent mCols mRows playerClick (GameweekNo gwno) model.LeagueId dispatch
           ]
       ]
 

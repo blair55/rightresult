@@ -143,21 +143,21 @@ module League =
     div [ ClassName "block" ]
       [ Components.pageTitle name
         (if showPaymentPrompt DateTime.UtcNow model.PrivateLeagueId then
-            Components.card
-              [ Message.message [ Message.Color IsDanger ]
-                  [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-                      [ str "The payment deadline for PL1 is 1st September."
-                        str " "
-                        str "Please transfer £25 to"
-                        str " "
-                        span [ Style [ CSSProp.WhiteSpace "nowrap" ] ] [ str "39138556" ]
-                        str " "
-                        span [ Style [ CSSProp.WhiteSpace "nowrap" ] ] [ str "07-04-36" ]
-                        str " "
-                        str "to continue playing. All money received will be paid out as prize money. Cheers, Nick."
-                      ]
-                  ]
-              ]
+          Components.card
+            [ Message.message [ Message.Color IsDanger ]
+                [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
+                    [ str "The payment deadline for PL1 is 1st September."
+                      str " "
+                      str "Please transfer £25 to"
+                      str " "
+                      span [ Style [ CSSProp.WhiteSpace "nowrap" ] ] [ str "39138556" ]
+                      str " "
+                      span [ Style [ CSSProp.WhiteSpace "nowrap" ] ] [ str "07-04-36" ]
+                      str " "
+                      str "to continue playing. All money received will be paid out as prize money. Cheers, Nick."
+                    ]
+                ]
+            ]
           else
             div [] [])
         Components.subHeading "Standings"
