@@ -381,60 +381,64 @@ module Teams =
   let [<Literal>] WestHam = "West Ham"
   let [<Literal>] Wolves = "Wolves"
 
-(***TODO:
 
-  - leave league event should effect docs?
-  - league history multiple winners
-  - league history paging
-  - fixture prediction stats
-  - protect add fixtures
-  - league position delta
-  - fixture form guide
-  - chart: player rank/points/average?
-  - homepage winning player
-  - homepage best performing league
-  - homeplayer week history & average points
-  - pwa
+/// TODO:
 
-  + swap elasticsearch for in-memory
-  + league position grouping
-  + league matrix
-  + gameweek in omnifixture view
-  + fix invite social icons
-  + matrix column sort order
-  + homepage player global rank
-  + https
-  + auto add results
-  + month/week league history
-  + fixture paging
-  + password protect eventstore
-  + productionize & dns
-  + feedback/survey
-  + other player's predictions/points
-  + Favicon
-  + DateTime.Now???
-  + Link home in nav bar
-  + prevent negative score
-  + Cancel button on Join League & Create League views
-  + auto add fixtures
-  + sort fixtures by ko
-  + redirect url on login
-  + home page
-  + league page
-  + club badges
-  + selected tab
-  + error msgs & handle all Result|Error cases
-  + serve index.html on all unmatched paths
-  + use proper facebook login using private key
-  + twitter login
-  + double down
-  + share/join league
-
-  - edit result (ApplyResult cmd to Classified fixture)
-    -> how does this work with adding points to players in leagues?
-  - only league admin can remove league, capabilities?
-  - elasticsearch async endpoints?
-
-  + edit fixture cmd/event (e.g. ko)
-  + event versioning
-*)
+///  - leave league event should effect docs?
+///  - league history multiple winners
+///  - league history paging
+///  - fixture prediction stats
+///  - protect add fixtures
+///  - league position delta
+///  - fixture form guide
+///  - chart: player rank/points/average?
+///  - homepage best performing league
+///  - homeplayer week history & average points
+/// https://betting.betfair.com/football/opta/index.xml
+/// https://betting.betfair.com/football/opta/crystal-palace-v-aston-villa-preview-opta-stats-saturday-31-august-2019-290819-629.html
+/// $(".entry_body__quote blockquote p:first").text()
+/// → curl https://www.infogol.net/en/seo/content/match-fixture/30702
+///
+///  + homepage winning player
+///  + pwa
+///  + swap elasticsearch for in-memory
+///  + league position grouping
+///  + league matrix
+///  + gameweek in omnifixture view
+///  + fix invite social icons
+///  + matrix column sort order
+///  + homepage player global rank
+///  + https
+///  + auto add results
+///  + month/week league history
+///  + fixture paging
+///  + password protect eventstore
+///  + productionize & dns
+///  + feedback/survey
+///  + other player's predictions/points
+///  + Favicon
+///  + DateTime.Now???
+///  + Link home in nav bar
+///  + prevent negative score
+///  + Cancel button on Join League & Create League views
+///  + auto add fixtures
+///  + sort fixtures by ko
+///  + redirect url on login
+///  + home page
+///  + league page
+///  + club badges
+///  + selected tab
+///  + error msgs & handle all Result|Error cases
+///  + serve index.html on all unmatched paths
+///  + use proper facebook login using private key
+///  + twitter login
+///  + double down
+///  + share/join league
+///
+///  - edit result (ApplyResult cmd to Classified fixture)
+///    -> how does this work with adding points to players in leagues?
+///  - only league admin can remove league, capabilities?
+///  - elasticsearch async endpoints?
+///
+///  + edit fixture cmd/event (e.g. ko)
+///  + event versioning
