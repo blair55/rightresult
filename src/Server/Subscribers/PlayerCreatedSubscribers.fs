@@ -1,6 +1,5 @@
 ﻿namespace Server.Subscribers
 
-open System
 open Shared
 open FSharp.Core
 open Server.Infrastructure
@@ -61,7 +60,7 @@ module PlayerRemovedSubscribers =
       ElasticSearch.repo deps.ElasticSearch
     deps.Queries.getPrivateLeagues ()
       |> List.ofSeq
-      |> List.map (fun l -> Guid.Parse l.Id |> PrivateLeagueId |> PrivateLeague)
+      |> List.map (fun l -> PrivateLeague l.PrivateLeagueId)
       |> fun leagueIds -> GlobalLeague :: leagueIds
       |> List.map (fun leagueId ->
           repo.Edit

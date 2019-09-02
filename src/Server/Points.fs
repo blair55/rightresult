@@ -9,11 +9,12 @@ module Points =
     | AwayWin
     | Draw
 
+  let getScoreResult (ScoreLine (home, away)) =
+    if home > away then HomeWin
+    elif home < away then AwayWin
+    else Draw
+
   let getPointsForPrediction result predictionDd =
-    let getScoreResult (ScoreLine (home, away)) =
-      if home > away then HomeWin
-      elif home < away then AwayWin
-      else Draw
     let init =
       PredictionPointsMonoid.Init
     match predictionDd with
@@ -31,3 +32,17 @@ module Points =
       else init, Incorrect
     | None ->
       init, Incorrect
+
+  let getHomeAndAwayPremTableRowDiff (ScoreLine (Score homeScore, Score awayScore)) =
+    ScoreLine (Score homeScore, Score awayScore)
+    |> getScoreResult
+    |> function
+    | HomeWin ->
+      { Played = 1; GoalsFor = homeScore; GoalsAgainst = awayScore; Points = 3 },
+      { Played = 1; GoalsFor = awayScore; GoalsAgainst = homeScore; Points = 0 }
+    | AwayWin ->
+      { Played = 1; GoalsFor = homeScore; GoalsAgainst = awayScore; Points = 0 },
+      { Played = 1; GoalsFor = awayScore; GoalsAgainst = homeScore; Points = 3 }
+    | Draw ->
+      { Played = 1; GoalsFor = homeScore; GoalsAgainst = awayScore; Points = 1 },
+      { Played = 1; GoalsFor = awayScore; GoalsAgainst = homeScore; Points = 1 }

@@ -90,34 +90,34 @@ module Server =
 
       let isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno =
         fixturesAndPredictions
-        |> List.exists (fun (f, pred) ->
+        |> List.exists (fun ({ FixtureRecord.GameweekNo = fgwno; KickOff = (KickOff ko) }, pred) ->
           match pred with
-          | Some p when p.IsDoubleDown && f.GameweekNo = gwno && (now()) > f.KickOff -> true
+          | Some p when p.IsDoubleDown && fgwno = gwno && (now()) > ko -> true
           | _ -> false)
 
-      let getClassifiedInfo (pred:PredictionNode option) (result:ScoreLine) =
+      let getClassifiedInfo (pred:PredictionRecord option) (result:ScoreLine) =
         pred
-        |> Option.map (fun p -> ScoreLine (Score p.HomeScore, Score p.AwayScore), p.IsDoubleDown)
+        |> Option.map (fun p -> p.ScoreLine, p.IsDoubleDown)
         |> Points.getPointsForPrediction result
         |> fun (points, category) -> result, points.Points, category
         |> FixtureState.Classified
 
       fixturesAndPredictions
-      |> List.map (fun (f, pred) ->
-        Guid.Parse f.Id |> FixtureId,
-        { FixturePredictionViewModel.Id = Guid.Parse f.Id |> FixtureId
-          FixtureSetId = Guid.Parse f.FixtureSetId |> FixtureSetId
-          GameweekNo = GameweekNo f.GameweekNo
+      |> List.map (fun ({ FixtureRecord.KickOff = KickOff ko } as f, pred) ->
+        f.Id,
+        { FixturePredictionViewModel.Id = f.Id
+          FixtureSetId = f.FixtureSetId
+          GameweekNo = f.GameweekNo
           SortOrder = f.SortOrder
-          KickOff = KickOff f.KickOff
-          FormattedKickOff = f.KickOff.Date.ToString("ddd MMM d, yyyy")
-          TeamLine = TeamLine (Team f.HomeTeam, Team f.AwayTeam)
+          KickOff = f.KickOff
+          FormattedKickOff = ko.Date.ToString("ddd MMM d, yyyy")
+          TeamLine = f.TeamLine
           State =
-            match f.HasResult with
-            | true -> ScoreLine (Score f.HomeScore, Score f.AwayScore) |> getClassifiedInfo pred
-            | _ when (now()) < f.KickOff -> FixtureState.Open
+            match f.ScoreLine with
+            | Some scoreLine -> scoreLine |> getClassifiedInfo pred
+            | _ when (now()) < ko -> FixtureState.Open
             | _ -> FixtureState.KickedOff
-          Prediction = pred |> Option.map (fun p -> ScoreLine (Score p.HomeScore, Score p.AwayScore))
+          Prediction = pred |> Option.map (fun p -> p.ScoreLine)
           IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
           InProgress = false
           IsDoubleDownAvailable = not <| isAnyDoubleDownFixtureForGameweekAlreadyKickedOff f.GameweekNo })
@@ -241,8 +241,8 @@ module Server =
       let fixturesAndPredictionsInFixtureSet =
         q.getPlayerFixtureSet playerId fsId
         |> List.ofSeq
-      let fixtureSet =
-        q.getFixtureSet fsId
+      let gwno =
+        q.getFixtureSetGameweekNo fsId
       // let sumPoints =
       if List.isEmpty fixturesAndPredictionsInFixtureSet then
         ValidationError "could not get playerfixture set" |> Error
@@ -251,8 +251,8 @@ module Server =
         | Some player ->
           { PlayerId = player.Id
             PlayerName = player.Name
-            FixtureSetId = FixtureSetId (Guid.Parse fixtureSet.Id)
-            GameweekNo = GameweekNo fixtureSet.GameweekNo
+            FixtureSetId = fsId
+            GameweekNo = gwno
             AveragePoints = 0
             TotalPoints = PredictionPointsMonoid.Init
             Rows =
@@ -299,7 +299,7 @@ module Server =
 
     let getAllPlayers _ : PlayerViewModel list =
       q.getAllPlayers ()
-      |> Seq.map (fun p -> { PlayerViewModel.Id = PlayerId p.Id; Name = PlayerName p.Name })
+      |> Seq.map (fun p -> { PlayerViewModel.Id = p.Id; Name = p.Name })
       |> List.ofSeq
       // |> List.sortWith (fun { Name = PlayerName a } { Name = PlayerName b } -> a.CompareTo b)
       |> List.sortBy (fun { Name = PlayerName a } -> a.ToLower())
@@ -330,6 +330,16 @@ module Server =
         |> fun repo -> repo.Read GlobalGameweekWinner
       Ok x
 
+    let getRealPremTable () : PremTable =
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo -> repo.Read RealPremTable
+      |> Option.defaultValue PremTable.Init
+
+    let getPredictedPremTable (jwtPlayer:Jwt.JwtPlayer) : PremTable =
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo -> repo.Read (PredictedPremTable <| PlayerId jwtPlayer.playerId)
+      |> Option.defaultValue PremTable.Init
+
     let vt =
       validateToken
 
@@ -353,6 +363,8 @@ module Server =
         getGlobalGameweekWinner = vt >> fun _ -> getGlobalGameweekWinner () |> Async.retn
         submitFeedback = fun fb t -> t |> (vt >> Result.map (submitFeedback config fb) >> Async.retn)
         addNewFixtureSet = vt >> (fun _ -> FixtureSourcing.addNewFixtureSet deps) >> handleCommand
+        getRealPremTable = vt >> Result.map (fun _ -> getRealPremTable ()) >> Async.retn
+        getPredictedPremTable = vt >> Result.map getPredictedPremTable >> Async.retn
         prediction = makePrediction
         doubleDown = doDoubleDown
         removeDoubleDown = removeDownDown

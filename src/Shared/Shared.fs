@@ -93,6 +93,55 @@ and PushSubscriptionKeys =
   { P256dh : string
     Auth : string }
 
+module Teams =
+
+  let [<Literal>] Arsenal = "Arsenal"
+  let [<Literal>] AstonVilla = "Aston Villa"
+  let [<Literal>] Bournemouth = "Bournemouth"
+  let [<Literal>] Brighton = "Brighton"
+  let [<Literal>] Burnley = "Burnley"
+  // let [<Literal>] Cardiff = "Cardiff"
+  let [<Literal>] Chelsea = "Chelsea"
+  let [<Literal>] CrystalPalace = "Crystal Palace"
+  let [<Literal>] Everton = "Everton"
+  // let [<Literal>] Fulham = "Fulham"
+  // let [<Literal>] Huddersfield = "Huddersfield"
+  let [<Literal>] Leicester = "Leicester"
+  let [<Literal>] Liverpool = "Liverpool"
+  let [<Literal>] ManCity = "Man City"
+  let [<Literal>] ManUtd = "Man Utd"
+  let [<Literal>] Newcastle = "Newcastle"
+  let [<Literal>] Norwich = "Norwich"
+  let [<Literal>] SheffieldUtd = "Sheffield Utd"
+  let [<Literal>] Southampton = "Southampton"
+  let [<Literal>] Spurs = "Spurs"
+  let [<Literal>] Watford = "Watford"
+  let [<Literal>] WestHam = "West Ham"
+  let [<Literal>] Wolves = "Wolves"
+
+  let all =
+    [ Arsenal
+      AstonVilla
+      Bournemouth
+      Brighton
+      Burnley
+      Chelsea
+      CrystalPalace
+      Everton
+      Leicester
+      Liverpool
+      ManCity
+      ManUtd
+      Newcastle
+      Norwich
+      SheffieldUtd
+      Southampton
+      Spurs
+      Watford
+      WestHam
+      Wolves ]
+    |> List.map Team
+
 // view model types
 
 type DocumentId =
@@ -294,6 +343,23 @@ type GlobalGameweekWinner =
     Member : LeagueTableMember
   }
 
+type PremTable =
+  { Rows : Map<Team, PremTableRow> }
+  static member Init =
+    { Rows =
+        Teams.all
+        |> List.map (fun t -> t, { Played = 0; GoalsFor = 0; GoalsAgainst = 0; Points = 0 })
+        |> Map.ofList }
+and PremTableRow =
+  { Played : int
+    GoalsFor : int
+    GoalsAgainst : int
+    Points : int }
+  static member (+) (a:PremTableRow, b:PremTableRow) =
+    { Played = a.Played + b.Played
+      GoalsFor = a.GoalsFor + b.GoalsFor
+      GoalsAgainst = a.GoalsAgainst - b.GoalsAgainst
+      Points = a.Points + b.Points }
 
 type Document =
   | LeagueTableDocument of LeagueId * LeagueWindow
@@ -303,6 +369,8 @@ type Document =
   | PlayerPushSubscriptions
   | Matrix of LeagueId * GameweekNo
   | GlobalGameweekWinner
+  | RealPremTable
+  | PredictedPremTable of PlayerId
 
 type IProtocol =
   { getFixtures : int * int -> AppToken -> Ars<Map<FixtureId, FixturePredictionViewModel>>
@@ -322,6 +390,8 @@ type IProtocol =
     getDateFormat : DateTime -> String -> AppToken -> Ars<String>
     getLeagueMatrix : LeagueId -> GameweekNo -> AppToken -> Ars<MatrixDoc>
     getGlobalGameweekWinner : AppToken -> Ars<GlobalGameweekWinner option>
+    getRealPremTable : AppToken -> Ars<PremTable>
+    getPredictedPremTable : AppToken -> Ars<PremTable>
     submitFeedback : string -> AppToken -> Ars<Unit>
     addNewFixtureSet : AppToken -> Ars<Unit>
     prediction : AppToken -> PredictionAction -> Ars<PredictionAction>
@@ -354,33 +424,6 @@ module KickOff =
 
   let isLessThan (KickOff ko) now =
     ko < now
-
-module Teams =
-
-  let [<Literal>] Arsenal = "Arsenal"
-  let [<Literal>] AstonVilla = "Aston Villa"
-  let [<Literal>] Bournemouth = "Bournemouth"
-  let [<Literal>] Brighton = "Brighton"
-  let [<Literal>] Burnley = "Burnley"
-  // let [<Literal>] Cardiff = "Cardiff"
-  let [<Literal>] Chelsea = "Chelsea"
-  let [<Literal>] CrystalPalace = "Crystal Palace"
-  let [<Literal>] Everton = "Everton"
-  // let [<Literal>] Fulham = "Fulham"
-  // let [<Literal>] Huddersfield = "Huddersfield"
-  let [<Literal>] Leicester = "Leicester"
-  let [<Literal>] Liverpool = "Liverpool"
-  let [<Literal>] ManCity = "Man City"
-  let [<Literal>] ManUtd = "Man Utd"
-  let [<Literal>] Newcastle = "Newcastle"
-  let [<Literal>] Norwich = "Norwich"
-  let [<Literal>] SheffieldUtd = "Sheffield Utd"
-  let [<Literal>] Southampton = "Southampton"
-  let [<Literal>] Spurs = "Spurs"
-  let [<Literal>] Watford = "Watford"
-  let [<Literal>] WestHam = "West Ham"
-  let [<Literal>] Wolves = "Wolves"
-
 
 /// TODO:
 

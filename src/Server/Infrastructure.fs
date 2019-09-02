@@ -128,8 +128,8 @@ module Graph =
           .Return(fun f pred -> f.As<FixtureNode>(), pred.As<String>())
           .Results
         |> Seq.map (fun (f, predStr) ->
-          f, if predStr |> isNull then None
-             else Json.dsrlzStrngAtPath<PredictionNode> "data" predStr |> Some)
+          buildFixtureRecord f, if predStr |> isNull then None
+             else Json.dsrlzStrngAtPath<PredictionNode> "data" predStr |> buildPredictionRecord |> Some)
 
       getPlayerPredictionForFixture = fun (PlayerId playerId) (FixtureId fId) ->
         gc.Cypher
@@ -138,6 +138,7 @@ module Graph =
           .AndWhere(fun (f:FixtureNode) -> f.Id = string fId)
           .Return<PredictionNode>("pred")
           .Results
+        |> Seq.map buildPredictionRecord
         |> Seq.tryHead
 
       getFixtureSetAndEarliestKo = fun (FixtureSetId fsId) ->
@@ -149,6 +150,7 @@ module Graph =
             Return.As<DateTimeOffset>("min(f.KickOff)"))
           .Results
         |> Seq.head
+        |> fun (fixtureNode, ko) -> buildFixtureRecord fixtureNode, ko
 
       getPredictionsForPlayer = fun (PlayerId playerId) ->
         gc.Cypher
@@ -157,6 +159,8 @@ module Graph =
           .Return(fun pred fixture -> fixture.As<FixtureNode>(), pred.As<PredictionNode>())
           .Results
         |> List.ofSeq
+        |> List.map (fun (fixtureNode, predictionNode) ->
+          buildFixtureRecord fixtureNode, buildPredictionRecord predictionNode)
 
       getPredictionsForPlayerInFixtureSet = fun (FixtureSetId fsId) (PlayerId playerId) ->
         gc.Cypher
@@ -166,6 +170,8 @@ module Graph =
           .Return(fun fixture pred -> fixture.As<FixtureNode>(), pred.As<PredictionNode>())
           .Results
         |> List.ofSeq
+        |> List.map (fun (fixtureNode, predictionNode) ->
+          buildFixtureRecord fixtureNode, buildPredictionRecord predictionNode)
 
       getPredictionsForPlayerInMonth = fun (year, month) (PlayerId playerId) ->
         gc.Cypher
@@ -176,6 +182,8 @@ module Graph =
           .Return(fun fixture pred -> fixture.As<FixtureNode>(), pred.As<PredictionNode>())
           .Results
         |> List.ofSeq
+        |> List.map (fun (fixtureNode, predictionNode) ->
+          buildFixtureRecord fixtureNode, buildPredictionRecord predictionNode)
 
       getPlayersInPrivateLeague = fun (PrivateLeagueId privateLeagueId) ->
         gc.Cypher
@@ -184,21 +192,42 @@ module Graph =
           .Return<PlayerNode>("p")
           .Results
         |> List.ofSeq
+        |> List.map buildPlayerRecord
 
       getAllPlayers = fun () ->
         gc.Cypher
           .Match("(p:Player)")
           .Return<PlayerNode>("p")
           .Results
+        |> Seq.map buildPlayerRecord
         |> List.ofSeq
 
-      getFixtureSet = fun (FixtureSetId fsId) ->
+      getFixtureSetGameweekNo = fun (FixtureSetId fsId) ->
         gc.Cypher
           .Match("(fs:FixtureSet)")
           .Where(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
           .Return<FixtureSetNode>("fs")
           .Results
         |> Seq.head
+        |> fun fs -> GameweekNo fs.GameweekNo
+
+      getFixtureSetYearAndMonth = fun (FixtureSetId fsId) ->
+        gc.Cypher
+          .Match("(fs:FixtureSet)")
+          .Where(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
+          .Return<FixtureSetNode>("fs")
+          .Results
+        |> Seq.head
+        |> fun fs -> fs.Year, fs.Month
+
+      getFixtureRecord = fun (FixtureId fId) ->
+        gc.Cypher
+          .Match("f:Fixture)")
+          .Where(fun (f:FixtureNode) -> f.Id = string fId)
+          .Return<FixtureNode>("f")
+          .Results
+        |> Seq.head
+        |> buildFixtureRecord
 
       getUnconcludedFixtureSets = fun () ->
         gc.Cypher
@@ -216,12 +245,15 @@ module Graph =
           .Match("(l:League)")
           .Return<LeagueNode>("l")
           .Results
+        |> Seq.map buildLeagueRecord
 
       getPrivateLeaguesAndMembers = fun () ->
         gc.Cypher
           .Match("(player:Player)-[:IN_LEAGUE]->(league:League)")
           .Return(fun player league -> league.As<LeagueNode>(), player.CollectAs<PlayerNode>())
           .Results
+        |> Seq.map (fun (league, players) ->
+          buildLeagueRecord league, players |> Seq.map buildPlayerRecord)
 
       getFixturesLength = fun () ->
         gc.Cypher

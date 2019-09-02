@@ -12,21 +12,21 @@ module FixtureSubscribersAssistance =
   let leagueIdsAndNames deps =
     deps.Queries.getPrivateLeagues ()
     |> List.ofSeq
-    |> List.map (fun l -> PrivateLeagueId (Guid.Parse l.Id) |> fun p -> PrivateLeague p, (LeagueName l.Name))
+    |> List.map (fun l -> PrivateLeague l.PrivateLeagueId, l.LeagueName)
     |> fun l -> (GlobalLeague, Global.leagueName)::l
 
   let getPrivateLeaguesAndLeagueMembers deps =
     deps.Queries.getPrivateLeaguesAndMembers ()
     |> List.ofSeq
     |> List.map (fun (league, members) ->
-      PrivateLeagueId (Guid.Parse league.Id) |> PrivateLeague,
-      LeagueName league.Name,
+      PrivateLeague league.PrivateLeagueId,
+      league.LeagueName,
       members
       |> List.ofSeq
-      |> List.map (fun m -> PlayerId m.Id))
+      |> List.map (fun m -> m.Id))
 
   let allLeaguesAndMembers deps =
-    List.map (fun (p:PlayerNode) -> PlayerId p.Id)
+    List.map (fun (p:PlayerRecord) -> p.Id)
     >> fun allPlayerIds -> (GlobalLeague, Global.leagueName, allPlayerIds) :: getPrivateLeaguesAndLeagueMembers deps
 
   let getPlayerPushSubscriptions (deps:Dependencies) : List<PlayerId * PushSubscription> =
@@ -137,7 +137,6 @@ module FixtureSetConcludedSubscribers =
       calculateGlobalGameweekWinner
     ]
 
-
 module FixtureKoEditedSubscribers =
 
   let editFixtureKo (deps:Dependencies) _ (_, fId, ko) =
@@ -162,13 +161,13 @@ module FixtureKickedOffSubscribers =
 
     let playerNameMap =
       allPlayers
-      |> List.map (fun p -> PlayerId p.Id, PlayerName p.Name)
+      |> List.map (fun p -> p.Id, p.Name)
       |> Map.ofList
 
     ElasticSearch.repo deps.ElasticSearch
     |> fun repo ->
-    q.getFixtureSet fsId
-    |> fun fs ->
+    q.getFixtureSetGameweekNo fsId
+    |> fun gwno ->
     FixtureSubscribersAssistance.allLeaguesAndMembers deps allPlayers
     |> List.iter (fun (leagueId, _, members) ->
       (fun (m:MatrixDoc) ->
@@ -180,7 +179,7 @@ module FixtureKickedOffSubscribers =
               |> List.map (fun pId ->
                 q.getPlayerPredictionForFixture pId fId
                 |> Option.map (fun p ->
-                  { MatrixPrediction.Prediction = ScoreLine (Score p.HomeScore, Score p.AwayScore)
+                  { MatrixPrediction.Prediction = p.ScoreLine
                     IsDoubleDown = p.IsDoubleDown
                     Points = None })
                 |> fun mPrediction ->
@@ -198,23 +197,51 @@ module FixtureKickedOffSubscribers =
                 )
                 |> Map.ofList
           })
-        |> repo.Edit (Matrix (leagueId, GameweekNo fs.GameweekNo))
+        |> repo.Edit (Matrix (leagueId, gwno))
         |> ignore
       )
+
+  let updatePredictedPremTable deps _ (fsId, fId) =
+
+    let repo =
+      ElasticSearch.repo deps.ElasticSearch
+
+    let q =
+      deps.Queries
+
+    let allPlayers =
+      q.getAllPlayers ()
+
+    let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } =
+      q.getFixtureRecord fId
+
+    allPlayers
+    |> List.ofSeq
+    |> List.choose (fun player -> q.getPlayerPredictionForFixture player.Id fId)
+    |> List.iter (fun prediction ->
+      Points.getHomeAndAwayPremTableRowDiff prediction.ScoreLine
+      |> fun (homeRowDiff, awayRowDiff) ->
+        repo.Upsert
+          (PredictedPremTable prediction.PlayerId)
+          PremTable.Init
+          (fun table ->
+            table.Rows
+            |> Map.add homeTeam (table.Rows.[homeTeam] + homeRowDiff)
+            |> Map.add awayTeam (table.Rows.[awayTeam] + awayRowDiff)
+            |> fun rows -> { PremTable.Rows = rows } ))
 
   let all =
     [ kickOffFixture
       updateMatrix
+      updatePredictedPremTable
     ]
 
 module FixtureClassifiedSubscribers =
 
-  let fixturePredictionToPoints (f:FixtureNode, p:PredictionNode) =
-    match f.HasResult with
-    | true ->
-      ScoreLine (Score f.HomeScore, Score f.AwayScore)
-      |> fun result ->
-        (Some (ScoreLine (Score p.HomeScore, Score p.AwayScore), p.IsDoubleDown))
+  let fixturePredictionToPoints (f:FixtureRecord, p:PredictionRecord) =
+    match f.ScoreLine with
+    | Some result ->
+      Some (p.ScoreLine, p.IsDoubleDown)
       |> Points.getPointsForPrediction result
       |> fst
     | _ ->
@@ -244,18 +271,21 @@ module FixtureClassifiedSubscribers =
     let q =
       deps.Queries
 
-    let fixtureSet =
-      q.getFixtureSet (FixtureSetId fsId)
+    let (GameweekNo gwno) =
+      q.getFixtureSetGameweekNo (FixtureSetId fsId)
+
+    let (year, month) =
+      q.getFixtureSetYearAndMonth (FixtureSetId fsId)
 
     let allPlayers =
       q.getAllPlayers ()
 
     let playerNameMap =
       allPlayers
-      |> List.map (fun p -> PlayerId p.Id, PlayerName p.Name)
+      |> List.map (fun p -> p.Id, p.Name)
       |> Map.ofList
 
-    let buildLeagueTable (leagueName, document, (playerPredictions:Map<PlayerId, (FixtureNode * PredictionNode) list>)) =
+    let buildLeagueTable (leagueName, document, (playerPredictions:Map<PlayerId, (FixtureRecord * PredictionRecord) list>)) =
 
       ElasticSearch.repo deps.ElasticSearch
       |> fun repo ->
@@ -287,8 +317,8 @@ module FixtureClassifiedSubscribers =
     FixtureSubscribersAssistance.allLeaguesAndMembers deps allPlayers
     |> List.iter (fun (leagueId, leagueName, members) ->
       [ leagueName, LeagueTableDocument (leagueId, Full), members |> membersToPredictionMap q.getPredictionsForPlayer
-        leagueName, LeagueTableDocument (leagueId, Week fixtureSet.GameweekNo), members |> membersToPredictionMap (q.getPredictionsForPlayerInFixtureSet (FixtureSetId fsId))
-        leagueName, LeagueTableDocument (leagueId, Month (fixtureSet.Year, fixtureSet.Month)), members |> membersToPredictionMap (q.getPredictionsForPlayerInMonth (fixtureSet.Year, fixtureSet.Month))
+        leagueName, LeagueTableDocument (leagueId, Week gwno), members |> membersToPredictionMap (q.getPredictionsForPlayerInFixtureSet (FixtureSetId fsId))
+        leagueName, LeagueTableDocument (leagueId, Month (year, month)), members |> membersToPredictionMap (q.getPredictionsForPlayerInMonth (year, month))
       ]
       |> List.iter buildLeagueTable)
 
@@ -299,11 +329,10 @@ module FixtureClassifiedSubscribers =
     let q =
       deps.Queries
     let gwno =
-      q.getFixtureSet fsId
-      |> fun fs -> GameweekNo fs.GameweekNo
+      q.getFixtureSetGameweekNo fsId
     q.getAllPlayers ()
     |> List.iter (fun player ->
-        q.getPredictionsForPlayerInFixtureSet fsId (PlayerId player.Id)
+        q.getPredictionsForPlayerInFixtureSet fsId player.Id
         |> List.map fixturePredictionToPoints
         |> List.fold (+) PredictionPointsMonoid.Init
         |> fun m ->
@@ -314,8 +343,8 @@ module FixtureClassifiedSubscribers =
           ElasticSearch.repo deps.ElasticSearch
           |> fun repo ->
             repo.Upsert
-              (PlayerFixtureSetsDocument (PlayerId player.Id))
-              (PlayerFixtureSetsDoc.Init (PlayerId player.Id))
+              (PlayerFixtureSetsDocument player.Id)
+              (PlayerFixtureSetsDoc.Init player.Id)
               (fun pfsd -> { pfsd with FixtureSets = pfsd.FixtureSets.Add (fsId, docRow) }))
 
   let updateLeagueHistoryWindowDoc (deps:Dependencies) (docF, window, description) =
@@ -327,7 +356,7 @@ module FixtureClassifiedSubscribers =
     let leagueIds =
       deps.Queries.getPrivateLeagues ()
       |> List.ofSeq
-      |> List.map (fun l -> PrivateLeagueId (Guid.Parse l.Id) |> PrivateLeague)
+      |> List.map (fun l -> PrivateLeague l.PrivateLeagueId)
       |> fun l -> GlobalLeague::l
 
     leagueIds
@@ -352,8 +381,8 @@ module FixtureClassifiedSubscribers =
 
   let updateLeagueHistoryFixtureSetDoc deps _ (FixtureSetId fsId, _, _) =
     deps.Queries.getFixtureSetAndEarliestKo (FixtureSetId fsId)
-    |> fun (fixtureSet, _) ->
-    (LeagueAllFixtureSetHistory, Week fixtureSet.GameweekNo, sprintf "Gameweek %i" fixtureSet.GameweekNo)
+    |> fun ({ FixtureRecord.GameweekNo = GameweekNo gwno }, _) ->
+    (LeagueAllFixtureSetHistory, Week gwno, sprintf "Gameweek %i" gwno)
     |> updateLeagueHistoryWindowDoc deps
 
   let updateLeagueHistoryMonthSetDoc deps _ (FixtureSetId fsId, _, _) =
@@ -372,13 +401,13 @@ module FixtureClassifiedSubscribers =
 
     let playerNameMap =
       allPlayers
-      |> List.map (fun p -> PlayerId p.Id, PlayerName p.Name)
+      |> List.map (fun p -> p.Id, p.Name)
       |> Map.ofList
 
     ElasticSearch.repo deps.ElasticSearch
     |> fun repo ->
-    q.getFixtureSet fsId
-    |> fun fs ->
+    q.getFixtureSetGameweekNo fsId
+    |> fun gwno ->
     FixtureSubscribersAssistance.allLeaguesAndMembers deps allPlayers
     |> List.iter (fun (leagueId, _, members) ->
       (fun (m:MatrixDoc) ->
@@ -410,8 +439,28 @@ module FixtureClassifiedSubscribers =
                   pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = Map.empty; TotalPoints = 0 })
               |> Map.ofList
           })
-        |> repo.Edit (Matrix (leagueId, GameweekNo fs.GameweekNo))
+        |> repo.Edit (Matrix (leagueId, gwno))
         |> ignore)
+
+  let updateRealPremTable deps _ (_, fId, resultScoreLine) =
+
+    let repo =
+      ElasticSearch.repo deps.ElasticSearch
+
+    let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } =
+      deps.Queries.getFixtureRecord fId
+
+    let (homeRowDiff, awayRowDiff) =
+      Points.getHomeAndAwayPremTableRowDiff resultScoreLine
+
+    repo.Upsert
+      RealPremTable
+      PremTable.Init
+      (fun table ->
+        table.Rows
+        |> Map.add homeTeam (table.Rows.[homeTeam] + homeRowDiff)
+        |> Map.add awayTeam (table.Rows.[awayTeam] + awayRowDiff)
+        |> fun r -> { PremTable.Rows = r })
 
   let all =
     [ updateFixtureGraph
@@ -420,4 +469,5 @@ module FixtureClassifiedSubscribers =
       updateLeagueHistoryFixtureSetDoc
       updateLeagueHistoryMonthSetDoc
       updateMatrixDoc
+      updateRealPremTable
     ]

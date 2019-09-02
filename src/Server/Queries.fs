@@ -10,18 +10,20 @@ module Queries =
       getAllFixtures : unit -> FixtureRecord seq
       getFixturesInLatestFixtureSet : unit -> (FixtureSetId * GameweekNo * (FixtureRecord seq)) option
       getFixturesAwaitingResults : unit -> FixtureRecord seq
-      getPlayerPredictionsByFixture : PlayerId -> (FixtureNode * PredictionNode option) seq
-      getPlayerPredictionForFixture : PlayerId -> FixtureId -> PredictionNode option
-      getFixtureSetAndEarliestKo : FixtureSetId -> FixtureNode * DateTimeOffset
-      getPredictionsForPlayer : PlayerId -> (FixtureNode * PredictionNode) list
-      getPredictionsForPlayerInFixtureSet : FixtureSetId -> PlayerId -> (FixtureNode * PredictionNode) list
-      getPredictionsForPlayerInMonth : (int * int) -> PlayerId -> (FixtureNode * PredictionNode) list
-      getPlayersInPrivateLeague : PrivateLeagueId -> PlayerNode list
-      getAllPlayers : unit -> PlayerNode list
-      getFixtureSet : FixtureSetId -> FixtureSetNode
+      getPlayerPredictionsByFixture : PlayerId -> (FixtureRecord * PredictionRecord option) seq
+      getPlayerPredictionForFixture : PlayerId -> FixtureId -> PredictionRecord option
+      getFixtureSetAndEarliestKo : FixtureSetId -> FixtureRecord * DateTimeOffset
+      getPredictionsForPlayer : PlayerId -> (FixtureRecord * PredictionRecord) list
+      getPredictionsForPlayerInFixtureSet : FixtureSetId -> PlayerId -> (FixtureRecord * PredictionRecord) list
+      getPredictionsForPlayerInMonth : (int * int) -> PlayerId -> (FixtureRecord * PredictionRecord) list
+      getPlayersInPrivateLeague : PrivateLeagueId -> PlayerRecord list
+      getAllPlayers : unit -> PlayerRecord list
+      getFixtureSetGameweekNo : FixtureSetId -> GameweekNo
+      getFixtureSetYearAndMonth : FixtureSetId -> int * int
+      getFixtureRecord : FixtureId -> FixtureRecord
       getUnconcludedFixtureSets : unit -> (FixtureSetId * GameweekNo * FixtureRecord list) seq
-      getPrivateLeagues : unit -> LeagueNode seq
-      getPrivateLeaguesAndMembers : unit -> (LeagueNode * (PlayerNode seq)) seq
+      getPrivateLeagues : unit -> LeagueRecord seq
+      getPrivateLeaguesAndMembers : unit -> (LeagueRecord * (PlayerRecord seq)) seq
 
       getFixturesLength : unit -> int
       getLeaguesPlayerIsIn : PlayerId -> LeagueRecord seq
