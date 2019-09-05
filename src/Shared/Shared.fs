@@ -348,18 +348,78 @@ type PremTable =
   static member Init =
     { Rows =
         Teams.all
-        |> List.map (fun t -> t, { Played = 0; GoalsFor = 0; GoalsAgainst = 0; Points = 0 })
+        |> List.map (fun t -> t, PremTableRow.Init)
         |> Map.ofList }
 and PremTableRow =
   { Played : int
     GoalsFor : int
     GoalsAgainst : int
     Points : int }
+  static member Init =
+    { Played = 0; GoalsFor = 0; GoalsAgainst = 0; Points = 0 }
   static member (+) (a:PremTableRow, b:PremTableRow) =
     { Played = a.Played + b.Played
       GoalsFor = a.GoalsFor + b.GoalsFor
-      GoalsAgainst = a.GoalsAgainst - b.GoalsAgainst
+      GoalsAgainst = a.GoalsAgainst + b.GoalsAgainst
       Points = a.Points + b.Points }
+
+
+type FixtureDetails =
+  { Home : FixtureDetailsColumn
+    Away : FixtureDetailsColumn }
+  static member Init =
+    { Home = FixtureDetailsColumn.Init; Away = FixtureDetailsColumn.Init }
+and FixtureDetailsColumn =
+  { Team : Team
+    PremTableRow : PremTableRow
+    FormGuide : FormFixture list }
+  static member Init =
+    { Team = Team ""
+      PremTableRow = PremTableRow.Init
+      FormGuide = [] }
+and FormFixture =
+  { KickOff : KickOff
+    Venue : FormVenue
+    Result : FormResult
+    GoalsFor : Score
+    GoalsAgainst : Score }
+and FormVenue =
+  | H | A
+and FormResult =
+  | W | L | D
+
+/// separate because sourced by db query,
+/// its not document at rest. Also maybe we don't
+/// want if fixture has not yet kicked off?
+/// If so, this endpoint should be protected
+/// such that this info is not returned until ko
+and PredictionsAggregate =
+  { AvgHomeScore : decimal
+    AvgAwayScore : decimal
+    HomeWinCount : int
+    AwayWinCount : int
+    DrawCount : int }
+///       +
+/// +     +
+/// + + + + +
+/// W W D W L
+/// -   - - -
+///       - -
+/// h a h h a
+///
+/// toggle: HomeAway/All
+/// opacity gradient with recency
+
+
+/// MATCH (p:Prediction)-[:FOR_FIXTURE]->(f:Fixture)
+/// WHERE f.Id = 'c785a15e-7e59-4da1-a201-afe61916701c'
+/// RETURN
+/// avg(p.HomeScore) as AvgHomeScore,
+/// avg(p.AwayScore) as AvgAwayScore,
+/// count(case p.HomeScore > p.AwayScore when true then 1 end) as HomeWins,
+/// count(case p.HomeScore = p.AwayScore when true then 1 end) as Draws,
+/// count(case p.HomeScore < p.AwayScore when true then 1 end) as AwayWins
+
 
 type Document =
   | LeagueTableDocument of LeagueId * LeagueWindow
@@ -371,6 +431,8 @@ type Document =
   | GlobalGameweekWinner
   | RealPremTable
   | PredictedPremTable of PlayerId
+  | FormGuideDocument of Team
+  | FixtureDetailsDocument of FixtureId
 
 type IProtocol =
   { getFixtures : int * int -> AppToken -> Ars<Map<FixtureId, FixturePredictionViewModel>>
@@ -392,6 +454,7 @@ type IProtocol =
     getGlobalGameweekWinner : AppToken -> Ars<GlobalGameweekWinner option>
     getRealPremTable : AppToken -> Ars<PremTable>
     getPredictedPremTable : AppToken -> Ars<PremTable>
+    getFixtureDetails : AppToken -> FixtureId -> Ars<FixtureDetails>
     submitFeedback : string -> AppToken -> Ars<Unit>
     addNewFixtureSet : AppToken -> Ars<Unit>
     prediction : AppToken -> PredictionAction -> Ars<PredictionAction>
@@ -430,18 +493,14 @@ module KickOff =
 ///  - leave league event should effect docs?
 ///  - league history multiple winners
 ///  - league history paging
-///  - fixture prediction stats
 ///  - protect add fixtures
 ///  - league position delta
-///  - fixture form guide
 ///  - chart: player rank/points/average?
 ///  - homepage best performing league
 ///  - homeplayer week history & average points
-/// https://betting.betfair.com/football/opta/index.xml
-/// https://betting.betfair.com/football/opta/crystal-palace-v-aston-villa-preview-opta-stats-saturday-31-august-2019-290819-629.html
-/// $(".entry_body__quote blockquote p:first").text()
-/// → curl https://www.infogol.net/en/seo/content/match-fixture/30702
-///
+///  - fixture prediction stats
+///  - fixture form guide
+
 ///  + homepage winning player
 ///  + pwa
 ///  + swap elasticsearch for in-memory

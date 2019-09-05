@@ -324,11 +324,10 @@ module Server =
       |> fun repo -> repo.Read (Matrix (leagueId, gwno))
       |> resultOfOption (ValidationError "League matrix not found")
 
-    let getGlobalGameweekWinner () =
-      let x : GlobalGameweekWinner option =
-        ElasticSearch.repo deps.ElasticSearch
-        |> fun repo -> repo.Read GlobalGameweekWinner
-      Ok x
+    let getGlobalGameweekWinner () : Rresult<GlobalGameweekWinner option> =
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo -> repo.Read GlobalGameweekWinner
+      |> Ok
 
     let getRealPremTable () : PremTable =
       ElasticSearch.repo deps.ElasticSearch
@@ -339,6 +338,11 @@ module Server =
       ElasticSearch.repo deps.ElasticSearch
       |> fun repo -> repo.Read (PredictedPremTable <| PlayerId jwtPlayer.playerId)
       |> Option.defaultValue PremTable.Init
+
+    let getFixtureDetails fId : Rresult<FixtureDetails> =
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo -> repo.Read (FixtureDetailsDocument fId)
+      |> resultOfOption (ValidationError "Fixture details not found")
 
     let vt =
       validateToken
@@ -361,10 +365,11 @@ module Server =
         getDateFormat = fun dateTime format t -> t |> (vt >> Result.map (fun _ -> dateTime.ToString(format)) >> Async.retn)
         getLeagueMatrix = fun leagueId gwno t -> t |> (vt >> Result.bind (fun _ -> getLeagueMatrixForGameweek leagueId gwno) >> Async.retn)
         getGlobalGameweekWinner = vt >> fun _ -> getGlobalGameweekWinner () |> Async.retn
-        submitFeedback = fun fb t -> t |> (vt >> Result.map (submitFeedback config fb) >> Async.retn)
-        addNewFixtureSet = vt >> (fun _ -> FixtureSourcing.addNewFixtureSet deps) >> handleCommand
         getRealPremTable = vt >> Result.map (fun _ -> getRealPremTable ()) >> Async.retn
         getPredictedPremTable = vt >> Result.map getPredictedPremTable >> Async.retn
+        getFixtureDetails = vt >> (fun _ -> getFixtureDetails >> Async.retn)
+        submitFeedback = fun fb t -> t |> (vt >> Result.map (submitFeedback config fb) >> Async.retn)
+        addNewFixtureSet = vt >> (fun _ -> FixtureSourcing.addNewFixtureSet deps) >> handleCommand
         prediction = makePrediction
         doubleDown = doDoubleDown
         removeDoubleDown = removeDownDown

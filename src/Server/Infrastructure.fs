@@ -319,6 +319,34 @@ module Graph =
         |> Seq.sortDescending
         |> Seq.tryHead
         |> Option.map GameweekNo
+
+      getPredictionsAggregate = fun (FixtureId fId) ->
+        gc.Cypher
+          .Match("(p:Prediction)-[:FOR_FIXTURE]->(f:Fixture)")
+          .Where(fun (f:FixtureNode) -> f.Id = string fId)
+          .Return(fun () ->
+            Return.As<decimal>("avg(p.HomeScore)"),
+            Return.As<decimal>("avg(p.AwayScore)"),
+            Return.As<int>("count(case p.HomeScore > p.AwayScore when true then 1 end"),
+            Return.As<int>("count(case p.HomeScore < p.AwayScore when true then 1 end"),
+            Return.As<int>("count(case p.HomeScore = p.AwayScore when true then 1 end"))
+          .Results
+        |> Seq.map (fun (avgHs, avgAs, hw, aw, dr) ->
+            { AvgHomeScore = avgHs
+              AvgAwayScore = avgAs
+              HomeWinCount = hw
+              AwayWinCount = aw
+              DrawCount = dr })
+        |> Seq.head
+
+      getFixturesForTeam = fun (Team team) ->
+        gc.Cypher
+          .Match("(f:Fixture)")
+          .Where(fun (f:FixtureNode) -> f.HomeTeam = team)
+          .OrWhere(fun (f:FixtureNode) -> f.AwayTeam = team)
+          .Return<FixtureNode>("f")
+          .Results
+        |> Seq.map buildFixtureRecord
     }
 
   let nonQueries (gc:GraphClient) : NonQueries =

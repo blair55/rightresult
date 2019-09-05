@@ -1,7 +1,6 @@
 ﻿namespace Server.Subscribers
 
 open FSharp.Core
-open System
 open Shared
 open Server
 open Server.Infrastructure
@@ -35,10 +34,27 @@ module FixtureSubscribersAssistance =
     |> Option.defaultValue []
     |> List.distinct
 
+  let buildColumn (deps:Dependencies) team =
+    let getFormGuide team : FormFixture list =
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo ->
+      repo.Read (FormGuideDocument team)
+      |> Option.defaultValue []
+    let getPremTableRow team =
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo ->
+      repo.Read RealPremTable
+      |> Option.bind (fun (table:PremTable) -> Map.tryFind team table.Rows)
+      |> Option.defaultValue PremTableRow.Init
+    { FixtureDetailsColumn.Team = team
+      PremTableRow = getPremTableRow team
+      FormGuide = getFormGuide team }
+
 
 module FixtureSetCreatedSubscribers =
 
   open Infrastructure.PushNotifications
+  open FixtureSubscribersAssistance
 
   let createFixtureSet (deps:Dependencies) created (FixtureSetId fsId, GameweekNo gwno, fixtures:FixtureRecord list) =
     fixtures
@@ -105,9 +121,18 @@ module FixtureSetCreatedSubscribers =
     FixtureSubscribersAssistance.getPlayerPushSubscriptions deps
     |> List.iter (fun (_, ps) -> deps.PushNotify m ps)
 
+  let createFixtureDetails (deps:Dependencies) _ (_, _, fixtures) =
+    fixtures
+    |> List.iter (fun { FixtureRecord.Id = fId; TeamLine = TeamLine (home, away) } ->
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo ->
+        repo.Insert (FixtureDetailsDocument fId)
+          { Home = buildColumn deps home; Away = buildColumn deps away })
+
   let all =
     [ createFixtureSet
       createMatrix
+      createFixtureDetails
       notifyPlayers
     ]
 
@@ -237,6 +262,9 @@ module FixtureKickedOffSubscribers =
     ]
 
 module FixtureClassifiedSubscribers =
+
+  open Points
+  open FixtureSubscribersAssistance
 
   let fixturePredictionToPoints (f:FixtureRecord, p:PredictionRecord) =
     match f.ScoreLine with
@@ -462,6 +490,56 @@ module FixtureClassifiedSubscribers =
         |> Map.add awayTeam (table.Rows.[awayTeam] + awayRowDiff)
         |> fun r -> { PremTable.Rows = r })
 
+  let updateFormGuideDoc deps _ (fsId, fId, ScoreLine (homeScore, awayScore)) =
+
+    let repo =
+      ElasticSearch.repo deps.ElasticSearch
+
+    let ({ FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } as fixture) =
+      deps.Queries.getFixtureRecord fId
+
+    let scoreResult =
+      getScoreResult (ScoreLine (homeScore, awayScore))
+
+    repo.Upsert (FormGuideDocument homeTeam) []
+      (fun guide ->
+        { KickOff = fixture.KickOff
+          Venue = H
+          Result =
+            match scoreResult with
+            | HomeWin -> W
+            | AwayWin -> L
+            | Draw -> D
+          GoalsFor = homeScore
+          GoalsAgainst = awayScore } :: guide)
+
+    repo.Upsert (FormGuideDocument awayTeam) []
+      (fun guide ->
+        { KickOff = fixture.KickOff
+          Venue = A
+          Result =
+            match scoreResult with
+            | HomeWin -> L
+            | AwayWin -> W
+            | Draw -> D
+          GoalsFor = awayScore
+          GoalsAgainst = homeScore } :: guide)
+
+  let updateOpenFixtureDetails deps _ (_, fId, _) =
+    /// needed to update fd with first result when a team appears twice in one gw
+    let updateOpenFixtureDetailsForTeam update =
+      deps.Queries.getFixturesForTeam
+      >> List.ofSeq
+      >> List.filter (fun f -> f.ScoreLine.IsNone)
+      >> List.iter (fun f ->
+        ElasticSearch.repo deps.ElasticSearch
+        |> fun repo -> repo.Upsert (FixtureDetailsDocument f.Id) FixtureDetails.Init update)
+    let { FixtureRecord.TeamLine = TeamLine (home, away) } =
+      deps.Queries.getFixtureRecord fId
+    home |> updateOpenFixtureDetailsForTeam (fun fd -> { fd with Home = buildColumn deps home })
+    away |> updateOpenFixtureDetailsForTeam (fun fd -> { fd with Away = buildColumn deps away })
+
+
   let all =
     [ updateFixtureGraph
       updateAllLeagueTables
@@ -470,4 +548,6 @@ module FixtureClassifiedSubscribers =
       updateLeagueHistoryMonthSetDoc
       updateMatrixDoc
       updateRealPremTable
+      updateFormGuideDoc
+      updateOpenFixtureDetails
     ]

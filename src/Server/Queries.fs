@@ -24,7 +24,6 @@ module Queries =
       getUnconcludedFixtureSets : unit -> (FixtureSetId * GameweekNo * FixtureRecord list) seq
       getPrivateLeagues : unit -> LeagueRecord seq
       getPrivateLeaguesAndMembers : unit -> (LeagueRecord * (PlayerRecord seq)) seq
-
       getFixturesLength : unit -> int
       getLeaguesPlayerIsIn : PlayerId -> LeagueRecord seq
       getPlayerFixtureSet : PlayerId -> FixtureSetId -> (FixtureRecord * PredictionRecord option) seq
@@ -32,6 +31,8 @@ module Queries =
       getPrivateLeague : PrivateLeagueId -> LeagueRecord option
       getFixtureByTeams : Team -> Team -> FixtureRecord
       getMaxGameweekNo : unit -> GameweekNo option
+      getPredictionsAggregate : FixtureId -> PredictionsAggregate
+      getFixturesForTeam : Team -> FixtureRecord seq
     }
 
   type NonQueries =
