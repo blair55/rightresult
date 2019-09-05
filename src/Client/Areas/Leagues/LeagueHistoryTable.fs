@@ -47,7 +47,8 @@ module LeagueHistoryTable =
         | Week _ -> []
         | Month (y, m) ->
           [ Cmd.OfAsync.either
-              (api.getDateFormat (DateTime(y, m, 1)) "MMMM yyyy")
+              /// use (y, m, 2) to prevent against utc vs gmt+0100 issues
+              (api.getDateFormat (DateTime(y, m, 2)) "MMMM yyyy")
               player.Token
               LeagueWindowDescriptionReceived
               (Error >> Init)
