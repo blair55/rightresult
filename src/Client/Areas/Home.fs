@@ -53,7 +53,6 @@ module HomeArea =
     Hero.hero
       [ Hero.Color IsPrimary
         Hero.IsBold
-        Hero.IsLarge
         Hero.Props
           [ Style [ MarginBottom "1em" ] ]
       ]
@@ -88,12 +87,12 @@ module HomeArea =
               OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch)
             ]
         ]
-        [ Hero.body [ ]
+        [ Hero.body []
             [ Container.container
                 [ Container.IsFluid ]
                 [ Heading.h3 []
                     [ str playerName ]
-                  Heading.h5 []
+                  Heading.h6 []
                     [ str <| sprintf "Wins GW%i with %i points" gwno m.Points ] ] ] ]
     | None ->
       div [] []
