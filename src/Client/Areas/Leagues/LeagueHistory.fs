@@ -71,13 +71,13 @@ module LeagueHistory =
     let gwTab = [ a [ OnClick (fun _ -> ChangeViewMode FixtureSets |> dispatch) ] [ str "Gameweeks" ] ]
     let mnTab = [ a [ OnClick (fun _ -> ChangeViewMode Months |> dispatch) ] [ str "Months" ] ]
     let getWindowInt = function
-      | Full -> bigint 0
       | Week w -> bigint w
       | Month (y, m) -> (DateTime(y, m, 1)).Ticks |> bigint
+      | _ -> bigint 0
     let historyRoute = function
-      | Full -> PlayerLeaguesRoute
       | Week w -> LeagueHistoryFixtureSetRoute (leagueIdStr, w)
       | Month (y, m) -> LeagueHistoryMonthRoute (leagueIdStr, y, m)
+      | _ -> PlayerLeaguesRoute
     let matrixRoute = function
       | Week w -> LeagueMatrixRoute (leagueIdStr, w)
       | _ -> PlayerLeaguesRoute

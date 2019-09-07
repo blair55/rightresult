@@ -294,6 +294,13 @@ module FixtureClassifiedSubscribers =
     >> List.collect id
     >> List.rev
 
+  let movementAlgo (previousTableMap: Map<PlayerId, LeagueTableMember> option) =
+    List.map (fun (playerId, m:LeagueTableMember) ->
+      previousTableMap
+      |> Option.bind (Map.tryFind playerId)
+      |> Option.map (fun prev -> { m with Movement = prev.Position - m.Position })
+      |> fun updatedMember -> playerId, Option.defaultValue m updatedMember)
+
   let updateAllLeagueTables (deps:Dependencies) _ (FixtureSetId fsId, _, _) =
 
     let q =
@@ -313,7 +320,16 @@ module FixtureClassifiedSubscribers =
       |> List.map (fun p -> p.Id, p.Name)
       |> Map.ofList
 
-    let buildLeagueTable (leagueName, document, (playerPredictions:Map<PlayerId, (FixtureRecord * PredictionRecord) list>)) =
+    let getTable (leagueId, window) : LeagueTableDoc option =
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo -> repo.Read (LeagueTableDocument (leagueId, window))
+
+    let buildLeagueTable
+      (leagueName, document, previousTable:LeagueTableDoc option,
+        (playerPredictions:Map<PlayerId, (FixtureRecord * PredictionRecord) list>)) =
+
+      let previousTableMap =
+        previousTable |> Option.map (fun t -> t.Members |> Map.ofList)
 
       ElasticSearch.repo deps.ElasticSearch
       |> fun repo ->
@@ -333,20 +349,29 @@ module FixtureClassifiedSubscribers =
       |> List.filter (snd >> Option.isSome)
       |> List.map (fun (p, o) -> p, o.Value)
       |> standingAlgo
+      |> movementAlgo previousTableMap
       |> fun members ->
         { LeagueTableDoc.LeagueName = leagueName
           Members = members }
       |> repo.Insert document
 
-
     let membersToPredictionMap f =
       List.map (fun playerId -> playerId, f playerId) >> Map.ofList
 
-    FixtureSubscribersAssistance.allLeaguesAndMembers deps allPlayers
+    allLeaguesAndMembers deps allPlayers
     |> List.iter (fun (leagueId, leagueName, members) ->
-      [ leagueName, LeagueTableDocument (leagueId, Full), members |> membersToPredictionMap q.getPredictionsForPlayer
-        leagueName, LeagueTableDocument (leagueId, Week gwno), members |> membersToPredictionMap (q.getPredictionsForPlayerInFixtureSet (FixtureSetId fsId))
-        leagueName, LeagueTableDocument (leagueId, Month (year, month)), members |> membersToPredictionMap (q.getPredictionsForPlayerInMonth (year, month))
+      [ leagueName, LeagueTableDocument (leagueId, Full),
+          (getTable (leagueId, WeekInclusive (gwno - 1))),
+          members |> membersToPredictionMap q.getPredictionsForPlayer
+
+        leagueName, LeagueTableDocument (leagueId, WeekInclusive gwno),
+          None, members |> membersToPredictionMap q.getPredictionsForPlayer
+
+        leagueName, LeagueTableDocument (leagueId, Week gwno),
+          None, members |> membersToPredictionMap (q.getPredictionsForPlayerInFixtureSet (FixtureSetId fsId))
+
+        leagueName, LeagueTableDocument (leagueId, Month (year, month)),
+          None, members |> membersToPredictionMap (q.getPredictionsForPlayerInMonth (year, month))
       ]
       |> List.iter buildLeagueTable)
 

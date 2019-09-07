@@ -30,9 +30,9 @@ module LeagueHistoryTable =
     { Window = window
       WindowDescription =
         match window with
-        | Full -> NotAsked
         | Week w -> sprintf "Gameweek %i" w |> Success
         | Month _ -> Fetching
+        | _ -> NotAsked
       LeagueTable = Fetching
       Player = player
     }, Cmd.batch
@@ -43,16 +43,15 @@ module LeagueHistoryTable =
             (Error >> Init)
         ] @
         match window with
-        | Full -> []
-        | Week _ -> []
         | Month (y, m) ->
           [ Cmd.OfAsync.either
-              /// use (y, m, 2) to prevent against utc vs gmt+0100 issues
+              /// use (y, m, 2) to prevent against utc vs gmt+0100 issue
               (api.getDateFormat (DateTime(y, m, 2)) "MMMM yyyy")
               player.Token
               LeagueWindowDescriptionReceived
               (Error >> Init)
           ]
+        | _ -> []
         )
 
   let leagueView (league:LeagueTableDoc) desc (model:Model) dispatch =

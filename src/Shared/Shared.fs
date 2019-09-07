@@ -324,6 +324,7 @@ type LeagueWindow =
   | Full
   | Week of int
   | Month of int * int
+  | WeekInclusive of int
 
 type LeagueHistoryDoc =
   Map<LeagueWindow, LeagueHistoryUnitWinner>
@@ -490,57 +491,57 @@ module KickOff =
 
 /// TODO:
 
-///  - leave league event should effect docs?
-///  - league history multiple winners
-///  - league history paging
-///  - protect add fixtures
-///  - league position delta
-///  - chart: player rank/points/average?
-///  - homepage best performing league
-///  - homeplayer week history & average points
-///  - fixture prediction stats
-///  - fixture form guide
+/// - league history multiple winners
+/// - league history paging
+/// - protect add fixtures
+/// - league position delta
+/// - chart: player rank/points/average?
+/// - homepage best performing league
+/// - homeplayer week history & average points
+/// - fixture prediction stats
+/// - fixture form guide
+/// - handle unhappy notifcations reg path
 
-///  + homepage winning player
-///  + pwa
-///  + swap elasticsearch for in-memory
-///  + league position grouping
-///  + league matrix
-///  + gameweek in omnifixture view
-///  + fix invite social icons
-///  + matrix column sort order
-///  + homepage player global rank
-///  + https
-///  + auto add results
-///  + month/week league history
-///  + fixture paging
-///  + password protect eventstore
-///  + productionize & dns
-///  + feedback/survey
-///  + other player's predictions/points
-///  + Favicon
-///  + DateTime.Now???
-///  + Link home in nav bar
-///  + prevent negative score
-///  + Cancel button on Join League & Create League views
-///  + auto add fixtures
-///  + sort fixtures by ko
-///  + redirect url on login
-///  + home page
-///  + league page
-///  + club badges
-///  + selected tab
-///  + error msgs & handle all Result|Error cases
-///  + serve index.html on all unmatched paths
-///  + use proper facebook login using private key
-///  + twitter login
-///  + double down
-///  + share/join league
+/// + homepage winning player
+/// + pwa
+/// + swap elasticsearch for in-memory
+/// + league position grouping
+/// + league matrix
+/// + gameweek in omnifixture view
+/// + fix invite social icons
+/// + matrix column sort order
+/// + homepage player global rank
+/// + https
+/// + auto add results
+/// + month/week league history
+/// + fixture paging
+/// + password protect eventstore
+/// + productionize & dns
+/// + feedback/survey
+/// + other player's predictions/points
+/// + Favicon
+/// + DateTime.Now???
+/// + Link home in nav bar
+/// + prevent negative score
+/// + Cancel button on Join League & Create League views
+/// + auto add fixtures
+/// + sort fixtures by ko
+/// + redirect url on login
+/// + home page
+/// + league page
+/// + club badges
+/// + selected tab
+/// + error msgs & handle all Result|Error cases
+/// + serve index.html on all unmatched paths
+/// + use proper facebook login using private key
+/// + twitter login
+/// + double down
+/// + share/join league
 ///
-///  - edit result (ApplyResult cmd to Classified fixture)
-///    -> how does this work with adding points to players in leagues?
-///  - only league admin can remove league, capabilities?
-///  - elasticsearch async endpoints?
+/// - edit result (ApplyResult cmd to Classified fixture)
+///   -> how does this work with adding points to players in leagues?
+/// - only league admin can remove league, capabilities?
+/// - elasticsearch async endpoints?
 ///
-///  + edit fixture cmd/event (e.g. ko)
-///  + event versioning
+/// + edit fixture cmd/event (e.g. ko)
+/// + event versioning
