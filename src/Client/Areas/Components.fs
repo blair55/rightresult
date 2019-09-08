@@ -160,7 +160,6 @@ module Components =
     Text.span [ Modifiers [ ]; Props [ Class clas' ] ] []
 
   module ScoreBox =
-    open Fable.FontAwesome.Free
 
     let private boxes clas' h a dd =
       [ div [ Class <| sprintf "scorebox scorebox-left %s" clas' ]

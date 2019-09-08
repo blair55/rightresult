@@ -367,7 +367,7 @@ module Server =
         getGlobalGameweekWinner = vt >> fun _ -> getGlobalGameweekWinner () |> Async.retn
         getRealPremTable = vt >> Result.map (fun _ -> getRealPremTable ()) >> Async.retn
         getPredictedPremTable = vt >> Result.map getPredictedPremTable >> Async.retn
-        getFixtureDetails = vt >> (fun _ -> getFixtureDetails >> Async.retn)
+        getFixtureDetails = fun t fId -> t |> (vt >> fun _ -> getFixtureDetails fId |> Async.retn)
         submitFeedback = fun fb t -> t |> (vt >> Result.map (submitFeedback config fb) >> Async.retn)
         addNewFixtureSet = vt >> (fun _ -> FixtureSourcing.addNewFixtureSet deps) >> handleCommand
         prediction = makePrediction
@@ -466,7 +466,7 @@ module Server =
       POST >=> route  "/api/fixtureSet" >=> createFixtureSet handleCommand
       POST >=> route  "/api/removePlayer" >=> removePlayer handleCommand
       POST >=> route  "/api/classifyFixture" >=> classifyFixture deps handleCommand
-      POST >=> route  "/api/classifyAllFixtures" >=> classifyAllFixtures deps handleCommand
+      // POST >=> route  "/api/classifyAllFixtures" >=> classifyAllFixtures deps handleCommand
       POST >=> routef "/api/classifyFixturesAfterGameweek/%i" (classifyFixturesAfterGameweek deps handleCommand)
       POST >=> route  "/api/addPlayerToLeague" >=> addPlayerToLeague handleCommand
       POST >=> route  "/api/removePlayerFromLeague" >=> removePlayerFromLeague handleCommand
@@ -474,8 +474,9 @@ module Server =
       POST >=> route  "/api/overwritePredictionSet" >=> overwritePredictionSet handleCommand
       POST >=> route  "/api/kickoffFixture" >=> kickOffFixture deps handleCommand
       POST >=> route  "/api/testNotify" >=> testNotify deps
+      POST >=> route  "/api/backgroundTasks" >=> runBackgroundTasks deps handleCommand now
       GET  >=> route  "/api/vapidPublicKey" >=> text appConfig.pushSubscriptionPublicKey
-      GET  >=> route  "/api/printDocstore" >=> printDocstore deps
+      GET  >=> route  "/api/printDocstore" >=> warbler (fun _ -> printDocstore deps)
       GET  >=> route  "/api/now" >=> warbler (fun _ -> now().ToString("s") |> text)
       GET  >=> route  "/api/utcnow" >=> warbler (fun _ -> DateTime.UtcNow.ToString("s") |> text)
       buildProtocol handleCommand deps appConfig
@@ -513,9 +514,7 @@ module Server =
         let (_, _, _, _, queries, _, _, handleCommand) = inf
         async {
           while not ct.IsCancellationRequested do
-            Whistler.kickOffFixtures handleCommand queries (now())
-            Classifier.concludeGameweek handleCommand queries
-            Classifier.classifyKickedOffFixtures handleCommand queries
+            backgroundTasks handleCommand queries now
             return! Async.Sleep 60000
         } |> Async.StartAsTask :> Tasks.Task
       member __.StopAsync _ =

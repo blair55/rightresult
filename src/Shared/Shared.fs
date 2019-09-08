@@ -352,24 +352,34 @@ type PremTable =
         |> List.map (fun t -> t, PremTableRow.Init)
         |> Map.ofList }
 and PremTableRow =
-  { Played : int
+  { Position : int
+    Played : int
+    Won : int
+    Lost : int
+    Drawn : int
     GoalsFor : int
     GoalsAgainst : int
     Points : int }
   static member Init =
-    { Played = 0; GoalsFor = 0; GoalsAgainst = 0; Points = 0 }
+    { Position = 0; Played = 0; Won = 0; Lost = 0; Drawn = 0; GoalsFor = 0; GoalsAgainst = 0; Points = 0 }
   static member (+) (a:PremTableRow, b:PremTableRow) =
-    { Played = a.Played + b.Played
+    { Position = 0
+      Played = a.Played + b.Played
+      Won = a.Won + b.Won
+      Lost = a.Lost + b.Lost
+      Drawn = a.Drawn + b.Drawn
       GoalsFor = a.GoalsFor + b.GoalsFor
       GoalsAgainst = a.GoalsAgainst + b.GoalsAgainst
       Points = a.Points + b.Points }
 
 
 type FixtureDetails =
-  { Home : FixtureDetailsColumn
+  { KickOff : KickOff
+    Id : FixtureId
+    Home : FixtureDetailsColumn
     Away : FixtureDetailsColumn }
-  static member Init =
-    { Home = FixtureDetailsColumn.Init; Away = FixtureDetailsColumn.Init }
+  static member Init fId ko =
+    { Id = fId; KickOff = ko; Home = FixtureDetailsColumn.Init; Away = FixtureDetailsColumn.Init }
 and FixtureDetailsColumn =
   { Team : Team
     PremTableRow : PremTableRow
@@ -495,12 +505,14 @@ module KickOff =
 /// - league history paging
 /// - protect add fixtures
 /// - league position delta
-/// - chart: player rank/points/average?
-/// - homepage best performing league
-/// - homeplayer week history & average points
 /// - fixture prediction stats
 /// - fixture form guide
 /// - handle unhappy notifcations reg path
+/// - homeplayer week history & average points
+/// - player rank, points, average pts chart
+/// - player highlights section - DDs and outliers
+/// - new awards added to hp ?
+/// - xss ?
 
 /// + homepage winning player
 /// + pwa

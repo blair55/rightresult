@@ -34,12 +34,20 @@ module FixtureSubscribersAssistance =
     |> Option.defaultValue []
     |> List.distinct
 
+  let rankPremTable ({ PremTable.Rows = rows }) =
+    rows
+    |> Map.toList
+    |> List.sortByDescending (fun (_, row) -> row.Points, row.GoalsFor - row.GoalsAgainst, row.GoalsFor)
+    |> List.mapi (fun i (team, row) -> team, { row with Position = i+1 })
+    |> fun rows -> { PremTable.Rows = rows |> Map.ofList }
+
   let buildColumn (deps:Dependencies) team =
     let getFormGuide team : FormFixture list =
       ElasticSearch.repo deps.ElasticSearch
       |> fun repo ->
       repo.Read (FormGuideDocument team)
       |> Option.defaultValue []
+      |> List.sortByDescending (fun f -> f.KickOff)
     let getPremTableRow team =
       ElasticSearch.repo deps.ElasticSearch
       |> fun repo ->
@@ -123,11 +131,11 @@ module FixtureSetCreatedSubscribers =
 
   let createFixtureDetails (deps:Dependencies) _ (_, _, fixtures) =
     fixtures
-    |> List.iter (fun { FixtureRecord.Id = fId; TeamLine = TeamLine (home, away) } ->
+    |> List.iter (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
       ElasticSearch.repo deps.ElasticSearch
       |> fun repo ->
         repo.Insert (FixtureDetailsDocument fId)
-          { Home = buildColumn deps home; Away = buildColumn deps away })
+          { Id = fId; KickOff = ko; Home = buildColumn deps home; Away = buildColumn deps away })
 
   let all =
     [ createFixtureSet
@@ -253,7 +261,8 @@ module FixtureKickedOffSubscribers =
             table.Rows
             |> Map.add homeTeam (table.Rows.[homeTeam] + homeRowDiff)
             |> Map.add awayTeam (table.Rows.[awayTeam] + awayRowDiff)
-            |> fun rows -> { PremTable.Rows = rows } ))
+            |> fun rows -> { PremTable.Rows = rows }
+            |> FixtureSubscribersAssistance.rankPremTable))
 
   let all =
     [ kickOffFixture
@@ -433,15 +442,15 @@ module FixtureClassifiedSubscribers =
       | None -> ())
 
   let updateLeagueHistoryFixtureSetDoc deps _ (FixtureSetId fsId, _, _) =
-    deps.Queries.getFixtureSetAndEarliestKo (FixtureSetId fsId)
-    |> fun ({ FixtureRecord.GameweekNo = GameweekNo gwno }, _) ->
+    deps.Queries.getFixtureSetGameweekNo (FixtureSetId fsId)
+    |> fun (GameweekNo gwno) ->
     (LeagueAllFixtureSetHistory, Week gwno, sprintf "Gameweek %i" gwno)
     |> updateLeagueHistoryWindowDoc deps
 
   let updateLeagueHistoryMonthSetDoc deps _ (FixtureSetId fsId, _, _) =
-    deps.Queries.getFixtureSetAndEarliestKo (FixtureSetId fsId)
-    |> fun (_, earliestKo) ->
-    (LeagueAllMonthHistory, Month (earliestKo.DateTime.Year, earliestKo.Month), (earliestKo.ToString("MMMM yyyy")))
+    deps.Queries.getFixtureSetEarliestKickOff (FixtureSetId fsId)
+    |> fun (KickOff ko) ->
+    (LeagueAllMonthHistory, Month (ko.DateTime.Year, ko.Month), (ko.ToString("MMMM yyyy")))
     |> updateLeagueHistoryWindowDoc deps
 
   let updateMatrixDoc deps _ (fsId, fId, resultScoreLine) =
@@ -513,7 +522,8 @@ module FixtureClassifiedSubscribers =
         table.Rows
         |> Map.add homeTeam (table.Rows.[homeTeam] + homeRowDiff)
         |> Map.add awayTeam (table.Rows.[awayTeam] + awayRowDiff)
-        |> fun r -> { PremTable.Rows = r })
+        |> fun r -> { PremTable.Rows = r }
+        |> rankPremTable)
 
   let updateFormGuideDoc deps _ (fsId, fId, ScoreLine (homeScore, awayScore)) =
 
@@ -558,7 +568,7 @@ module FixtureClassifiedSubscribers =
       >> List.filter (fun f -> f.ScoreLine.IsNone)
       >> List.iter (fun f ->
         ElasticSearch.repo deps.ElasticSearch
-        |> fun repo -> repo.Upsert (FixtureDetailsDocument f.Id) FixtureDetails.Init update)
+        |> fun repo -> repo.Upsert (FixtureDetailsDocument f.Id) (FixtureDetails.Init f.Id f.KickOff) update)
     let { FixtureRecord.TeamLine = TeamLine (home, away) } =
       deps.Queries.getFixtureRecord fId
     home |> updateOpenFixtureDetailsForTeam (fun fd -> { fd with Home = buildColumn deps home })

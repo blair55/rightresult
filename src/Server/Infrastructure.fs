@@ -141,16 +141,15 @@ module Graph =
         |> Seq.map buildPredictionRecord
         |> Seq.tryHead
 
-      getFixtureSetAndEarliestKo = fun (FixtureSetId fsId) ->
+      getFixtureSetEarliestKickOff = fun (FixtureSetId fsId) ->
         gc.Cypher
           .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet)")
           .Where(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
-          .Return(fun () ->
-            Return.As<FixtureNode>("fs"),
-            Return.As<DateTimeOffset>("min(f.KickOff)"))
+          .Return(fun () -> Return.As<DateTime>("min(f.KickOff)"))
           .Results
         |> Seq.head
-        |> fun (fixtureNode, ko) -> buildFixtureRecord fixtureNode, ko
+        |> DateTimeOffset
+        |> KickOff
 
       getPredictionsForPlayer = fun (PlayerId playerId) ->
         gc.Cypher
@@ -222,7 +221,7 @@ module Graph =
 
       getFixtureRecord = fun (FixtureId fId) ->
         gc.Cypher
-          .Match("f:Fixture)")
+          .Match("(f:Fixture)")
           .Where(fun (f:FixtureNode) -> f.Id = string fId)
           .Return<FixtureNode>("f")
           .Results

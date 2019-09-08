@@ -4,6 +4,7 @@ open Elmish
 
 open Fable.React
 open Fable.React.Props
+open Fulma.Extensions.Wikiki
 
 open Shared
 open Fulma
@@ -21,6 +22,8 @@ module OmniFixtures =
     { Page : Page
       Length : int
       Fixtures : FixtureMap
+      FixtureDetails : FixtureDetails WebData
+      IsDetailsOpen : bool
     }
   and FixtureMap =
     Map<FixtureId, FixturePredictionViewModel>
@@ -40,6 +43,7 @@ module OmniFixtures =
     | Init of Rresult<Unit>
     | FixturesReceived of Rresult<FixtureMap>
     | FixturesLengthReceived of Rresult<int>
+    | FixtureDetailsReceived of Rresult<FixtureDetails>
     | Prediction of PredictionAction
     | PredictionAccepted of Rresult<PredictionAction>
     | SetDoubleDown of FixtureSetId * FixtureId
@@ -47,25 +51,27 @@ module OmniFixtures =
     | RemoveDoubleDown of FixtureSetId
     | RemoveDoubleDownResponse of Rresult<FixtureSetId>
     | Page of from:int
+    | OpenDetails of FixtureId
+    | CloseDetails
 
   let getFixturesCmd api player from =
-    Cmd.OfAsync.either
+    Cmd.OfAsync.perform
       (api.getFixtures (from, pageSize))
       player.Token
       FixturesReceived
-      (AsyncError >> Error >> Init)
 
   let getFixturesLengthCmd api player =
-    Cmd.OfAsync.either
+    Cmd.OfAsync.perform
       api.getFixturesLength
       player.Token
       FixturesLengthReceived
-      (AsyncError >> Error >> Init)
 
   let init api player =
     { Page = buildPage initFrom 0
       Length = 0
       Fixtures = Map.empty
+      FixtureDetails = NotAsked
+      IsDetailsOpen = false
     }, Cmd.batch
         [ getFixturesCmd api player initFrom
           getFixturesLengthCmd api player
@@ -105,8 +111,7 @@ module OmniFixtures =
           ]
       ]
 
-  let badgeAndScoreRow (f:FixturePredictionViewModel) predictionBox =
-    let (TeamLine (homeTeam, awayTeam)) = f.TeamLine
+  let badgeAndScoreRow dispatch ({ FixturePredictionViewModel.TeamLine = (TeamLine (homeTeam, awayTeam)) } as f) predictionBox =
     div [ Style [ Position PositionOptions.Relative ] ]
       [ div [ Style [ Position PositionOptions.Relative ] ]
           [ rowOf3
@@ -119,7 +124,18 @@ module OmniFixtures =
         div [ Style [ Position PositionOptions.Absolute; Width "100%"; Top "0.6em" ] ]
           [ rowOf3
               [ ]
-              [ predictionBox ]
+              [ predictionBox
+                div [ Style [ Margin "0.7em auto" ] ]
+                  [
+                    Button.button
+                      [ Button.IsFullWidth
+                        Button.IsInverted
+                        Button.IsLink
+                        Button.Size IsSmall
+                        Button.OnClick (fun _ -> dispatch (OpenDetails f.Id)) ]
+                      [ str "INFO" ]
+                  ]
+              ]
               [ ]
           ]
       ]
@@ -199,7 +215,7 @@ module OmniFixtures =
             [ Style [ Position PositionOptions.Relative; Padding "1em 0" ]
             ]
         ]
-        [ badgeAndScoreRow f predictionBox
+        [ badgeAndScoreRow dispatch f predictionBox
         ]
 
       Card.footer []
@@ -216,18 +232,18 @@ module OmniFixtures =
         ]
     ]
 
-  let kickedOffFixtureView (f:FixturePredictionViewModel) =
+  let kickedOffFixtureView dispatch (f:FixturePredictionViewModel) =
     let predictionBox =
       match f.Prediction with
       | Some p -> ScoreBox.kickedOffScoreBox p f.IsDoubleDown
       | _ -> ScoreBox.emptyScoreBox()
     [ fixtureTitleBar ("In play", IsDark, IsWarning, f.IsDoubleDown, [])
       Card.content []
-        [ badgeAndScoreRow f predictionBox
+        [ badgeAndScoreRow dispatch f predictionBox
         ]
     ]
 
-  let classifiedFixtureView
+  let classifiedFixtureView dispatch
     (f:FixturePredictionViewModel)
     (ScoreLine (Score homeScore, Score awayScore), points, category) =
     let s = if points = 1 then sprintf "%i point" points else sprintf "%i points" points
@@ -240,7 +256,7 @@ module OmniFixtures =
       | _ -> ScoreBox.emptyScoreBox()
     [ fixtureTitleBar (sprintf "Result %i-%i" homeScore awayScore, IsWhite, IsInfo, f.IsDoubleDown, rhs)
       Card.content []
-        [ badgeAndScoreRow f predictionBox
+        [ badgeAndScoreRow dispatch f predictionBox
         ]
     ]
 
@@ -249,9 +265,9 @@ module OmniFixtures =
       [ Card.card []
           (match f.State with
             | FixtureState.Open -> openFixtureView dispatch f
-            | FixtureState.KickedOff -> kickedOffFixtureView f
+            | FixtureState.KickedOff -> kickedOffFixtureView dispatch f
             | FixtureState.Classified (result, points, category) ->
-              classifiedFixtureView f (result, points, category))
+              classifiedFixtureView dispatch f (result, points, category))
       ]
 
   let groupedDateView dispatch ko (GameweekNo gwno) fixtures =
@@ -264,6 +280,76 @@ module OmniFixtures =
           |> List.map (fixtureView dispatch))
       ]
 
+  let fixtureDetails dispatch (model:Model) =
+
+    let body (fd:FixtureDetails) =
+      let (prevFixtureId, nextFixtureId) =
+        model.Fixtures
+        |> Map.toList
+        |> List.sortBy (fun (_, f) -> f.SortOrder)
+        |> fun fixtures ->
+        fixtures
+        |> List.tryFindIndex (fun (fId, _) -> fId = fd.Id)
+        |> Option.map (fun i ->
+          fixtures |> List.tryItem (i-1) |> Option.map (fun (fId, _) -> fId),
+          fixtures |> List.tryItem (i+1) |> Option.map (fun (fId, _) -> fId))
+        |> Option.defaultValue (None, None)
+
+      [
+      // [ Quickview.header [ ]
+          // [ Quickview.title [ ] [ str "Testing..." ] ]
+            // Delete.delete [ Delete.OnClick this.hide ] [ ]
+        Quickview.body []
+          [ FixtureDetails.teamSection fd.Home
+            FixtureDetails.teamSection fd.Away
+          ]
+        Quickview.footer [ ]
+          [ Container.container []
+              [ Columns.columns [ Columns.IsMobile ]
+                  [ Column.column [ Column.Width (Screen.All, Column.Is4) ]
+                      [ div []
+                          (match prevFixtureId with
+                          | Some fId ->
+                            [ Button.button
+                                [ Button.IsFullWidth
+                                  Button.OnClick (fun _ -> OpenDetails fId |> dispatch) ]
+                                [ Fa.i [ Fa.Solid.AngleLeft ] []
+                                ]
+                            ]
+                          | None -> [])
+                      ]
+                    Column.column [ Column.Width (Screen.All, Column.Is4) ]
+                      [ div []
+                          [ Button.button
+                              [ Button.IsFullWidth
+                                Button.OnClick (fun _ -> CloseDetails |> dispatch) ]
+                              [ Fa.i [ Fa.Solid.Times ] []
+                              ]
+                          ]
+                      ]
+                    Column.column [ Column.Width (Screen.All, Column.Is4) ]
+                      [ div []
+                          (match nextFixtureId with
+                          | Some fId ->
+                            [ Button.button
+                                [ Button.IsFullWidth
+                                  Button.OnClick (fun _ -> OpenDetails fId |> dispatch)]
+                                [ Fa.i [ Fa.Solid.AngleRight ] []
+                                ]
+                            ]
+                          | None -> [])
+                      ]
+                  ]
+              ]
+          ]
+      ]
+    div [ Class "fixture-details-container" ]
+      [ Quickview.quickview [ Quickview.IsActive (model.IsDetailsOpen) ]
+          (match model.FixtureDetails with
+            | Success fd -> body fd
+            | _ -> [])
+      ]
+
   let view (model:Model) dispatch =
     let dateGroupedFixtures =
       Map.toList model.Fixtures
@@ -271,7 +357,8 @@ module OmniFixtures =
       |> List.sortBy (fun (date, _) -> date)
     div [ ]
       [ Components.pageTitle "Fixtures"
-        div []
+        fixtureDetails dispatch model
+        div [ OnClick (fun _ -> if model.IsDetailsOpen then dispatch CloseDetails else ()) ]
           (dateGroupedFixtures
           |> List.map (fun (_, items) ->
               let (_, first) = items.Head
@@ -315,11 +402,10 @@ module OmniFixtures =
     | Prediction action ->
       let (PredictionAction (_, fId, _, _)) = action
       { model with Fixtures = model.Fixtures.Add(fId, { model.Fixtures.Item fId with InProgress = true }) },
-      Cmd.OfAsync.either
+      Cmd.OfAsync.perform
         (api.prediction player.Token)
         action
         PredictionAccepted
-        (AsyncError >> Error >> Init)
     | PredictionAccepted result ->
       match result with
       | Ok (PredictionAction (_, fId, team, vec)) ->
@@ -339,11 +425,10 @@ module OmniFixtures =
         { model with Fixtures = Map.map (fun k v -> { v with InProgress = false }) model.Fixtures }, alert e
     | SetDoubleDown (fsId, fId) ->
       model,
-      Cmd.OfAsync.either
+      Cmd.OfAsync.perform
         (api.doubleDown player.Token)
         (fsId, fId)
         SetDoubleDownResponse
-        (AsyncError >> Error >> Init)
     | SetDoubleDownResponse r ->
       match r with
       | Ok (fsId, fId) ->
@@ -353,11 +438,10 @@ module OmniFixtures =
       | Error e -> model, alert e
     | RemoveDoubleDown fsId ->
       model,
-      Cmd.OfAsync.either
+      Cmd.OfAsync.perform
         (api.removeDoubleDown player.Token)
         fsId
         RemoveDoubleDownResponse
-        (AsyncError >> Error >> Init)
     | RemoveDoubleDownResponse r ->
       match r with
       | Ok fsId ->
@@ -367,3 +451,15 @@ module OmniFixtures =
       | Error e -> model, alert e
     | Page from ->
       { model with Page = buildPage from model.Length }, getFixturesCmd api player from
+    | FixtureDetailsReceived r ->
+      match r with
+      | Ok fixtureDetails -> { model with FixtureDetails = Success fixtureDetails }, []
+      | Error e -> model, alert e
+    | OpenDetails fixtureId ->
+      { model with IsDetailsOpen = true },
+      Cmd.OfAsync.perform
+        (api.getFixtureDetails player.Token)
+        fixtureId
+        FixtureDetailsReceived
+    | CloseDetails ->
+      { model with IsDetailsOpen = false; FixtureDetails = NotAsked }, []

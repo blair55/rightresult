@@ -10,6 +10,7 @@
     <Compile Include="Areas\Login.fs" />
     <Compile Include="Areas\Home.fs" />
 
+    <Compile Include="Areas\Fixtures\FixtureDetails.fs" />
     <Compile Include="Areas\Fixtures\OmniFixtures.fs" />
     <Compile Include="Areas\Fixtures\AddFixtureSet.fs" />
     <Compile Include="Areas\Fixtures\FixturesArea.fs" />

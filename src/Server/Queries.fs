@@ -12,7 +12,7 @@ module Queries =
       getFixturesAwaitingResults : unit -> FixtureRecord seq
       getPlayerPredictionsByFixture : PlayerId -> (FixtureRecord * PredictionRecord option) seq
       getPlayerPredictionForFixture : PlayerId -> FixtureId -> PredictionRecord option
-      getFixtureSetAndEarliestKo : FixtureSetId -> FixtureRecord * DateTimeOffset
+      getFixtureSetEarliestKickOff : FixtureSetId -> KickOff
       getPredictionsForPlayer : PlayerId -> (FixtureRecord * PredictionRecord) list
       getPredictionsForPlayerInFixtureSet : FixtureSetId -> PlayerId -> (FixtureRecord * PredictionRecord) list
       getPredictionsForPlayerInMonth : (int * int) -> PlayerId -> (FixtureRecord * PredictionRecord) list

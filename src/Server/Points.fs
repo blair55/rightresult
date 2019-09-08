@@ -34,15 +34,17 @@ module Points =
       init, Incorrect
 
   let getHomeAndAwayPremTableRowDiff (ScoreLine (Score homeScore, Score awayScore)) =
+    { PremTableRow.Init with Played = 1 }
+    |> fun defaultRow ->
     ScoreLine (Score homeScore, Score awayScore)
     |> getScoreResult
     |> function
     | HomeWin ->
-      { Played = 1; GoalsFor = homeScore; GoalsAgainst = awayScore; Points = 3 },
-      { Played = 1; GoalsFor = awayScore; GoalsAgainst = homeScore; Points = 0 }
+      { defaultRow with Won  = 1; GoalsFor = homeScore; GoalsAgainst = awayScore; Points = 3 },
+      { defaultRow with Lost = 1; GoalsFor = awayScore; GoalsAgainst = homeScore }
     | AwayWin ->
-      { Played = 1; GoalsFor = homeScore; GoalsAgainst = awayScore; Points = 0 },
-      { Played = 1; GoalsFor = awayScore; GoalsAgainst = homeScore; Points = 3 }
+      { defaultRow with Lost = 1; GoalsFor = homeScore; GoalsAgainst = awayScore },
+      { defaultRow with Won  = 1; GoalsFor = awayScore; GoalsAgainst = homeScore; Points = 3 }
     | Draw ->
-      { Played = 1; GoalsFor = homeScore; GoalsAgainst = awayScore; Points = 1 },
-      { Played = 1; GoalsFor = awayScore; GoalsAgainst = homeScore; Points = 1 }
+      { defaultRow with Drawn = 1; GoalsFor = homeScore; GoalsAgainst = awayScore; Points = 1 },
+      { defaultRow with Drawn = 1; GoalsFor = awayScore; GoalsAgainst = homeScore; Points = 1 }
