@@ -20,8 +20,6 @@ module FixtureDetails =
       | 2 -> "nd"
       | 3 -> "rd"
       | _ -> "th"
-    let signedInt i =
-      if i > 0 then sprintf "%+i" i else string i
     let teamName (Team team) =
       Heading.h6 []
         [ str team

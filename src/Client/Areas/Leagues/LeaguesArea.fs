@@ -3,7 +3,6 @@ namespace Areas.Leagues
 open Elmish
 open Shared
 open Routes
-open System
 
 module LeaguesArea =
 
@@ -18,6 +17,7 @@ module LeaguesArea =
     | LeagueHistoryTableModel of LeagueHistoryTable.Model
     | LeagueMatrixModel of LeagueMatrix.Model
     | LeagueTableModel of LeagueTable.Model
+    | PremTableModel of PremTable.Model
 
   type Msg =
     | CreateLeagueMsg of CreateLeague.Msg
@@ -30,6 +30,7 @@ module LeaguesArea =
     | LeagueHistoryTableMsg of LeagueHistoryTable.Msg
     | LeagueMatrixMsg of LeagueMatrix.Msg
     | LeagueTableMsg of LeagueTable.Msg
+    | PremTableMsg of PremTable.Msg
 
   let update api p message model =
     match message, model with
@@ -53,6 +54,8 @@ module LeaguesArea =
       LeagueMatrix.update api p msg m |> fun (m, cmd) -> LeagueMatrixModel m, Cmd.map LeagueMatrixMsg cmd
     | LeagueTableMsg msg, LeagueTableModel m ->
       LeagueTable.update api p msg m |> fun (m, cmd) -> LeagueTableModel m, Cmd.map LeagueTableMsg cmd
+    | PremTableMsg msg, PremTableModel m ->
+      PremTable.update api p msg m |> fun (m, cmd) -> PremTableModel m, Cmd.map PremTableMsg cmd
     | _ -> model, alert (LoginProblem "league msg not matched")
 
   let urlUpdate api p = function
@@ -90,6 +93,9 @@ module LeaguesArea =
     | LeagueTableRoute leagueId when leagueId = Global.identifier ->
       GlobalLeague |> LeagueTable.init api p |> fun (m, cmd) -> LeagueTableModel m, Cmd.map LeagueTableMsg cmd
 
+    | LeaguePremTableRoute table ->
+      PremTable.init api p table |> fun (m, cmd) -> PremTableModel m, Cmd.map PremTableMsg cmd
+
     | PlayerLeaguesRoute
     | _ ->
       Leagues.init api p |> fun (m, cmd) -> LeaguesModel m, Cmd.map LeaguesMsg cmd
@@ -116,3 +122,5 @@ module LeaguesArea =
       LeagueMatrix.view m (LeagueMatrixMsg >> dispatch)
     | LeagueTableModel m ->
       LeagueTable.view m (LeagueTableMsg >> dispatch)
+    | PremTableModel m ->
+      PremTable.view m (PremTableMsg >> dispatch)

@@ -24,6 +24,7 @@ and LeaguesRoute =
   | LeagueHistoryFixtureSetRoute of string * int
   | LeagueHistoryMonthRoute of string * int * int
   | LeagueMatrixRoute of string * int
+  | LeaguePremTableRoute of string
 and PlayersRoute =
   | AllPlayersRoute
   | PlayerRoute of string
@@ -44,7 +45,8 @@ let leaveLeaguePath   = sprintf "leagues/%s/leave"
 let leagueHistoryPath = sprintf "leagues/%s/history"
 let leagueHistoryFsPath = sprintf "leagues/%s/history/gw/%i"
 let leagueHistoryMnPath = sprintf "leagues/%s/history/month/%i/%i"
-let leagueMatrixPath  = sprintf "leagues/%s/matrix/%i"
+let leagueMatrixPath    = sprintf "leagues/%s/matrix/%i"
+let leaguePremTablePath = sprintf "leagues/premtable/%s"
 let playersPath       = "players"
 let playerPath        = sprintf "players/%s"
 let playerFixtureSetPath = sprintf "players/%s/gameweek/%s"
@@ -70,6 +72,7 @@ let route : Parser<Route -> Route, _> =
     map (curry2 (LeagueHistoryFixtureSetRoute >> LeaguesRoute)) (s leaguesPath </> str </> s "history" </> s "gw" </> i32)
     map (curry3 (LeagueHistoryMonthRoute      >> LeaguesRoute)) (s leaguesPath </> str </> s "history" </> s "month" </> i32 </> i32)
     map (curry2 (LeagueMatrixRoute            >> LeaguesRoute)) (s leaguesPath </> str </> s "matrix"  </> i32)
+    map (LeaguePremTableRoute >> LeaguesRoute) (s leaguesPath </> s "premtable" </> str)
     map (AllPlayersRoute    |> PlayersRoute) (s playersPath)
     map (PlayerRoute        >> PlayersRoute) (s playersPath </> str)
     map (curry2 (PlayerFixtureSetRoute >> PlayersRoute)) (s playersPath </> str </> s "gameweek" </> str)
@@ -96,6 +99,7 @@ let private routeToPath = function
     | LeagueHistoryFixtureSetRoute (leagueId, gwno)   -> leagueHistoryFsPath leagueId gwno
     | LeagueHistoryMonthRoute (leagueId, year, month) -> leagueHistoryMnPath leagueId year month
     | LeagueMatrixRoute (leagueId, gwno)              -> leagueMatrixPath    leagueId gwno
+    | LeaguePremTableRoute table -> leaguePremTablePath table
   | PlayersRoute r ->
     match r with
     | AllPlayersRoute          -> playersPath

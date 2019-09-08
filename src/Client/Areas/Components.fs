@@ -14,6 +14,9 @@ module CustomClasses =
 
 module Components =
 
+  let signedInt i =
+    if i > 0 then sprintf "%+i" i else string i
+
   let pointsTotalView (total:PredictionPointsMonoid) =
     let brokenSpan one two =
       [ span [] [ str one ]

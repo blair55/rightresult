@@ -25,6 +25,7 @@
     <Compile Include="Areas\Leagues\GlobalLeague.fs" />
     <Compile Include="Areas\Leagues\LeagueMatrix.fs" />
     <Compile Include="Areas\Leagues\LeagueTable.fs" />
+    <Compile Include="Areas\Leagues\PremTable.fs" />
     <Compile Include="Areas\Leagues\LeaguesArea.fs" />
 
     <Compile Include="Areas\Players\AllPlayers.fs" />

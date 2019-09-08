@@ -65,14 +65,32 @@ module Leagues =
           ]
       ]
 
+  let premTables dispatch =
+    [ Card.card []
+        [ Card.content [ Props [ Style [ Padding "0.6em 1em" ] ] ]
+            [ a [ OnClick (fun _ -> LeaguePremTableRoute "real" |> LeaguesRoute |> NavTo |> dispatch) ]
+                [ str "Real table" ]
+            ]
+        ]
+
+      Card.card []
+        [ Card.content [ Props [ Style [ Padding "0.6em 1em" ] ] ]
+            [ a [ OnClick (fun _ -> LeaguePremTableRoute "predicted" |> LeaguesRoute |> NavTo |> dispatch) ]
+                [ str "Your predicted table" ]
+            ]
+        ]
+    ]
+
   let view (model:Model) dispatch =
     div []
-      [ Components.pageTitle "Leagues"
-        (match model with
-        | Success l when Map.isEmpty l -> noLeaguesView dispatch
-        | Success l -> leaguesList dispatch l
-        | _ -> div [] [])
-      ]
+      ([  Components.pageTitle "Leagues"
+          Components.subHeading "Private Leagues"
+          (match model with
+          | Success l when Map.isEmpty l -> noLeaguesView dispatch
+          | Success l -> leaguesList dispatch l
+          | _ -> div [] [])
+          Components.subHeading "Premier League Tables"
+        ] @ premTables dispatch)
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with
