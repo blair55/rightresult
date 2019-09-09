@@ -89,10 +89,18 @@ module Components =
     let playerLink pId (m:LeagueTableMember) =
       let (PlayerName name) = m.PlayerName
       a [ OnClick (fun _ -> playerClick pId) ] [ str name ]
+    let movementIcon m =
+      if m > 0 then
+        [ Fa.i [ Fa.CustomClass "movement-up"; Fa.Size Fa.FaSmall; Fa.Solid.AngleUp ] [] ]
+      elif m < 0 then
+        [ Fa.i [ Fa.CustomClass "movement-down"; Fa.Size Fa.FaSmall; Fa.Solid.AngleDown ] [] ]
+      else
+        [ Fa.i [ Fa.CustomClass "movement-none"; Fa.Size Fa.FaExtraSmall; Fa.Solid.Minus ] [] ]
     Table.table [ Table.IsHoverable; Table.IsFullWidth ]
       [ thead []
           [ tr []
               [ th [] []
+                th [] []
                 th [] []
                 th [ Class CustomClasses.TextRight ] [ str "CR" ]
                 th [ Class CustomClasses.TextRight ] [ str "CS" ]
@@ -102,7 +110,8 @@ module Components =
           |> List.map (fun (pId, m) ->
             let (p, cr, cs) = toShortPoints m.Points
             tr [ ClassName (if activePlayerId = pId then "is-selected" else "") ]
-               [ td [ Class CustomClasses.TextRight ] [ str (string m.Position) ]
+               [ td [ Style [ ] ] (movementIcon m.Movement)
+                 td [ Class CustomClasses.TextRight ] [ str (string m.Position) ]
                  td [] [ playerLink pId m ]
                  td [ Class CustomClasses.TextRight ] [ str (string cr) ]
                  td [ Class CustomClasses.TextRight ] [ str (string cs) ]

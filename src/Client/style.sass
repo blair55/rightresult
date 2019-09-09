@@ -25,10 +25,9 @@ body
   border-radius: 0
 
 .table tr.is-selected
-  background-color: #eee
-  color: #363636
+  background-color: $light
+  color: $dark
 
-// $brand-green: #00d1b2
 $brand-green: $primary
 
 .text-right
@@ -62,6 +61,15 @@ table.table th.text-left
   .matrix-player-name, .matrix-player-score
     white-space: nowrap
     line-height: 2em
+
+
+.movement-up
+  color: $success
+.movement-down
+  color: $danger
+.movement-none
+  text-align: center
+  color: $grey
 
 .scorebox-container
   $default-color: #f5f5f5

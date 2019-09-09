@@ -125,16 +125,16 @@ module OmniFixtures =
           [ rowOf3
               [ ]
               [ predictionBox
-                div [ Style [ Margin "0.7em auto" ] ]
-                  [
-                    Button.button
-                      [ Button.IsFullWidth
-                        Button.IsInverted
-                        Button.IsLink
-                        Button.Size IsSmall
-                        Button.OnClick (fun _ -> dispatch (OpenDetails f.Id)) ]
-                      [ str "INFO" ]
-                  ]
+                // div [ Style [ Margin "0.7em auto" ] ]
+                //   [
+                //     Button.button
+                //       [ Button.IsFullWidth
+                //         Button.IsInverted
+                //         Button.IsLink
+                //         Button.Size IsSmall
+                //         Button.OnClick (fun _ -> dispatch (OpenDetails f.Id)) ]
+                //       [ str "INFO" ]
+                //   ]
               ]
               [ ]
           ]
