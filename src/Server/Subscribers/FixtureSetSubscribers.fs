@@ -34,13 +34,6 @@ module FixtureSubscribersAssistance =
     |> Option.defaultValue []
     |> List.distinct
 
-  let rankPremTable ({ PremTable.Rows = rows }) =
-    rows
-    |> Map.toList
-    |> List.sortByDescending (fun (_, row) -> row.Points, row.GoalsFor - row.GoalsAgainst, row.GoalsFor)
-    |> List.mapi (fun i (team, row) -> team, { row with Position = i+1 })
-    |> fun rows -> { PremTable.Rows = rows |> Map.ofList }
-
   let buildColumn (deps:Dependencies) team =
     let getFormGuide team : FormFixture list =
       ElasticSearch.repo deps.ElasticSearch
@@ -234,40 +227,26 @@ module FixtureKickedOffSubscribers =
         |> ignore
       )
 
-  let updatePredictedPremTable deps _ (fsId, fId) =
-
-    let repo =
-      ElasticSearch.repo deps.ElasticSearch
-
-    let q =
-      deps.Queries
-
-    let allPlayers =
-      q.getAllPlayers ()
-
-    let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } =
-      q.getFixtureRecord fId
-
-    allPlayers
+  let updatePredictedPremTableForAllPlayers deps _ (_, _) =
+    ElasticSearch.repo deps.ElasticSearch
+    |> fun repo ->
+    deps.Queries.getAllPlayers ()
     |> List.ofSeq
-    |> List.choose (fun player -> q.getPlayerPredictionForFixture player.Id fId)
-    |> List.iter (fun prediction ->
-      Points.getHomeAndAwayPremTableRowDiff prediction.ScoreLine
-      |> fun (homeRowDiff, awayRowDiff) ->
-        repo.Upsert
-          (PredictedPremTable prediction.PlayerId)
-          PremTable.Init
-          (fun table ->
-            table.Rows
-            |> Map.add homeTeam (table.Rows.[homeTeam] + homeRowDiff)
-            |> Map.add awayTeam (table.Rows.[awayTeam] + awayRowDiff)
-            |> fun rows -> { PremTable.Rows = rows }
-            |> FixtureSubscribersAssistance.rankPremTable))
+    |> List.map (fun player ->
+      player,
+      deps.Queries.getPredictionsForPlayer player.Id
+      |> List.ofSeq
+      |> List.map (fun (f, p) -> f.TeamLine, p.ScoreLine))
+    |> List.iter (fun (player, predictions) ->
+      predictions
+      |> Points.buildTable PremTable.Init
+      |> repo.Insert (PredictedPremTable player.Id))
+
 
   let all =
     [ kickOffFixture
       updateMatrix
-      updatePredictedPremTable
+      updatePredictedPremTableForAllPlayers
     ]
 
 module FixtureClassifiedSubscribers =
@@ -504,75 +483,69 @@ module FixtureClassifiedSubscribers =
         |> repo.Edit (Matrix (leagueId, gwno))
         |> ignore)
 
-  let updateRealPremTable deps _ (_, fId, resultScoreLine) =
+  let updateRealPremTable deps _ _ =
+    ElasticSearch.repo deps.ElasticSearch
+    |> fun repo ->
+    deps.Queries.getAllFixtures ()
+    |> List.ofSeq
+    |> List.choose (fun f -> f.ScoreLine |> Option.map (fun sl -> f.TeamLine, sl))
+    |> Points.buildTable PremTable.Init
+    |> repo.Insert RealPremTable
 
+  let updateFormGuideDoc deps _ (_, fId, _) =
     let repo =
       ElasticSearch.repo deps.ElasticSearch
+    let rebuildFormGuide team =
+      deps.Queries.getFixturesForTeam team
+      |> List.ofSeq
+      |> List.sortBy (fun f -> f.KickOff)
+      |> List.choose (fun f -> f.ScoreLine |> Option.map (fun s -> f, s))
+      |> List.map (fun ({ TeamLine = TeamLine (homeTeam, _); KickOff = ko }, ScoreLine (homeScore, awayScore)) ->
+        getScoreResult (ScoreLine (homeScore, awayScore))
+        |> fun scoreResult ->
+        match if team = homeTeam then H else A with
+        | H ->
+          { KickOff = ko
+            Venue = H
+            Result =
+              match scoreResult with
+              | HomeWin -> W
+              | AwayWin -> L
+              | Draw -> D
+            GoalsFor = homeScore
+            GoalsAgainst = awayScore }
+        | A ->
+          { KickOff = ko
+            Venue = A
+            Result =
+              match scoreResult with
+              | HomeWin -> L
+              | AwayWin -> W
+              | Draw -> D
+            GoalsFor = awayScore
+            GoalsAgainst = homeScore })
+        |> repo.Insert (FormGuideDocument team)
 
     let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } =
       deps.Queries.getFixtureRecord fId
 
-    let (homeRowDiff, awayRowDiff) =
-      Points.getHomeAndAwayPremTableRowDiff resultScoreLine
+    rebuildFormGuide homeTeam
+    rebuildFormGuide awayTeam
 
-    repo.Upsert
-      RealPremTable
-      PremTable.Init
-      (fun table ->
-        table.Rows
-        |> Map.add homeTeam (table.Rows.[homeTeam] + homeRowDiff)
-        |> Map.add awayTeam (table.Rows.[awayTeam] + awayRowDiff)
-        |> fun r -> { PremTable.Rows = r }
-        |> rankPremTable)
-
-  let updateFormGuideDoc deps _ (fsId, fId, ScoreLine (homeScore, awayScore)) =
-
-    let repo =
-      ElasticSearch.repo deps.ElasticSearch
-
-    let ({ FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } as fixture) =
-      deps.Queries.getFixtureRecord fId
-
-    let scoreResult =
-      getScoreResult (ScoreLine (homeScore, awayScore))
-
-    repo.Upsert (FormGuideDocument homeTeam) []
-      (fun guide ->
-        { KickOff = fixture.KickOff
-          Venue = H
-          Result =
-            match scoreResult with
-            | HomeWin -> W
-            | AwayWin -> L
-            | Draw -> D
-          GoalsFor = homeScore
-          GoalsAgainst = awayScore } :: guide)
-
-    repo.Upsert (FormGuideDocument awayTeam) []
-      (fun guide ->
-        { KickOff = fixture.KickOff
-          Venue = A
-          Result =
-            match scoreResult with
-            | HomeWin -> L
-            | AwayWin -> W
-            | Draw -> D
-          GoalsFor = awayScore
-          GoalsAgainst = homeScore } :: guide)
 
   let updateOpenFixtureDetails deps _ (_, fId, _) =
     /// needed to update fd with first result when a team appears twice in one gw
-    let updateOpenFixtureDetailsForTeam update =
+    let update updateF =
       deps.Queries.getFixturesForTeam
       >> List.ofSeq
       >> List.filter (fun f -> f.ScoreLine.IsNone)
       >> List.iter (fun f ->
         ElasticSearch.repo deps.ElasticSearch
-        |> fun repo -> repo.Upsert (FixtureDetailsDocument f.Id) (FixtureDetails.Init f.Id f.KickOff) update)
+        |> fun repo -> repo.Upsert (FixtureDetailsDocument f.Id) (FixtureDetails.Init f.Id f.KickOff) updateF)
     let { FixtureRecord.TeamLine = TeamLine (home, away) } =
       deps.Queries.getFixtureRecord fId
-    home |> updateOpenFixtureDetailsForTeam (fun fd -> { fd with Home = buildColumn deps home })
-    away |> updateOpenFixtureDetailsForTeam (fun fd -> { fd with Away = buildColumn deps away })
+    home |> update (fun fd -> { fd with Home = buildColumn deps home })
+    away |> update (fun fd -> { fd with Away = buildColumn deps away })
 
 
   let all =

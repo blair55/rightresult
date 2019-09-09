@@ -48,3 +48,16 @@ module Points =
     | Draw ->
       { defaultRow with Drawn = 1; GoalsFor = homeScore; GoalsAgainst = awayScore; Points = 1 },
       { defaultRow with Drawn = 1; GoalsFor = awayScore; GoalsAgainst = homeScore; Points = 1 }
+
+  let buildTable { PremTable.Rows = rows } results =
+    (rows, results)
+    ||> List.fold (fun table (TeamLine (homeTeam, awayTeam), scoreLine) ->
+      let (homeRowDiff, awayRowDiff) =
+        getHomeAndAwayPremTableRowDiff scoreLine
+      table
+      |> Map.add homeTeam (table.[homeTeam] + homeRowDiff)
+      |> Map.add awayTeam (table.[awayTeam] + awayRowDiff))
+    |> Map.toList
+    |> List.sortByDescending (fun (_, row) -> row.Points, row.GoalsFor - row.GoalsAgainst, row.GoalsFor)
+    |> List.mapi (fun i (team, row) -> team, { row with Position = i+1 })
+    |> fun r -> { PremTable.Rows = r |> Map.ofList }
