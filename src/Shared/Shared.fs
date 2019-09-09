@@ -504,9 +504,7 @@ module KickOff =
 /// - league history multiple winners
 /// - league history paging
 /// - protect add fixtures
-/// - league position delta
 /// - fixture prediction stats
-/// - fixture form guide
 /// - handle unhappy notifcations reg path
 /// - homeplayer week history & average points
 /// - player rank, points, average pts chart
@@ -514,6 +512,9 @@ module KickOff =
 /// - new awards added to hp ?
 /// - xss ?
 
+/// + real & predicted prem tables
+/// + league position delta
+/// + fixture form guide
 /// + homepage winning player
 /// + pwa
 /// + swap elasticsearch for in-memory
