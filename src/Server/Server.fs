@@ -507,13 +507,15 @@ module Server =
         (EventStore.store eventStore)
     appConfig, elasticSearch, eventStore, graphClient, queries, nonQueries, pushNotify, handleCommand
 
+  let mutable backgroundTasksSemaphore = false
+
   type RecurringTasks () =
     interface IHostedService with
       member __.StartAsync ct =
         printfn "STARTING RECURRING TASKS"
         let (_, _, _, _, queries, _, _, handleCommand) = inf
         async {
-          while not ct.IsCancellationRequested do
+          while not ct.IsCancellationRequested && backgroundTasksSemaphore do
             backgroundTasks handleCommand queries now
             return! Async.Sleep 60000
         } |> Async.StartAsTask :> Tasks.Task
@@ -535,6 +537,7 @@ module Server =
     Graph.deleteAll graphClient
     // ElasticSearch.setUpIndicies appConfig.elasticSearchUrl elasticSearch
     EventStore.readFromBeginningAndSubscribeFromEnd eventStore onEvent
+    backgroundTasksSemaphore <- true
     PushNotifications.semaphore <- true
     app
       .UseStaticFiles()
