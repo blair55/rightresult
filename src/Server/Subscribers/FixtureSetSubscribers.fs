@@ -533,19 +533,16 @@ module FixtureClassifiedSubscribers =
     rebuildFormGuide awayTeam
 
 
-  let updateOpenFixtureDetails deps _ (_, fId, _) =
+  let updateOpenFixtureDetails deps _ (_, _, _) =
     /// needed to update fd with first result when a team appears twice in one gw
-    let update updateF =
-      deps.Queries.getFixturesForTeam
-      >> List.ofSeq
-      >> List.filter (fun f -> f.ScoreLine.IsNone)
-      >> List.iter (fun f ->
-        ElasticSearch.repo deps.ElasticSearch
-        |> fun repo -> repo.Upsert (FixtureDetailsDocument f.Id) (FixtureDetails.Init f.Id f.KickOff) updateF)
-    let { FixtureRecord.TeamLine = TeamLine (home, away) } =
-      deps.Queries.getFixtureRecord fId
-    home |> update (fun fd -> { fd with Home = buildColumn deps home })
-    away |> update (fun fd -> { fd with Away = buildColumn deps away })
+    deps.Queries.getAllFixtures ()
+    |> List.ofSeq
+    |> List.filter (fun f -> f.ScoreLine.IsNone)
+    |> List.iter (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo ->
+        repo.Insert (FixtureDetailsDocument fId)
+          { Id = fId; KickOff = ko; Home = buildColumn deps home; Away = buildColumn deps away })
 
 
   let all =

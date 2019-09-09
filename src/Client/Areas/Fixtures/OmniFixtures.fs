@@ -125,16 +125,15 @@ module OmniFixtures =
           [ rowOf3
               [ ]
               [ predictionBox
-                // div [ Style [ Margin "0.7em auto" ] ]
-                //   [
-                //     Button.button
-                //       [ Button.IsFullWidth
-                //         Button.IsInverted
-                //         Button.IsLink
-                //         Button.Size IsSmall
-                //         Button.OnClick (fun _ -> dispatch (OpenDetails f.Id)) ]
-                //       [ str "INFO" ]
-                //   ]
+                div [ Style [ Margin "0.7em auto" ] ]
+                  [ Button.button
+                      [ Button.IsFullWidth
+                        Button.IsInverted
+                        Button.IsLink
+                        Button.Size IsSmall
+                        Button.OnClick (fun _ -> dispatch (OpenDetails f.Id)) ]
+                      [ str "INFO" ]
+                  ]
               ]
               [ ]
           ]
@@ -167,11 +166,12 @@ module OmniFixtures =
           ]
       ]
 
+  let footItem item = Card.Footer.a [] item
+
   let openFixtureView dispatch (f:FixturePredictionViewModel) =
     let (KickOff ko) = f.KickOff
     let homeScore = Option.map (fun (ScoreLine (Score h, _)) -> h) f.Prediction
     let awayScore = Option.map (fun (ScoreLine (_, Score a)) -> a) f.Prediction
-    let footItem item = Card.Footer.a [] item
 
     let rhs =
       match homeScore, awayScore with
@@ -304,42 +304,28 @@ module OmniFixtures =
             FixtureDetails.teamSection fd.Away
           ]
         Quickview.footer [ ]
-          [ Container.container []
-              [ Columns.columns [ Columns.IsMobile ]
-                  [ Column.column [ Column.Width (Screen.All, Column.Is4) ]
-                      [ div []
-                          (match prevFixtureId with
-                          | Some fId ->
-                            [ Button.button
-                                [ Button.IsFullWidth
-                                  Button.OnClick (fun _ -> OpenDetails fId |> dispatch) ]
-                                [ Fa.i [ Fa.Solid.AngleLeft ] []
-                                ]
-                            ]
-                          | None -> [])
-                      ]
-                    Column.column [ Column.Width (Screen.All, Column.Is4) ]
-                      [ div []
-                          [ Button.button
-                              [ Button.IsFullWidth
-                                Button.OnClick (fun _ -> CloseDetails |> dispatch) ]
-                              [ Fa.i [ Fa.Solid.Times ] []
-                              ]
-                          ]
-                      ]
-                    Column.column [ Column.Width (Screen.All, Column.Is4) ]
-                      [ div []
-                          (match nextFixtureId with
-                          | Some fId ->
-                            [ Button.button
-                                [ Button.IsFullWidth
-                                  Button.OnClick (fun _ -> OpenDetails fId |> dispatch)]
-                                [ Fa.i [ Fa.Solid.AngleRight ] []
-                                ]
-                            ]
-                          | None -> [])
-                      ]
+          [ Card.footer []
+              [ footItem
+                  (match prevFixtureId with
+                  | Some fId ->
+                    [ button [ Button.Color IsLight ]
+                        (fun _ -> OpenDetails fId |> dispatch)
+                        [ Fa.i [ Fa.Solid.AngleLeft ] [] ]
+                    ]
+                  | None -> [])
+                footItem
+                  [ button [ Button.Color IsLight ]
+                      (fun _ -> CloseDetails |> dispatch)
+                      [ Fa.i [ Fa.Solid.Times ] [] ]
                   ]
+                footItem
+                  (match nextFixtureId with
+                  | Some fId ->
+                    [ button [ Button.Color IsLight ]
+                        (fun _ -> OpenDetails fId |> dispatch)
+                        [ Fa.i [ Fa.Solid.AngleRight ] [] ]
+                    ]
+                  | None -> [])
               ]
           ]
       ]

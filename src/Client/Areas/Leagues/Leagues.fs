@@ -88,8 +88,8 @@ module Leagues =
           (match model with
           | Success l when Map.isEmpty l -> noLeaguesView dispatch
           | Success l -> leaguesList dispatch l
-          | _ -> div [] [])])
-          // Components.subHeading "Premier League Tables" ] @ premTables dispatch)
+          | _ -> div [] []) //])
+          Components.subHeading "Premier League Tables" ] @ premTables dispatch)
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with

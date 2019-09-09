@@ -11,6 +11,7 @@ module CustomClasses =
 
   let [<Literal>] TextRight = "has-text-right"
   let [<Literal>] TextLeft = "has-text-left"
+  let [<Literal>] TextCenter = "has-text-centered"
 
 module Components =
 
@@ -110,8 +111,8 @@ module Components =
           |> List.map (fun (pId, m) ->
             let (p, cr, cs) = toShortPoints m.Points
             tr [ ClassName (if activePlayerId = pId then "is-selected" else "") ]
-               [ td [ Style [ ] ] (movementIcon m.Movement)
-                 td [ Class CustomClasses.TextRight ] [ str (string m.Position) ]
+               [ td [ Class CustomClasses.TextRight ] [ str (string m.Position) ]
+                 td [ Class CustomClasses.TextCenter ] (movementIcon m.Movement)
                  td [] [ playerLink pId m ]
                  td [ Class CustomClasses.TextRight ] [ str (string cr) ]
                  td [ Class CustomClasses.TextRight ] [ str (string cs) ]
