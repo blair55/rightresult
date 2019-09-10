@@ -37,22 +37,9 @@ module FixtureDetails =
               Column.column [ Column.Width (Screen.All, Column.IsFourFifths) ]
                 [ div [Class "fd-team-name"]
                     [ teamName col.Team ]
-                  // div [Class "fd-position-ordinal"]
-                  //   [ span [Class "fd-position"] [str (string col.PremTableRow.Position)]
-                  //     span [Class "fd-ordinal"] [str (ordinal row.Position)]
-                  //   ]
                 ]
             ]
-          // Columns.columns [ Columns.IsMobile; Columns.IsGapless ]
-          //   [ Column.column [ Column.Width (Screen.All, Column.IsOneFifth) ]
-          //       [ ]
-          //     Column.column [ Column.Width (Screen.All, Column.IsFourFifths) ]
-          //       [ div [Class "fd-position-ordinal"]
-          //           [ span [Class "fd-position"] [str (string col.PremTableRow.Position)]
-          //             span [Class "fd-ordinal"] [str (ordinal row.Position)]
-          //           ]
-          //       ]
-          //   ]
+
         ]
     let tableRow =
       let cell k v =
@@ -96,18 +83,17 @@ module FixtureDetails =
       | H -> div [ Class "fg-venue-h" ] [ span [] [ str "home" ] ]
       | A -> div [ Class "fg-venue-a" ] [ span [] [ str "away" ] ]
 
-    let formGuideColumn maxGf maxGa
+    let formGuideColumn maxGf maxGa opacity
       { FormFixture.GoalsFor = Score goalsFor
         GoalsAgainst = Score goalsAgainst
         Result = result
         Venue = venue } =
       Column.column [ Column.Width (Screen.All, Column.Is2) ]
-        [ div [Class "fg-column"]
-            [
-              div [] [ formGuideVenue venue ]
-              div [ Class "fg-goals-for" ] ([0..goalsFor-1] |> take maxGf |> List.rev |> List.map formGuideGoal)
+        [ div [Class "fg-column"; Style [ Opacity ((string opacity))] ]
+            [ div [] [ formGuideVenue venue ]
+              div [ Class "fg-goals-for" ] ([0..goalsFor-1] |> take 5 |> List.rev |> List.map formGuideGoal)
               div [] [ formGuideResult result venue ]
-              div [ Class "fg-goals-against" ] ([0..goalsAgainst-1] |> take maxGa |> List.map formGuideGoal)
+              div [ Class "fg-goals-against" ] ([0..goalsAgainst-1] |> take 5 |> List.map formGuideGoal)
             ]
         ]
 
@@ -120,18 +106,23 @@ module FixtureDetails =
         ]
 
     let formGuideRow =
+      let colCount = 6
       div [ Class "form-guide" ]
         [ Columns.columns [ Columns.IsMobile; Columns.IsGapless ]
             (col.FormGuide
-            |> take 6
+            |> take colCount
             |> List.rev
             |> (fun l ->
               let maxGf = l |> List.map (function | Some { GoalsFor = Score gf } -> gf | None -> 0) |> List.max
               let maxGa = l |> List.map (function | Some { GoalsAgainst = Score ga } -> ga | None -> 0) |> List.max
               l
-              |> List.map (function
-                | Some col -> formGuideColumn maxGf maxGa col
-                | None -> formGuideColumnNoFixture)))
+              |> List.mapi (fun i col ->
+                match col, i with
+                | Some col, 0 -> formGuideColumn maxGf maxGa 0.40 col
+                | Some col, 1 -> formGuideColumn maxGf maxGa 0.70 col
+                | Some col, 2 -> formGuideColumn maxGf maxGa 0.90 col
+                | Some col, _ -> formGuideColumn maxGf maxGa 1.00 col
+                | _ -> formGuideColumnNoFixture)))
         ]
 
     div [ Class "fixture-details" ]

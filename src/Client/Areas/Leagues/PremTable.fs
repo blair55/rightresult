@@ -34,7 +34,7 @@ module PremTable =
     | Predicted -> api.getPredictedPremTable
 
   let title = function
-    | Real -> Components.pageTitle "Premier league table"
+    | Real -> Components.pageTitle "League table"
     | Predicted -> Components.pageTitle "Predicted table"
 
   let desc = function
@@ -43,7 +43,7 @@ module PremTable =
         Components.card
           [ Message.message [ Message.Color IsInfo ]
               [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-                  [ str "The Premier League table if all your predictions were correct" ]
+                  [ str "How the table would look if all your predictions were correct" ]
               ]
           ]
 

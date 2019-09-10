@@ -161,7 +161,7 @@ let logoBar =
   Navbar.navbar [Navbar.Color IsPrimary; Navbar.HasShadow ]
     [ Navbar.Brand.div []
         [ div [ Style [ Padding "1em" ] ]
-            [ Heading.h5 [ Heading.Modifiers [ Modifier.TextColor IsWhite ] ]
+            [ Heading.h5 [ Heading.Modifiers [ Modifier.TextColor IsWhite; Modifier.TextTransform TextTransform.UpperCase ] ]
                 [ a [ Href "/"; Style [ Color "#fff" ] ] [ str "Right Result" ]
                 ]
             ]

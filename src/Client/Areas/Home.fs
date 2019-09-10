@@ -7,6 +7,7 @@ open Thoth.Elmish
 open Fable.Core
 open Fable.React
 open Fable.React.Props
+open Fable.FontAwesome
 
 open Shared
 open Fulma
@@ -19,7 +20,6 @@ module HomeArea =
   type Model =
     { Player : ClientSafePlayer
       TotalPoints : PredictionPointsMonoid WebData
-      LeagueTable : LeagueTableDoc WebData
       GlobalGwWinner : WebData<GlobalGameweekWinner option>
       ShowFeedbackModal : bool
       FeedbackText : string
@@ -31,7 +31,6 @@ module HomeArea =
     | Init of Result<string, exn>
     | AlertInfo of string
     | PlayerPointsTotalRecieved of Rresult<PredictionPointsMonoid>
-    | LeagueTableReceived of Rresult<LeagueTableDoc>
     | GlobalGwWinnerReceived of Rresult<GlobalGameweekWinner option>
     | NavTo of Route
     | Logout
@@ -58,19 +57,44 @@ module HomeArea =
       ]
       [ Hero.body []
           [ Container.container [ Container.IsFluid ]
-              [ Heading.h1 [ Heading.Is3 ]
-                  [ a [ Href "/"; Style [ Color "#fff" ] ] [ str "Right Result" ]
-                    str " "
-                    span [ ClassName "is-size-6" ] [ str "2019/20" ]
+              [ Heading.h1
+                  [ Heading.Is3
+                    Heading.Modifiers
+                      [ Modifier.TextTransform TextTransform.UpperCase ]
                   ]
-                Components.pointsTotalView points
-              ] ] ]
+                  [ span [ ] [ str "Right Result" ] ]
+                Heading.h3
+                  [ Heading.IsSubtitle
+                    Heading.Is6
+                  ]
+                  [ Fa.i [ Fa.Solid.AngleDoubleDown ] []
+                    str " 2019/20"
+                  ]
+              ]
+          ]
+      ]
 
-  let globalLeaguePositionView (model:Model) (league:LeagueTableDoc) dispatch =
-    let (_, membr) =
-      league.Members |> List.filter (fun (pId, _) -> pId = model.Player.Id) |> List.head
-    div []
-      [ str <| sprintf "Position %i" membr.Position
+  let playerBar dispatch
+      { Model.Player = { Id = PlayerId playerId; Name = name }
+      } points =
+    Hero.hero
+      [ Hero.Color IsLight
+        Hero.IsBold
+        Hero.Props
+          [ Style [ MarginBottom "1em" ]
+            OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch)
+          ]
+      ]
+      [ Hero.body []
+          [ Container.container [ Container.IsFluid ]
+              [ Heading.h4
+                  [ Heading.Modifiers
+                      [ Modifier.TextTransform TextTransform.UpperCase ]
+                  ]
+                  [ span [] [ str "My Points" ] ]
+                Components.pointsTotalView points
+              ]
+          ]
       ]
 
   let gwWinner dispatch = function
@@ -80,7 +104,7 @@ module HomeArea =
         Member = { LeagueTableMember.PlayerName = (PlayerName playerName); Points = m }
       } ->
       Hero.hero
-        [ Hero.Color IsInfo
+        [ Hero.Color IsWarning
           Hero.IsBold
           Hero.Props
             [ Style [ MarginBottom "1em" ]
@@ -88,12 +112,21 @@ module HomeArea =
             ]
         ]
         [ Hero.body []
-            [ Container.container
-                [ Container.IsFluid ]
-                [ Heading.h3 []
-                    [ str playerName ]
-                  Heading.h6 []
-                    [ str <| sprintf "Wins GW%i with %i points" gwno m.Points ] ] ] ]
+            [ Container.container [ Container.IsFluid ]
+                [ Heading.h4
+                    [ Heading.Modifiers
+                        [ Modifier.TextTransform TextTransform.UpperCase ]
+                    ]
+                    [ span [] [ str <| sprintf "GW %i Winner" gwno ] ]
+                  Heading.h6
+                    [ Heading.IsSubtitle
+                    ]
+                    [ Fa.i [ Fa.Solid.Medal ] []
+                      str <| sprintf " %s • %ipts" playerName m.Points
+                    ]
+                ]
+            ]
+        ]
     | None ->
       div [] []
 
@@ -126,17 +159,19 @@ module HomeArea =
     Components.card
       [ Menu.menu []
           [ Menu.list []
-              [ Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] [ str "Global League" ]
-                Menu.Item.li [ Menu.Item.OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ] [ str model.Player.Name ]
+              [
+                // Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] [ str "Global League" ]
+                // Menu.Item.li [ Menu.Item.OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ] [ str model.Player.Name ]
                 Menu.Item.li [ Menu.Item.OnClick (fun _ -> Logout |> dispatch) ] [ str "Log out" ]
               ]
           ]
       ]
 
-  let loadedView (model:Model) (league, points, winner) dispatch =
+  let loadedView (model:Model) (points, winner) dispatch =
     [ heroBar model points
       notificationPrompt model dispatch
       gwWinner dispatch winner
+      playerBar dispatch model points
       homeMenu model dispatch
     ]
 
@@ -158,12 +193,11 @@ module HomeArea =
       ]
 
   let view model dispatch =
-    match model.LeagueTable, model.TotalPoints, model.GlobalGwWinner with
-    | Success league, Success points, Success winner ->
-      div [] (loadedView model (league, points, winner) dispatch)
-    | WebError _, _, _
-    | _, WebError _, _
-    | _, _, WebError _ ->
+    match model.TotalPoints, model.GlobalGwWinner with
+    | Success points, Success winner ->
+      div [Class "home"] (loadedView model (points, winner) dispatch)
+    | WebError _, _
+    | _, WebError _ ->
       noNetworkView model
     | _ ->
       div [] []
@@ -171,21 +205,18 @@ module HomeArea =
   let init api player =
     { Player = player
       TotalPoints = Fetching
-      LeagueTable = Fetching
+      // LeagueTable = Fetching
       GlobalGwWinner = Fetching
       ShowFeedbackModal = false
       FeedbackText = ""
       IsSubscribable = false
       IsSubscribing = false
     }, Cmd.batch
-        [ Cmd.OfAsync.perform
+        [
+          Cmd.OfAsync.perform
             (api.getPlayerPointsTotal player.Id)
             player.Token
             PlayerPointsTotalRecieved
-          Cmd.OfAsync.perform
-            (api.getLeagueTable GlobalLeague Full)
-            player.Token
-            LeagueTableReceived
           Cmd.OfAsync.perform
             api.getGlobalGameweekWinner
             player.Token
@@ -210,7 +241,7 @@ module HomeArea =
     match msg with
     | Init _ -> model, []
     | PlayerPointsTotalRecieved r -> { model with TotalPoints = resultToWebData r }, []
-    | LeagueTableReceived r -> { model with LeagueTable = resultToWebData r }, []
+    // | LeagueTableReceived r -> { model with LeagueTable = resultToWebData r }, []
     | GlobalGwWinnerReceived r -> { model with GlobalGwWinner = resultToWebData r }, []
     | ShowFeedbackModal -> { model with ShowFeedbackModal = true }, []
     | HideFeedbackModal -> { model with ShowFeedbackModal = false }, []

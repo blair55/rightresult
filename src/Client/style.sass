@@ -24,6 +24,9 @@ body
 .navbar .tabs.is-toggle ul li a
   border-radius: 0
 
+.navbar.is-fixed-bottom.has-shadow
+  box-shadow: 0 1px 4px 0 rgba(10, 10, 10, 0.3)
+
 .table tr.is-selected
   background-color: $light
   color: $dark
@@ -39,6 +42,9 @@ table.table th.text-right
 table.table th.text-left
   text-align: left !important
 
+.matrix-container
+  .card
+    overflow-x: scroll
 .matrix
   .matrix-head-container
     position: relative
@@ -62,6 +68,11 @@ table.table th.text-left
     white-space: nowrap
     line-height: 2em
 
+.home
+  .hero
+    box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1)
+  .hero-body
+    padding: 2rem 1.5rem
 
 .movement-up
   color: $success
@@ -191,42 +202,36 @@ table.table th.text-left
     padding: 0 1em 1em
     margin-top: -1em
     .fg-column
-      margin-right: 3px
+      margin-right: 2px
       .hero
         border-radius: 2px
     .fg-goal
-      height: 9px
+      height: 7px
       border-radius: 2px
     .fg-goals-for .fg-goal-some,
     .fg-goals-against .fg-goal-some
       background-color: $grey-lighter
     .fg-goals-for .fg-goal
-      margin-bottom: 3px
+      margin-bottom: 2px
     .fg-goals-against .fg-goal
-      margin-top: 3px
+      margin-top: 2px
 
 
-    .fg-venue-h,
-    .fg-venue-a,
     .fg-result-w,
     .fg-result-d,
     .fg-result-l
       text-align: center
       padding: 0.2em
-    .fg-result-w,
-    .fg-result-d,
-    .fg-result-l
       border-radius: 2px
       font-size: 0.8em
       font-weight: bold
       color: $light
-    // .fg-result-w
     .fg-result-d
       background-image: $darkgrey-grad
-    // .fg-result-l
     .fg-venue-h,
     .fg-venue-a
-      margin: 0.4em 0
+      text-align: center
+      margin: 0.5em 0 0
       font-size: 0.6em
       text-transform: uppercase
       color: #aaa

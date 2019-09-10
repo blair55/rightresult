@@ -30,6 +30,28 @@ module Leagues =
         player.Token
         LeaguesReceived
 
+  let createLeagueButton dispatch =
+    [ Card.card [ Props [ Style [ Width "100%" ] ] ]
+        [ Card.footer []
+            [ Card.Footer.a [ ]
+                [ Button.button
+                    [ Button.IsFullWidth
+                      Button.Color IsPrimary
+                      Button.OnClick (fun _ -> LeaguesRoute CreateLeagueRoute |> NavTo |> dispatch) ]
+                    [ str "Create Private League" ]
+                ]
+            ]
+        ]
+    ]
+
+  let globalLeague dispatch =
+      Card.card []
+        [ Card.content [ Props [ Style [ Padding "0.6em 1em" ] ] ]
+            [ a [ OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ]
+                  [ str "Global League" ]
+            ]
+        ]
+
   let leaguesList dispatch (model:LeagueList) =
     model
     |> Map.toList
@@ -41,15 +63,7 @@ module Leagues =
                     [ str leaguename ]
               ]
           ])
-    |> (fun l ->
-      l @ [ Card.card []
-              [ Card.footer []
-                  [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute CreateLeagueRoute |> NavTo |> dispatch) ] ]
-                      [ str "Create League"
-                      ]
-                  ]
-              ]
-          ])
+    |> fun l -> l @ (createLeagueButton dispatch)
     |> div []
 
   let noLeaguesView dispatch =
@@ -60,36 +74,41 @@ module Leagues =
               ]
           ]
       ]
-      [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute CreateLeagueRoute |> NavTo |> dispatch) ] ]
-          [ str "Create League"
+      (createLeagueButton dispatch)
+
+  let premTables dispatch =
+    div [ Style [MarginBottom "2em" ] ]
+      [ Card.card []
+          [ Card.content [ Props [ Style [ Padding "0.6em 1em" ] ] ]
+              [ a [ OnClick (fun _ -> LeaguePremTableRoute "real" |> LeaguesRoute |> NavTo |> dispatch) ]
+                  [ str "Premier League Table" ]
+              ]
+          ]
+
+        Card.card []
+          [ Card.content [ Props [ Style [ Padding "0.6em 1em" ] ] ]
+              [ a [ OnClick (fun _ -> LeaguePremTableRoute "predicted" |> LeaguesRoute |> NavTo |> dispatch) ]
+                  [ str "My Predicted Table" ]
+              ]
           ]
       ]
 
-  let premTables dispatch =
-    [ Card.card []
-        [ Card.content [ Props [ Style [ Padding "0.6em 1em" ] ] ]
-            [ a [ OnClick (fun _ -> LeaguePremTableRoute "real" |> LeaguesRoute |> NavTo |> dispatch) ]
-                [ str "Real table" ]
-            ]
-        ]
-
-      Card.card []
-        [ Card.content [ Props [ Style [ Padding "0.6em 1em" ] ] ]
-            [ a [ OnClick (fun _ -> LeaguePremTableRoute "predicted" |> LeaguesRoute |> NavTo |> dispatch) ]
-                [ str "Your predicted table" ]
-            ]
-        ]
-    ]
+  let getLeaguesView dispatch leagues =
+    if Map.isEmpty leagues
+    then noLeaguesView dispatch
+    else leaguesList dispatch leagues
 
   let view (model:Model) dispatch =
-    div []
-      ([  Components.pageTitle "Leagues"
-          Components.subHeading "Private Leagues"
-          (match model with
-          | Success l when Map.isEmpty l -> noLeaguesView dispatch
-          | Success l -> leaguesList dispatch l
-          | _ -> div [] []) //])
-          Components.subHeading "Premier League Tables" ] @ premTables dispatch)
+    match model with
+    | Success l ->
+      div []
+        [ Components.pageTitle "Leagues"
+          premTables dispatch
+          Components.subHeading "Prediction Leagues"
+          globalLeague dispatch
+          getLeaguesView dispatch l
+        ]
+    | _ -> div [] []
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with

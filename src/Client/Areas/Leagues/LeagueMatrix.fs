@@ -127,7 +127,7 @@ module LeagueMatrix =
     } (model:Model) dispatch =
     let playerClick (PlayerId pId) =
       pId |> (PlayerRoute >> PlayersRoute >> NavTo >> dispatch)
-    div [ ClassName "block" ]
+    div [ Class "matrix-container" ]
       [ Components.pageTitle leagueName
         Components.subHeading <| sprintf "Gameweek %i Matrix" gwno
         Card.card []
