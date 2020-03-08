@@ -30,6 +30,9 @@ module FixtureSet =
       fixtures.[fId]
       |> fun f -> fixtures.Add (fId, { f with ScoreLine = Some sl }) |> Ok
 
+    | FixtureAppended (_, f) ->
+      fixtures.Add (f.Id, f) |> Ok
+
     | _ -> HandlerHelper.eventErr event fixtures
 
   let folder =
@@ -57,3 +60,6 @@ module FixtureSet =
 
     | ClassifyFixture (fId, sl) ->
       [ FixtureClassified (fsId, fId, sl) ] |> Ok
+
+    | AppendFixture fixture ->
+      [ FixtureAppended (fsId, fixture) ] |> Ok

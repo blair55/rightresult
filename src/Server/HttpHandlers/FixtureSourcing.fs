@@ -222,6 +222,33 @@ module HttpHandlers =
     >> Task.bind (respond next ctx))
 
   [<CLIMutable>]
+  type AppendFixtureHttp =
+    { FixtureSetId : Guid
+      Home : string
+      Away : string
+      KickOff : DateTimeOffset }
+
+  let appendFixtureToGameweek handleCommand next (ctx:HttpContext) =
+    let respond next ctx = function
+      | Ok () -> Successful.OK "Ok" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
+    ctx
+    |> (fun ctx -> ctx.BindModelAsync<AppendFixtureHttp>()
+    >> Task.toAsync
+    >> Async.map (fun e ->
+      { Id = FixtureId (Guid.NewGuid())
+        FixtureSetId = FixtureSetId e.FixtureSetId
+        GameweekNo = GameweekNo 0
+        KickOff = KickOff e.KickOff
+        TeamLine = TeamLine (Team e.Home, Team e.Away)
+        ScoreLine = None
+        SortOrder = 0 }
+      |> AppendFixture
+      |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd))
+    >> Async.toTask (Async.bind handleCommand)
+    >> Task.bind (respond next ctx))
+
+  [<CLIMutable>]
   type FixtureClassificationHttp =
     { HomeTeam : string
       AwayTeam : string

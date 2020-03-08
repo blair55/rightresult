@@ -51,7 +51,6 @@ module FixtureSubscribersAssistance =
       PremTableRow = getPremTableRow team
       FormGuide = getFormGuide team }
 
-
 module FixtureSetCreatedSubscribers =
 
   open Infrastructure.PushNotifications
@@ -555,4 +554,80 @@ module FixtureClassifiedSubscribers =
       updateRealPremTable
       updateFormGuideDoc
       updateOpenFixtureDetails
+    ]
+
+module FixtureAppendedSubscribers =
+
+  open FixtureSubscribersAssistance
+
+  let createFixtureDetails (deps:Dependencies) _ (_, fixture) =
+    fixture
+    |> (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
+      ElasticSearch.repo deps.ElasticSearch
+      |> fun repo ->
+        repo.Insert (FixtureDetailsDocument fId)
+          { Id = fId; KickOff = ko; Home = buildColumn deps home; Away = buildColumn deps away })
+
+  let createFixture (deps:Dependencies) created (FixtureSetId fsId, fixture) =
+
+    let fixtures =
+      deps.Queries.getFixturesInFixtureSet (FixtureSetId fsId)
+      |> List.ofSeq
+
+    let (GameweekNo gwno) =
+      fixtures
+      |> List.head
+      |> fun f -> f.GameweekNo
+
+    fixture
+    |> (fun { FixtureRecord.Id = FixtureId fId
+              KickOff = KickOff ko
+              TeamLine = TeamLine (Team home, Team away) } ->
+      { FixtureNode.Id = string fId
+        FixtureSetId = string fsId
+        Created = created
+        GameweekNo = gwno
+        SortOrder = List.length fixtures
+        KickOff = ko
+        HomeTeam = home
+        AwayTeam = away
+        HasKickedOff = false
+        HasResult = false
+        HomeScore = 0
+        AwayScore = 0 })
+    |> deps.NonQueries.createFixture (FixtureSetId fsId)
+
+  let updateMatrix (deps:Dependencies) created (FixtureSetId fsId, fixture) =
+
+    let fixtures =
+      deps.Queries.getFixturesInFixtureSet (FixtureSetId fsId)
+      |> List.ofSeq
+
+    let (GameweekNo gwno) =
+      fixtures
+      |> List.head
+      |> fun f -> f.GameweekNo
+
+    let columns =
+      fixtures
+      |> List.map (fun f ->
+        f.Id,
+          { MatrixFixture.TeamLine = f.TeamLine
+            KickOff = f.KickOff
+            State = MatrixFixtureState.Open
+            SortOrder = f.SortOrder
+          })
+      |> Map.ofList
+
+    ElasticSearch.repo deps.ElasticSearch
+    |> fun repo ->
+    FixtureSubscribersAssistance.leagueIdsAndNames deps
+    |> List.choose (fun (leagueId, _) -> repo.Read (Matrix (leagueId, (GameweekNo gwno))))
+    |> List.map (fun m -> { m with Columns = columns })
+    |> List.iter (fun m -> repo.Insert (Matrix (m.LeagueId, (GameweekNo gwno))) m)
+
+  let all =
+    [ createFixtureDetails
+      createFixture
+      updateMatrix
     ]

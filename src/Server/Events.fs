@@ -24,6 +24,7 @@ module Events =
     | FixtureKoEdited of FixtureSetId * FixtureId * KickOff
     | FixtureKickedOff of FixtureSetId * FixtureId
     | FixtureClassified of FixtureSetId * FixtureId * ScoreLine
+    | FixtureAppended of FixtureSetId * FixtureRecord
     // prediction set
     | PredictionSetOverwritten of source:PlayerId * destination:PlayerId * FixtureSetId
     | PredictionSetDoubleDownRemoved of PlayerId * FixtureSetId

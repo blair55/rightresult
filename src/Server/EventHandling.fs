@@ -66,6 +66,10 @@ module EventHandling =
       FixtureClassifiedSubscribers.all
       |> List.iter (fun f -> f deps created (fsId, fId, scoreLine))
 
+    | FixtureAppended (fsId, fixture) ->
+      FixtureAppendedSubscribers.all
+      |> List.iter (fun f -> f deps created (fsId, fixture))
+
     // predictions
     | PredictionSetOverwritten (sourcePlayerId, destinationPlayerId, fsId) ->
       PredictionSetOverwrittenSubscribers.all

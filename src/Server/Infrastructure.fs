@@ -100,6 +100,14 @@ module Graph =
           .Results
         |> Seq.map buildFixtureRecord
 
+      getFixturesInFixtureSet = fun (FixtureSetId fsId) ->
+        gc.Cypher
+          .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet)")
+          .Where(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
+          .Return<FixtureNode>("f")
+          .Results
+        |> Seq.map buildFixtureRecord
+
       getFixturesInLatestFixtureSet = fun () ->
         gc.Cypher
           .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet)")
