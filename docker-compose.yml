@@ -35,12 +35,13 @@ services:
       - "2113:2113"
 
   neo4j:
-    image: neo4j
+    image: neo4j:3.4.1
     ports:
       - 7474:7474
       - 7687:7687
     environment:
       - NEO4J_AUTH=none
+      # - NEO4J_DEFAULT_LISTEN_ADDRESS=0.0.0.0
 
   # elasticsearch:
   #   image: docker.elastic.co/elasticsearch/elasticsearch:6.2.3
