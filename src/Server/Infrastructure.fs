@@ -430,6 +430,13 @@ module Graph =
           .Delete("pred")
           .ExecuteWithoutResults()
 
+      deleteFixture = fun (FixtureId fId) ->
+        gc.Cypher
+          .Match("()-[r1:PREDICTED]->(pred:Prediction)-[r2:FOR_FIXTURE]->(f:Fixture)-[r3:IN_FIXTURESET]->()")
+          .Where(fun (f:FixtureNode) -> f.Id = string fId)
+          .Delete("r1, pred, r2, f, r3")
+          .ExecuteWithoutResults()
+
       concludeFixtureSet = fun (FixtureSetId fsId) ->
         gc.Cypher
           .Match("(fs:FixtureSet)")

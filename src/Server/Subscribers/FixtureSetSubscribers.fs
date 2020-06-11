@@ -631,3 +631,13 @@ module FixtureAppendedSubscribers =
       createFixture
       updateMatrix
     ]
+
+
+module FixtureRemovedSubscribers =
+
+  let removeFixture (deps:Dependencies) _ fId =
+    deps.NonQueries.deleteFixture fId
+
+  let all =
+    [ removeFixture
+    ]

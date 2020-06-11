@@ -26,6 +26,7 @@ module Commands =
     | KickOffFixture of FixtureId
     | ClassifyFixture of FixtureId * ScoreLine
     | AppendFixture of FixtureRecord
+    | RemoveOpenFixture of FixtureId
   and PredictionSetCommand =
     | RemoveDoubleDown of PredictionEditDate
     | DatedPredictionCommand of PredictionCommand * FixtureId * PredictionEditDate

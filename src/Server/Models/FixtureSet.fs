@@ -33,6 +33,9 @@ module FixtureSet =
     | FixtureAppended (_, f) ->
       fixtures.Add (f.Id, f) |> Ok
 
+    | FixtureRemoved fId ->
+      fixtures.Remove fId |> Ok
+
     | _ -> HandlerHelper.eventErr event fixtures
 
   let folder =
@@ -63,3 +66,6 @@ module FixtureSet =
 
     | AppendFixture fixture ->
       [ FixtureAppended (fsId, fixture) ] |> Ok
+
+    | RemoveOpenFixture fId ->
+      fixtures.[fId] |> makeSureFixtureIsOpen |> Result.map (fun () -> [ FixtureRemoved fId ])

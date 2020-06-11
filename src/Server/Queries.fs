@@ -44,5 +44,6 @@ module Queries =
       classifyFixture : FixtureId * ScoreLine -> unit
       createPrediction : PredictionRecord -> unit
       deletePredictionSet : PlayerId * FixtureSetId -> unit
+      deleteFixture : FixtureId -> unit
       concludeFixtureSet : FixtureSetId -> unit
     }

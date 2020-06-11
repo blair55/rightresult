@@ -474,6 +474,7 @@ module Server =
       POST >=> route  "/api/overwritePredictionSet" >=> overwritePredictionSet handleCommand
       POST >=> route  "/api/kickoffFixture" >=> kickOffFixture deps handleCommand
       POST >=> route  "/api/appendFixtureToGameweek" >=> appendFixtureToGameweek handleCommand
+      POST >=> route  "/api/removeOpenFixture" >=> removeOpenFixture handleCommand
       POST >=> route  "/api/testNotify" >=> testNotify deps
       POST >=> route  "/api/backgroundTasks" >=> runBackgroundTasks deps handleCommand now
       GET  >=> route  "/api/vapidPublicKey" >=> text appConfig.pushSubscriptionPublicKey

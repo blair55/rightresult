@@ -249,6 +249,25 @@ module HttpHandlers =
     >> Task.bind (respond next ctx))
 
   [<CLIMutable>]
+  type RemoveOpenFixtureHttp =
+    { FixtureId : Guid
+      FixtureSetId : Guid }
+
+  let removeOpenFixture handleCommand next (ctx:HttpContext) =
+    let respond next ctx = function
+      | Ok () -> Successful.OK "Ok" next ctx
+      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
+    ctx
+    |> (fun ctx -> ctx.BindModelAsync<RemoveOpenFixtureHttp>()
+    >> Task.toAsync
+    >> Async.map (fun e ->
+      FixtureId e.FixtureId
+      |> RemoveOpenFixture
+      |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd))
+    >> Async.toTask (Async.bind handleCommand)
+    >> Task.bind (respond next ctx))
+
+  [<CLIMutable>]
   type FixtureClassificationHttp =
     { HomeTeam : string
       AwayTeam : string
