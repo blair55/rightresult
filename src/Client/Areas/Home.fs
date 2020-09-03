@@ -68,7 +68,7 @@ module HomeArea =
                     Heading.Is6
                   ]
                   [ Fa.i [ Fa.Solid.AngleDoubleDown ] []
-                    str " 2019/20"
+                    str " 2020/21"
                   ]
               ]
           ]
