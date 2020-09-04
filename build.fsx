@@ -77,4 +77,5 @@ open Fake.Core.TargetOperators
     ==> "InstallClient"
     ==> "RunTests"
 
+
 Target.runOrDefaultWithArguments "Bundle"
