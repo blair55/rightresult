@@ -5,6 +5,7 @@ on:
     branches:
       - master
 
+env:
   publish_version: 0.0.${{ github.run_number }}
 
 jobs:
@@ -12,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        dotnet: [3.1.201]
+        dotnet: [3.1.300]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -27,12 +28,20 @@ jobs:
       - run: dotnet paket restore
       - run: dotnet fake build -t bundle
 
+      - uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.publish_version }}
+          draft: false
+          prerelease: false
+
       - uses: docker/build-push-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: nickblair/rightresult
-          tags: latest
+          tags: latest, ${{ env.publish_version }}
 
       - run: ssh ${{ secrets.DEPLOY_DEST }} docker-compose stop rr
       - run: ssh ${{ secrets.DEPLOY_DEST }} docker-compose pull rr
