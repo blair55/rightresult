@@ -8,3 +8,4 @@ source .env
 set +a
 
 fake build --target run
+# cd deploy && dotnet Server.dll

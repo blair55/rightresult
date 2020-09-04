@@ -511,7 +511,8 @@ module Server =
           while not ct.IsCancellationRequested do
             backgroundTasks handleCommand queries now
             return! Async.Sleep 60000
-        } |> Async.StartAsTask :> Tasks.Task
+        } |> Async.StartAsTask |> ignore
+        Tasks.Task.CompletedTask
       member __.StopAsync _ =
         printfn "STOPPING RECURRING TASKS"
         Tasks.Task.CompletedTask
@@ -539,11 +540,11 @@ module Server =
     services
 #if DEBUG
 #else
-      .AddSingleton<IHostedService, RecurringTasks>()
+      .AddHostedService<RecurringTasks>()
 #endif
       .AddGiraffe() |> ignore
 
-  let port = 8085us
+  let port = 8085
 
   WebHost
     .CreateDefaultBuilder()
