@@ -545,10 +545,12 @@ module Server =
       .AddGiraffe() |> ignore
 
   let port = 8085
+  let publicPath = Path.Combine(Directory.GetCurrentDirectory(), "public")
 
   WebHost
     .CreateDefaultBuilder()
-    .UseWebRoot(Path.Combine(Directory.GetCurrentDirectory(), "public"))
+    .UseWebRoot(publicPath)
+    .UseContentRoot(publicPath)
     .Configure(Action<IApplicationBuilder> configureApp)
     .ConfigureServices(configureServices)
     .UseUrls(sprintf "http://0.0.0.0:%i/" port)
