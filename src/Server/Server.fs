@@ -30,13 +30,6 @@ open PushNotifications
 
 module Server =
 
-#if DEBUG
-  let publicPath = "/Users/nblair/lab/rightresult/src/Client/public"
-#else
-  let publicPath = Path.GetFullPath "./public"
-#endif
-  let port = 8085us
-
   type ApplicationConfiguration =
     { neo4jUrl : string
       eventStoreUrl : string
@@ -550,10 +543,11 @@ module Server =
 #endif
       .AddGiraffe() |> ignore
 
+  let port = 8085us
+
   WebHost
     .CreateDefaultBuilder()
-    .UseWebRoot(publicPath)
-    .UseContentRoot(publicPath)
+    .UseWebRoot(Path.Combine(Directory.GetCurrentDirectory(), "public"))
     .Configure(Action<IApplicationBuilder> configureApp)
     .ConfigureServices(configureServices)
     .UseUrls(sprintf "http://0.0.0.0:%i/" port)
