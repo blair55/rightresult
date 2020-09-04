@@ -1,13 +1,12 @@
-group Server
-    FSharp.Core
-    Giraffe
-    Microsoft.AspNetCore
-    Microsoft.AspNetCore.StaticFiles
-    Fable.Remoting.Giraffe
-    Fable.JsonConverter
-    FSharp.Data
-    jose-jwt
-    Newtonsoft.Json
-    EventStore.ClientAPI.NetCore
-    Neo4jClient
-    WebPush
+FSharp.Core
+Giraffe
+Microsoft.AspNetCore
+Microsoft.AspNetCore.StaticFiles
+Fable.Remoting.Giraffe
+Fable.JsonConverter
+FSharp.Data
+jose-jwt
+Newtonsoft.Json
+EventStore.ClientAPI.NetCore
+Neo4jClient
+WebPush

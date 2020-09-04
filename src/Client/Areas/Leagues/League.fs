@@ -54,31 +54,31 @@ module League =
     sprintf "%s//%s/%s"
       Browser.Dom.window.location.protocol
       Browser.Dom.window.location.hostname
-      // (if Browser.Dom.window.location.port = "80" then "" else sprintf ":%s" Browser.Dom.window.location.port)
+      // (if Browser.Dom.window.location.port = "79" then "" else sprintf ":%s" Browser.Dom.window.location.port)
       (string leagueId |> Routes.joinLeaguePath)
 
   let whatsAppLink =
     encodeURI
     >> fun uri ->
-      a [ Href <| sprintf "whatsapp://send?text=%s" uri ]
+      Menu.Item.li [ Menu.Item.Option.Href <| sprintf "whatsapp://send?text=%s" uri ]
         [ span [ Class "icon" ] [ i [ Class "fab fa-whatsapp fa-lg" ] [] ]
-          span [] [ str "Whatsapp" ]
+          span [ ] [ str "WhatsApp" ]
         ]
 
   let facebookLink =
     encodeURI
     >> fun uri ->
-      a [ Href <| sprintf "https://www.facebook.com/sharer/sharer.php?u=%s" uri ]
+      Menu.Item.li [ Menu.Item.Option.Href <| sprintf "https://www.facebook.com/sharer/sharer.php?u=%s" uri ]
         [ span [ Class "icon" ] [ i [ Class "fab fa-facebook fa-lg" ] [] ]
-          span [] [ str "Facebook" ]
+          span [ ] [ str "Facebook" ]
         ]
 
   let twitterLink =
     encodeURI
     >> fun uri ->
-      a [ Href <| sprintf "https://twitter.com/intent/tweet?text=%s" uri ]
+      Menu.Item.li [ Menu.Item.Option.Href <| sprintf "https://twitter.com/intent/tweet?text=%s" uri ]
         [ span [ Class "icon" ] [ i [ Class "fab fa-twitter fa-lg" ] [] ]
-          span [] [ str "Twitter" ]
+          span [ ] [ str "Twitter" ]
         ]
 
   let inviteModal (model:Model) dispatch =
@@ -88,22 +88,17 @@ module League =
       [ Modal.background [ Props [ OnClick (fun _ -> dispatch HideModal) ] ] [ ]
         Modal.content [ ]
           [ Box.box' [ ]
-              [ Heading.h5 [ Heading.IsSubtitle ] [ str "Invite to League" ]
-                div [ Style [ MarginBottom "1em" ] ]
-                  [ p [ Style [ MarginBottom "0.6em" ] ] [ str "Copy invite link" ]
-                    a [ Href inviteLink ] [ str inviteLink ]
+              [ Heading.h4 [ Heading.IsSubtitle ] [ str "Share invite link" ]
+                div [ Style [ MarginBottom "0em" ] ]
+                  [ a [ Href inviteLink ] [ str inviteLink ]
                   ]
-                div []
-                  [ p [] [ str "Or share using" ]
-                  ]
-                div []
-                  [ facebookLink inviteLink
-                  ]
-                div []
-                  [ twitterLink inviteLink
-                  ]
-                div []
-                  [ whatsAppLink inviteLink
+
+                Menu.menu []
+                  [ Menu.list [ ]
+                      [ facebookLink inviteLink
+                        twitterLink inviteLink
+                        whatsAppLink inviteLink
+                      ]
                   ]
               ]
           ]
@@ -129,7 +124,7 @@ module League =
     div [ ClassName "block" ]
       [ Components.pageTitle name
         Components.subHeading "Standings"
-        Card.card [ CustomClass "card-footer-only"; Props [ Style [ MarginBottom "2em" ] ] ]
+        Card.card [ CustomClass "card-footer-only"; Props [ Style [ MarginBottom "1em" ] ] ]
           [ div [] [ standingsFooter ]
           ]
         Components.subHeading "Membership"

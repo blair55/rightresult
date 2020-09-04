@@ -56,7 +56,7 @@ module HomeArea =
           [ Style [ MarginBottom "1em" ] ]
       ]
       [ Hero.body []
-          [ Container.container [ Container.IsFluid ]
+          [ Container.container []
               [ Heading.h1
                   [ Heading.Is3
                     Heading.Modifiers
@@ -86,7 +86,7 @@ module HomeArea =
           ]
       ]
       [ Hero.body []
-          [ Container.container [ Container.IsFluid ]
+          [ Container.container []
               [ Heading.h4
                   [ Heading.Modifiers
                       [ Modifier.TextTransform TextTransform.UpperCase ]
@@ -112,7 +112,7 @@ module HomeArea =
             ]
         ]
         [ Hero.body []
-            [ Container.container [ Container.IsFluid ]
+            [ Container.container []
                 [ Heading.h4
                     [ Heading.Modifiers
                         [ Modifier.TextTransform TextTransform.UpperCase ]

@@ -1,10 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../Shared/Shared.fs" />
+    <None Include="paket.references" />
     <Compile Include="Elevated.fs" />
     <Compile Include="Login/Utils.fs" />
     <Compile Include="Login/Jwt.fs" />
@@ -28,6 +29,9 @@
     <None Include="HttpHandlers/PremFixturesSample.json" />
     <Compile Include="EventHandling.fs" />
     <Compile Include="Server.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\Shared.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

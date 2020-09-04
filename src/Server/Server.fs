@@ -33,7 +33,7 @@ module Server =
 #if DEBUG
   let publicPath = "/Users/nblair/lab/rightresult/src/Client/public"
 #else
-  let publicPath = Path.GetFullPath "../Client/public"
+  let publicPath = Path.GetFullPath "./public"
 #endif
   let port = 8085us
 

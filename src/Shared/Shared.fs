@@ -503,7 +503,6 @@ module KickOff =
 
 /// TODO:
 
-/// - upgrade stack
 /// - add team to form guide
 /// - add fixture score to matrix
 /// - league history multiple winners

@@ -1,39 +1,34 @@
-version 5.215.0
+source https://api.nuget.org/v3/index.json
+framework: netcoreapp3.1, netstandard2.0
+storage: none
 
-group Server
-  source https://api.nuget.org/v3/index.json
-  framework: netcoreapp2.1
-  storage: none
+nuget FSharp.Core
+nuget FSharp.Data
+nuget Fable.Remoting.Giraffe
+nuget Fable.JsonConverter
+nuget Microsoft.AspNetCore
+nuget Microsoft.AspNetCore.StaticFiles
+nuget jose-jwt
+nuget Neo4j.Driver.Signed 1.7.2
+nuget Newtonsoft.Json
+nuget EventStore.ClientAPI.NetCore
+nuget Neo4jClient
+nuget WebPush
 
-  nuget FSharp.Core
-  nuget FSharp.Data 3.0.0-beta4 beta
-  nuget Giraffe
-  nuget Microsoft.AspNetCore
-  nuget Microsoft.AspNetCore.StaticFiles
-  nuget Fable.Remoting.Giraffe
-  nuget jose-jwt
-  nuget Fable.JsonConverter
-  nuget Newtonsoft.Json
-  nuget EventStore.ClientAPI.NetCore
-  nuget Neo4jClient
-  nuget WebPush
+nuget Expecto
 
-group Client
-  source https://api.nuget.org/v3/index.json
-  framework: netstandard2.0
-  storage: none
-
-  nuget Fable.Core ~> 3
-  nuget Fable.Elmish ~> 3
-  nuget Fable.Elmish.Debugger ~> 3
-  nuget Fable.Elmish.React ~> 3
-  nuget Fable.Elmish.HMR ~> 4
-  nuget Fable.React ~> 5
-  nuget Fable.Remoting.Client ~> 5
-  nuget Fulma
-  nuget Fable.FontAwesome.Free
-  nuget Fulma.Extensions.Wikiki.Quickview
-  nuget Thoth.Elmish.Toast
+nuget Fable.Core
+nuget Fable.Elmish
+nuget Fable.Elmish.React
+nuget Fable.Elmish.Debugger
+nuget Fable.Elmish.HMR
+nuget Fable.FontAwesome.Free
+nuget Fable.Mocha
+nuget Fable.React
+nuget Fable.Remoting.Client
+nuget Fulma
+nuget Fulma.Extensions.Wikiki.Quickview
+nuget Thoth.Elmish.Toast
 
 group Build
   source https://api.nuget.org/v3/index.json
@@ -44,8 +39,3 @@ group Build
   nuget Fake.Core.Target
   nuget Fake.DotNet.Cli
   nuget Fake.IO.FileSystem
-
-group Tests
-  storage: none
-  source https://api.nuget.org/v3/index.json
-  nuget Expecto

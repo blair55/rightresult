@@ -23,7 +23,7 @@ var CONFIG = {
   fsharpEntry: "./src/Client/Client.fsproj",
   cssEntry: "./src/Client/style.sass",
   badgeCssEntry: "./src/Client/badges.css",
-  outputDir: "./src/Client/deploy",
+  outputDir: "./deploy/public",
   assetsDir: "./src/Client/public",
   logoPath: "./src/Client/public/logo.png",
   devServerPort: 8080,
@@ -206,6 +206,11 @@ module.exports = {
         use: ["file-loader"],
       },
     ],
+  },
+  resolve: {
+    alias: {
+      '/images': resolve(CONFIG.assetsDir + "/images"),
+    },
   },
 };
 

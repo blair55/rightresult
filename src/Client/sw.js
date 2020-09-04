@@ -3,7 +3,6 @@ workbox.core.clientsClaim();
 
 self.addEventListener('push', event => {
   var notification = event.data.json();
-  console.log(notification);
   const options = {
     body: notification.Body,
     icon: '/logo.png',
