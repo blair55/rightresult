@@ -42,9 +42,3 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: nickblair/rightresult
           tags: latest, ${{ env.publish_version }}
-
-      - run: ssh ${{ secrets.DEPLOY_DEST }} docker-compose stop rr
-      - run: ssh ${{ secrets.DEPLOY_DEST }} docker-compose pull rr
-      - run: ssh ${{ secrets.DEPLOY_DEST }} docker-compose up -d deps
-      - run: sleep 15
-      - run: ssh ${{ secrets.DEPLOY_DEST }} docker-compose up -d rr
