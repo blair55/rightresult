@@ -84,9 +84,13 @@ module LeagueJoinedSubscribers =
     | Some p ->
       ElasticSearch.repo deps.ElasticSearch
       |> fun repo ->
+        let members league =
+          if List.exists (fun (pId, _) -> pId = playerId) league.Members
+          then league
+          else { league with Members = (playerId, LeagueTableMember.Init p.Name)::league.Members }
         repo.Edit
           (LeagueTableDocument (PrivateLeague leagueId, Full))
-          (fun l -> { l with Members = (playerId, LeagueTableMember.Init p.Name)::l.Members })
+          members
         |> ignore
     | None -> ()
 
