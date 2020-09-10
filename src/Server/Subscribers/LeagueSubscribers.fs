@@ -75,8 +75,9 @@ module LeagueJoinedSubscribers =
       .Match("(p:Player)", "(l:League)")
       .Where(fun (p:PlayerNode) -> p.Id = playerId)
       .AndWhere(fun (l:LeagueNode) -> l.Id = string leagueId)
-      .Create("(p)-[:IN_LEAGUE {r}]->(l)")
-      .WithParam("r", dict [ "Joined", created ])
+      .CreateUnique("(p)-[:IN_LEAGUE]->(l)")
+      // .CreateUnique("(p)-[:IN_LEAGUE {r}]->(l)")
+      // .WithParam("r", dict [ "Joined", created ])
       .ExecuteWithoutResults()
 
   let private joinLeagueUpdateLatestTableDoc (deps:Dependencies) created (leagueId, playerId) =
@@ -84,9 +85,13 @@ module LeagueJoinedSubscribers =
     | Some p ->
       ElasticSearch.repo deps.ElasticSearch
       |> fun repo ->
+        let members league =
+          if List.exists (fun (pId, _) -> pId = playerId) league.Members
+          then league
+          else { league with Members = (playerId, LeagueTableMember.Init p.Name)::league.Members }
         repo.Edit
           (LeagueTableDocument (PrivateLeague leagueId, Full))
-          (fun l -> { l with Members = (playerId, LeagueTableMember.Init p.Name)::l.Members })
+          members
         |> ignore
     | None -> ()
 

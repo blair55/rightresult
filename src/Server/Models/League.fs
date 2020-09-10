@@ -37,9 +37,7 @@ module League =
     | Active _, RenameLeague leagueName ->
       Ok [ LeagueRenamed (leagueId, leagueName) ]
     | Active players, JoinLeague playerId ->
-      if players.Contains playerId
-      then Ok []
-      else [ LeagueJoined (leagueId, playerId) ] |> Ok
+      [ LeagueJoined (leagueId, playerId) ] |> Ok
     | Active players, LeaveLeague playerId ->
       if players.Contains playerId
       then [ LeagueLeft (leagueId, playerId) ] |> Ok
