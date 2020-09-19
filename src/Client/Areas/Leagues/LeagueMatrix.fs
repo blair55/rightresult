@@ -56,6 +56,11 @@ module LeagueMatrix =
       |> Map.toList
       |> List.sortBy (fun (_, { SortOrder = sortOrder; KickOff = (KickOff ko) }) -> sortOrder, ko)
 
+    let matrixScoreBox = function
+      | Open -> div [] []
+      | KickedOff -> Components.ScoreBox.emptyScoreBox ()
+      | Classified sl -> Components.ScoreBox.openScoreBox sl
+
     sortedMatrixCols
     |> List.map (fun (_, { TeamLine = TeamLine (home, away); State = state; KickOff = ko }) ->
       th [] [
@@ -63,6 +68,7 @@ module LeagueMatrix =
             [ div [ Class "matrix-head matrix-head-left" ] [ badge M home ]
               div [ Class "matrix-head matrix-head-right" ] [ badge M away ]
             ]
+          matrixScoreBox state
         ])
     |> fun cols -> ((th [] [])::cols) @ [ th [] [] ]
     |> fun cols ->
