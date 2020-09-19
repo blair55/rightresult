@@ -122,8 +122,8 @@ module Classifier =
   let classifyKickedOffFixtures (handle:Command -> Ars<Unit>) (q:Queries) =
     classifyFixtures "@@@@@@@@@@@@@@@@@ KICKED OFF FIXTURES" handle q (fun q -> q.getFixturesAwaitingResults ())
 
-  // let classifyAllFixtures (handle:Command -> Ars<Unit>) (q:Queries) =
-  //   classifyFixtures "@@@@@@@@@@@@@@@@@ CLASS ALL" handle q (fun q -> q.getAllFixtures ())
+  let classifyAllFixtures (handle:Command -> Ars<Unit>) (q:Queries) =
+    classifyFixtures "@@@@@@@@@@@@@@@@@ CLASS ALL" handle q (fun q -> q.getAllFixtures ())
 
   let classifyFixturesAfterGameweek (handle:Command -> Ars<Unit>) (q:Queries) (GameweekNo gwno) =
     classifyFixtures "@@@@@@@@@@@@@@@@@ CLASS AFTER GW" handle q (fun q -> q.getAllFixtures () |> Seq.filter(fun { GameweekNo = GameweekNo g } -> g > gwno))
@@ -293,9 +293,9 @@ module HttpHandlers =
     >> Async.toTask (Async.bind handleCommand)
     >> Task.bind (respond next ctx))
 
-  // let classifyAllFixtures (deps:Dependencies) handleCommand =
-  //   Classifier.classifyAllFixtures handleCommand deps.Queries
-  //   Successful.OK "Ok"
+  let classifyAllFixtures (deps:Dependencies) handleCommand =
+    Classifier.classifyAllFixtures handleCommand deps.Queries
+    Successful.OK "Ok"
 
   let classifyFixturesAfterGameweek (deps:Dependencies) handleCommand gwno =
     Classifier.classifyFixturesAfterGameweek handleCommand deps.Queries (GameweekNo gwno)

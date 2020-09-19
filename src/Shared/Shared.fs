@@ -515,6 +515,7 @@ module KickOff =
 /// - player highlights section - DDs and outliers
 /// - new awards added to hp ?
 /// - xss ?
+/// - undo allowing multiple league join events per player / revert 6250be3
 
 /// + real & predicted prem tables
 /// + league position delta

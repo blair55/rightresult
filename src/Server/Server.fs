@@ -459,7 +459,7 @@ module Server =
       POST >=> route  "/api/fixtureSet" >=> createFixtureSet handleCommand
       POST >=> route  "/api/removePlayer" >=> removePlayer handleCommand
       POST >=> route  "/api/classifyFixture" >=> classifyFixture deps handleCommand
-      // POST >=> route  "/api/classifyAllFixtures" >=> classifyAllFixtures deps handleCommand
+      POST >=> route  "/api/classifyAllFixtures" >=> classifyAllFixtures deps handleCommand
       POST >=> routef "/api/classifyFixturesAfterGameweek/%i" (classifyFixturesAfterGameweek deps handleCommand)
       POST >=> route  "/api/addPlayerToLeague" >=> addPlayerToLeague handleCommand
       POST >=> route  "/api/removePlayerFromLeague" >=> removePlayerFromLeague handleCommand
