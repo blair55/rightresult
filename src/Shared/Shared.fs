@@ -504,7 +504,6 @@ module KickOff =
 /// TODO:
 
 /// - add team to form guide
-/// - add fixture score to matrix
 /// - league history multiple winners
 /// - league history paging
 /// - protect add fixtures
@@ -517,6 +516,7 @@ module KickOff =
 /// - xss ?
 /// - undo allowing multiple league join events per player / revert 6250be3
 
+/// + add fixture score to matrix
 /// + real & predicted prem tables
 /// + league position delta
 /// + fixture form guide
