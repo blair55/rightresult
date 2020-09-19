@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "run": "env-cmd fake build --target run",
     "start": "webpack-dev-server",
     "build": "webpack -p",
     "test:live": "webpack-dev-server --config webpack.tests.config.js"
@@ -17,6 +18,7 @@
     "copy-webpack-plugin": "^5.1.1",
     "core-js": "^3.3.2",
     "css-loader": "^4.2.1",
+    "env-cmd": "^10.1.0",
     "fable-compiler": "^2.10.2",
     "fable-loader": "^2.1.8",
     "file-loader": "^6.1.0",
