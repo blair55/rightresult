@@ -44,13 +44,18 @@ module GlobalLeague =
       MaxGameweekNo = Fetching
     }, cmds
 
-  let leagueView (league:LeagueTableDoc) (GameweekNo gwno) dispatch =
-    let (LeagueName name) =
-      league.LeagueName
+  let leagueView {LeagueTableDoc.LeagueName = LeagueName name} (GameweekNo gwno) dispatch =
     let footer =
       Components.leagueMenu Global.identifier gwno (NavTo >> dispatch)
     div [ ClassName "block" ]
       [ Components.pageTitle name
+        Message.message [ Message.Color IsWarning ]
+          [ Message.body [ ]
+              [ str "To take part in prize money league contact"
+                str " "
+                a [ Href "mailto:predictionleague1@hotmail.com"] [ str "predictionleague1@hotmail.com" ]
+                br []
+                str "Check the Leagues tab to confirm which leagues you have entered" ] ]
         Components.subHeading "Standings"
         Card.card [ CustomClass "card-footer-only" ]
           [ div [] [ footer ]
