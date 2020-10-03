@@ -16,7 +16,7 @@ open Components
 module OmniFixtures =
 
   let initFrom = 0
-  let pageSize = 20
+  let pageSize = 10
 
   type Model =
     { Page : Page
