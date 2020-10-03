@@ -105,18 +105,6 @@ module League =
         Modal.close [ Modal.Close.Size IsLarge
                       Modal.Close.OnClick (fun _ -> dispatch HideModal) ] [ ] ]
 
-  let message (PrivateLeagueId leagueId) =
-    if leagueId = Guid.Parse ("4c15bcf0-ba45-446c-bd4d-3e3a45301680") then
-      Message.message [ Message.Color IsWarning ]
-        [ Message.body [ ]
-            [ str "Deadline for payment is 30/09"
-              br []
-              str "Please email"
-              str " "
-              a [ Href "mailto:predictionleague1@hotmail.com"] [ str "predictionleague1@hotmail.com" ]
-            ] ]
-    else div [] []
-
   let leagueView { LeagueTableDoc.LeagueName = LeagueName name } (GameweekNo gwno) model dispatch =
     let (PrivateLeagueId leagueId) =
       model.PrivateLeagueId
@@ -133,7 +121,6 @@ module League =
         ]
     div [ ClassName "block" ]
       [ Components.pageTitle name
-        message model.PrivateLeagueId
         Components.subHeading "Standings"
         Card.card [ CustomClass "card-footer-only"; Props [ Style [ MarginBottom "1em" ] ] ]
           [ div [] [ standingsFooter ]
