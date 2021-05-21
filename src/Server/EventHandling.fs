@@ -12,6 +12,7 @@ module EventHandling =
     |> DocumentId
 
   let onEvent deps (DatedEvent (event, created)) =
+    printfn "handling event: %A" event
 
     match event with
     // players
@@ -59,12 +60,18 @@ module EventHandling =
       |> List.iter (fun f -> f deps created (fsId, fId, ko))
 
     | FixtureKickedOff (fsId, fId) ->
-      FixtureKickedOffSubscribers.all
-      |> List.iter (fun f -> f deps created (fsId, fId))
+      deps.Queries.getFixture fId
+      |> fun fixture ->
+        match fixture.HasKickedOff with
+        | true -> printfn "fixture already kicked off: %A" event
+        | _ -> FixtureKickedOffSubscribers.all |> List.iter (fun f -> f deps created (fsId, fId))
 
     | FixtureClassified (fsId, fId, scoreLine) ->
-      FixtureClassifiedSubscribers.all
-      |> List.iter (fun f -> f deps created (fsId, fId, scoreLine))
+      deps.Queries.getFixture fId
+      |> fun fixture ->
+        match fixture.ScoreLine with
+        | Some _ -> printfn "fixture already classified: %A" event
+        | _ -> FixtureClassifiedSubscribers.all |> List.iter (fun f -> f deps created (fsId, fId, scoreLine))
 
     | FixtureAppended (fsId, fixture) ->
       FixtureAppendedSubscribers.all

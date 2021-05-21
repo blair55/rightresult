@@ -89,7 +89,8 @@ module FixtureSourcing =
           KickOff = KickOff ko
           TeamLine = TeamLine (Team h, Team a)
           ScoreLine = None
-          SortOrder = i })
+          SortOrder = i
+          HasKickedOff = false })
       |> fun fixtures -> GameweekNo gwno, fixtures
       |> CreateFixtureSet
       |> fun fscmd -> FixtureSetCommand (fsId, fscmd)))
@@ -188,7 +189,8 @@ module HttpHandlers =
             KickOff = KickOff f.KickOff
             TeamLine = TeamLine (Team f.Home, Team f.Away)
             ScoreLine = None
-            SortOrder = 0 })
+            SortOrder = 0
+            HasKickedOff = false })
       |> fun fixtures -> GameweekNo fs.GameweekNo, fixtures
       |> CreateFixtureSet
       |> fun fscmd -> FixtureSetCommand (FixtureSetId (Guid.NewGuid()), fscmd)
@@ -242,7 +244,8 @@ module HttpHandlers =
         KickOff = KickOff e.KickOff
         TeamLine = TeamLine (Team e.Home, Team e.Away)
         ScoreLine = None
-        SortOrder = 0 }
+        SortOrder = 0
+        HasKickedOff = false }
       |> AppendFixture
       |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd))
     >> Async.toTask (Async.bind handleCommand)

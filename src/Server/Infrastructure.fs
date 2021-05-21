@@ -62,6 +62,7 @@ module Graph =
       TeamLine = TeamLine (Team f.HomeTeam, Team f.AwayTeam)
       ScoreLine = if f.HasResult then ScoreLine (Score f.HomeScore, Score f.AwayScore) |> Some else None
       SortOrder = f.SortOrder
+      HasKickedOff = f.HasKickedOff
     }
 
   let private buildPredictionRecord (p:PredictionNode) =
@@ -99,6 +100,15 @@ module Graph =
           .Return<FixtureNode>("f")
           .Results
         |> Seq.map buildFixtureRecord
+
+      getFixture = fun (FixtureId fId) ->
+        gc.Cypher
+          .Match("(f:Fixture)")
+          .Where(fun (f:FixtureNode) -> f.Id = string fId)
+          .Return<FixtureNode>("f")
+          .Results
+        |> Seq.head
+        |> buildFixtureRecord
 
       getFixturesInFixtureSet = fun (FixtureSetId fsId) ->
         gc.Cypher

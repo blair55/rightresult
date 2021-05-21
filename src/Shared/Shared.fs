@@ -60,6 +60,7 @@ type FixtureRecord =
     KickOff : KickOff
     TeamLine : TeamLine
     ScoreLine : ScoreLine option
+    HasKickedOff : bool
     SortOrder : int
   }
 and PredictionRecord =
