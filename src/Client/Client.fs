@@ -48,7 +48,7 @@ let api : IProtocol =
   |> Remoting.buildProxy<IProtocol>
 
 let playerStorageKey =
-  "player-20/21"
+  "player-21/22"
 
 [<Emit("window.navigator.standalone === true")>]
 let isIosStandalone : bool =

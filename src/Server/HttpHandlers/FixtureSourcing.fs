@@ -23,22 +23,22 @@ module FixtureSourcing =
   let private premTeamIdToName = function
     | 1 -> Arsenal
     | 2 -> AstonVilla
-    | 3 -> Brighton
-    | 4 -> Burnley
-    | 5 -> Chelsea
-    | 6 -> CrystalPalace
-    | 7 -> Everton
-    | 8 -> Fulham
-    | 9 -> Leicester
-    | 10 -> Leeds
+    | 3 -> Brentford
+    | 4 -> Brighton
+    | 5 -> Burnley
+    | 6 -> Chelsea
+    | 7 -> CrystalPalace
+    | 8 -> Everton
+    | 9 -> Leeds
+    | 10 -> Leicester
     | 11 -> Liverpool
     | 12 -> ManCity
     | 13 -> ManUtd
     | 14 -> Newcastle
-    | 15 -> SheffieldUtd
+    | 15 -> Norwich
     | 16 -> Southampton
     | 17 -> Spurs
-    | 18 -> WestBrom
+    | 18 -> Watford
     | 19 -> WestHam
     | 20 -> Wolves
     | _ -> failwith "Unrecognised team id"

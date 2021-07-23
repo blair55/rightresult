@@ -99,48 +99,49 @@ module Teams =
   let [<Literal>] Arsenal = "Arsenal"
   let [<Literal>] AstonVilla = "Aston Villa"
   // let [<Literal>] Bournemouth = "Bournemouth"
+  let [<Literal>] Brentford = "Brentford"
   let [<Literal>] Brighton = "Brighton"
   let [<Literal>] Burnley = "Burnley"
   // let [<Literal>] Cardiff = "Cardiff"
   let [<Literal>] Chelsea = "Chelsea"
   let [<Literal>] CrystalPalace = "Crystal Palace"
   let [<Literal>] Everton = "Everton"
-  let [<Literal>] Fulham = "Fulham"
+  // let [<Literal>] Fulham = "Fulham"
   // let [<Literal>] Huddersfield = "Huddersfield"
-  let [<Literal>] Leicester = "Leicester"
   let [<Literal>] Leeds = "Leeds"
+  let [<Literal>] Leicester = "Leicester"
   let [<Literal>] Liverpool = "Liverpool"
   let [<Literal>] ManCity = "Man City"
   let [<Literal>] ManUtd = "Man Utd"
   let [<Literal>] Newcastle = "Newcastle"
-  // let [<Literal>] Norwich = "Norwich"
-  let [<Literal>] SheffieldUtd = "Sheffield Utd"
+  let [<Literal>] Norwich = "Norwich"
+  // let [<Literal>] SheffieldUtd = "Sheffield Utd"
   let [<Literal>] Southampton = "Southampton"
   let [<Literal>] Spurs = "Spurs"
-  // let [<Literal>] Watford = "Watford"
-  let [<Literal>] WestBrom = "West Brom"
+  let [<Literal>] Watford = "Watford"
+  // let [<Literal>] WestBrom = "West Brom"
   let [<Literal>] WestHam = "West Ham"
   let [<Literal>] Wolves = "Wolves"
 
   let all =
     [ Arsenal
       AstonVilla
+      Brentford
       Brighton
       Burnley
       Chelsea
       CrystalPalace
       Everton
-      Fulham
-      Leicester
       Leeds
+      Leicester
       Liverpool
       ManCity
       ManUtd
       Newcastle
-      SheffieldUtd
+      Norwich
       Southampton
       Spurs
-      WestBrom
+      Watford
       WestHam
       Wolves ]
     |> List.map Team
