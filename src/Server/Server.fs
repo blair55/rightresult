@@ -8,7 +8,7 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.DependencyInjection
 
-open Server.Application.HttpHandlers
+open Server.Application
 open Server.Infrastructure
 
 module Server =
@@ -19,7 +19,7 @@ module Server =
 
   let inf =
     let appConfig =
-      Config.buildAppConfig Environment.GetEnvironmentVariable
+      Application.Config.buildAppConfig Environment.GetEnvironmentVariable
     let elasticSearch = ()
       // DocumentStore Map.empty
     let eventStore =
@@ -61,7 +61,7 @@ module Server =
     Push.semaphore <- true
     app
       .UseStaticFiles()
-      .UseGiraffe(webApp handleCommand deps appConfig now)
+      .UseGiraffe(HttpHandlers.webApp handleCommand deps appConfig now)
 
   let configureServices (services:IServiceCollection) =
     services

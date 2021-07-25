@@ -3,10 +3,8 @@ Giraffe
 Microsoft.AspNetCore
 Microsoft.AspNetCore.StaticFiles
 Fable.Remoting.Giraffe
-Fable.JsonConverter
 FSharp.Data
 jose-jwt
-Newtonsoft.Json
 EventStore.Client.Grpc.Streams
 Neo4jClient
 WebPush

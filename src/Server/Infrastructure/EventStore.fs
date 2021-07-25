@@ -30,10 +30,8 @@ let readStreamEvents (client:EventStoreClient) (StreamId streamId) = async {
     return Result.Error (RemoteError.ServerSideError ex.Message) }
 
 let toEventStoreEvent (event:Event) =
-  let case, _ =
-    FSharpValue.GetUnionFields(event, typeof<Event>)
-  let bytes = Json.srlz event
-  EventData(Uuid.NewUuid(), case.Name, bytes)
+  let case, _ = FSharpValue.GetUnionFields(event, typeof<Event>)
+  EventData(Uuid.NewUuid(), case.Name, Json.srlz event)
 
 let subscribeToAll (client:EventStoreClient) onEvent =
   client.SubscribeToAllAsync(

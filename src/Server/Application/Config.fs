@@ -1,5 +1,6 @@
-﻿namespace Server
+﻿namespace Server.Application
 
+open Server
 open FSharp.Core
 
 module Config =

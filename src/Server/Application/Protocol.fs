@@ -9,10 +9,10 @@ open Server.Commands
 open Server.Queries
 open Shared
 open Server.Infrastructure
-open Server.Config
 open Server.Elevated
 open System.IO
 open Server
+open Config
 open Microsoft.AspNetCore
 
 module Protocol =

@@ -8,10 +8,10 @@ open Shared.Routes
 open Server
 open Server.Commands
 open Server.Queries
-open Server.Config
 open Server.Utils
 open Server.Infrastructure
 open Server.Infrastructure.Push
+open Config
 
 open Microsoft.AspNetCore
 open Microsoft.Extensions.Hosting

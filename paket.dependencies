@@ -5,13 +5,11 @@ storage none
 nuget FSharp.Core
 nuget FSharp.Data
 nuget Fable.Remoting.Giraffe
-nuget Fable.JsonConverter
 nuget Giraffe
 nuget Microsoft.AspNetCore
 nuget Microsoft.AspNetCore.StaticFiles
 nuget jose-jwt
 nuget Neo4j.Driver.Signed
-nuget Newtonsoft.Json
 nuget EventStore.Client.Grpc.Streams
 nuget Neo4jClient
 nuget WebPush
