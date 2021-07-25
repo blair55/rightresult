@@ -7,10 +7,6 @@ open Server.Subscribers
 
 module EventHandling =
 
-  let predictionSetId (PlayerId playerId) (FixtureSetId fsId) =
-    sprintf "%s-%s" playerId (string fsId)
-    |> DocumentId
-
   let onEvent deps (DatedEvent (event, created)) =
     printfn "handling event: %A" event
 

@@ -11,7 +11,7 @@ open Shared
 
 module Facebook =
 
-  let private apiVersion = "v3.0"
+  let private apiVersion = "v3.3"
   let private callbackPath = "/api/facebook/callback"
 
   type Url = Dialog | Oauth | Graph
@@ -107,13 +107,7 @@ module Facebook =
         | Ok gqr ->
           config.authOk gqr next ctx
         | Error e ->
-          match e with
-          | NoCodeReturned
-          | BadResponseFromOauth _
-          | NoAccessTokenReturned
-          | BadResponseFromGraph _
-          | CouldNotBuildGraphResult ->
-            config.authError "oops" next ctx
+          config.authError (sprintf "%A" e) next ctx
       ctx
       |> (getCode
       >> Async.retn

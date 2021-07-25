@@ -1,159 +1,20 @@
-namespace Server.HttpHandlers
+namespace Server.Application
 
 open System
-open FSharp.Data
+open System.Threading
+
+open Shared
+open Shared.Routes
+open Server
 open Server.Commands
 open Server.Queries
-open Shared
+open Server.Config
+open Server.Utils
 open Server.Infrastructure
-open Server.Infrastructure.Persistence
-open Server.Infrastructure.Time
-open Server.Infrastructure.PushNotifications
+open Server.Infrastructure.Push
 
-module FixtureSourcing =
-
-  type PremFixtures =
-    JsonProvider<Sample="HttpHandlers/PremFixturesSample.json">
-
-  let private premFixturesUrl =
-    sprintf "https://fantasy.premierleague.com/api/fixtures/?event=%i"
-
-  open Shared.Teams
-
-  let private premTeamIdToName = function
-    | 1 -> Arsenal
-    | 2 -> AstonVilla
-    | 3 -> Brentford
-    | 4 -> Brighton
-    | 5 -> Burnley
-    | 6 -> Chelsea
-    | 7 -> CrystalPalace
-    | 8 -> Everton
-    | 9 -> Leeds
-    | 10 -> Leicester
-    | 11 -> Liverpool
-    | 12 -> ManCity
-    | 13 -> ManUtd
-    | 14 -> Newcastle
-    | 15 -> Norwich
-    | 16 -> Southampton
-    | 17 -> Spurs
-    | 18 -> Watford
-    | 19 -> WestHam
-    | 20 -> Wolves
-    | _ -> failwith "Unrecognised team id"
-
-  let private toTeam =
-    premTeamIdToName >> Team
-
-  let private getNewPremGwFixtures no =
-    PremFixtures.Load(premFixturesUrl no)
-    |> Seq.map(fun f -> toUkTime f.KickoffTime.DateTime, f.TeamH |> premTeamIdToName, f.TeamA |> premTeamIdToName)
-    |> Seq.toList
-
-  let getNewPremGwResults no =
-    PremFixtures.Load(premFixturesUrl no)
-    |> Seq.filter (fun f -> f.Started && f.FinishedProvisional)
-    |> Seq.map (fun f ->
-        TeamLine (toTeam f.TeamH, toTeam f.TeamA),
-        ScoreLine (Score (f.TeamHScore.JsonValue.AsInteger()), Score (f.TeamAScore.JsonValue.AsInteger())))
-    |> Seq.toList
-
-  let private getNewGameweekNo (deps:Dependencies) =
-    deps.Queries.getMaxGameweekNo ()
-    |> function
-    | Some (GameweekNo gw) -> gw
-    | _ -> 0
-    |> (+) 1
-
-  let getNewFixtureSetViewModel (deps:Dependencies) =
-    deps
-    |> (getNewGameweekNo
-      >> (fun gwno ->
-      getNewPremGwFixtures gwno
-      |> List.map (fun (ko, h, a) -> KickOff ko, KickOff.groupFormat (KickOff ko), Team h, Team a)
-      |> fun items -> { NewFixtureSetViewModel.GameweekNo = GameweekNo gwno; Fixtures = items }))
-
-  let addNewFixtureSet (deps:Dependencies) =
-    deps
-    |> (getNewGameweekNo
-      >> (fun gwno ->
-      FixtureSetId (Guid.NewGuid())
-      |> fun fsId ->
-      getNewPremGwFixtures gwno
-      |> List.sortBy (fun (ko, _, _) -> ko)
-      |> List.mapi (fun i (ko, h, a) ->
-        { FixtureRecord.Id = FixtureId (Guid.NewGuid())
-          FixtureSetId = fsId
-          GameweekNo = GameweekNo gwno
-          KickOff = KickOff ko
-          TeamLine = TeamLine (Team h, Team a)
-          ScoreLine = None
-          SortOrder = i
-          HasKickedOff = false })
-      |> fun fixtures -> GameweekNo gwno, fixtures
-      |> CreateFixtureSet
-      |> fun fscmd -> FixtureSetCommand (fsId, fscmd)))
-
-module Classifier =
-
-  let private classifyFixtures desc (handle:Command -> Ars<Unit>) (q:Queries) (fixturesFunc:Queries -> FixtureRecord seq) =
-    let fixtures =
-      fixturesFunc q
-      |> List.ofSeq
-    fixtures
-    |> List.map (fun f -> f.GameweekNo)
-    |> List.distinct
-    |> List.map (fun (GameweekNo gwno) -> FixtureSourcing.getNewPremGwResults gwno)
-    |> List.collect id
-    |> List.iter (fun (teamLine, scoreLine) ->
-      fixtures
-      |> List.tryFind (fun f -> f.TeamLine = teamLine)
-      |> function
-      | Some f ->
-        ClassifyFixture (f.Id, scoreLine)
-        |> fun cmd -> FixtureSetCommand (f.FixtureSetId, cmd)
-        |> handle
-        |> Async.RunSynchronously
-        |> function
-        | Ok _ -> printfn "%s Fixture Classified\n%A\n%A" desc f scoreLine
-        | Error e -> printfn "ERROR CLASSIFYING\n%A" e
-      | None -> ())
-
-  let classifyKickedOffFixtures (handle:Command -> Ars<Unit>) (q:Queries) =
-    classifyFixtures "@@@@@@@@@@@@@@@@@ KICKED OFF FIXTURES" handle q (fun q -> q.getFixturesAwaitingResults ())
-
-  let classifyAllFixtures (handle:Command -> Ars<Unit>) (q:Queries) =
-    classifyFixtures "@@@@@@@@@@@@@@@@@ CLASS ALL" handle q (fun q -> q.getAllFixtures ())
-
-  let classifyFixturesAfterGameweek (handle:Command -> Ars<Unit>) (q:Queries) (GameweekNo gwno) =
-    classifyFixtures "@@@@@@@@@@@@@@@@@ CLASS AFTER GW" handle q (fun q -> q.getAllFixtures () |> Seq.filter(fun { GameweekNo = GameweekNo g } -> g > gwno))
-
-  let concludeGameweek (handle:Command -> Ars<Unit>) (q:Queries) =
-    q.getUnconcludedFixtureSets ()
-    |> Seq.iter (fun (fsId, gwno, fixtures) ->
-      if fixtures |> Seq.forall (fun f -> f.ScoreLine.IsSome) then
-        printfn "CONCLUDING GW %A %A" fsId gwno
-        FixtureSetCommand (fsId, ConcludeFixtureSet gwno)
-        |> handle
-        |> Async.RunSynchronously
-        |> ignore
-      else ())
-
-module Whistler =
-
-  let kickOffFixtures (handle:Command -> Ars<Unit>) (q:Queries) (now:DateTimeOffset) =
-    q.getKickedOffFixtures now
-    |> List.ofSeq
-    |> List.iter (
-      fun f ->
-        KickOffFixture f.Id
-        |> fun cmd -> FixtureSetCommand (f.FixtureSetId, cmd)
-        |> handle
-        |> Async.RunSynchronously
-        |> function
-        | Ok _ -> printfn "Fixture kicked off\n%A\n%A" f.Id f.TeamLine
-        | Error e -> printfn "ERROR KICKING OFF\n%A" e)
+open Microsoft.AspNetCore
+open Microsoft.Extensions.Hosting
 
 module HttpHandlers =
 
@@ -412,7 +273,7 @@ module HttpHandlers =
       PlayerId : string }
 
   let getPlayerPushSubscriptions (deps:Dependencies) : List<PlayerId * PushSubscription> =
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo -> repo.Read PlayerPushSubscriptions
     |> Option.defaultValue []
     |> List.distinct
@@ -438,3 +299,117 @@ module HttpHandlers =
     fun next (ctx:HttpContext) ->
       backgroundTasks handleCommand deps.Queries now
       Successful.OK "Ok" next ctx
+
+  type RecurringTasks (inf, now) =
+
+    interface IHostedService with
+      member __.StartAsync ct =
+        printfn "STARTING RECURRING TASKS"
+        let (_, _, _, _, queries, _, _, handleCommand) = inf
+        async {
+          while not ct.IsCancellationRequested do
+            backgroundTasks handleCommand queries now
+            return! Async.Sleep 60000
+        } |> Async.StartAsTask |> ignore
+        Tasks.Task.CompletedTask
+      member __.StopAsync _ =
+        printfn "STOPPING RECURRING TASKS"
+        Tasks.Task.CompletedTask
+
+  let webApp handleCommand (deps:Dependencies) (appConfig:ApplicationConfiguration) now =
+
+    let buildCsp (PlayerId id, PlayerName name) =
+      { Jwt.JwtPlayer.sub = ""
+        Jwt.JwtPlayer.name = name
+        Jwt.JwtPlayer.roles = []
+        Jwt.JwtPlayer.playerId = id }
+      |> Jwt.jwtPlayerToAppToken appConfig.encryptionKey
+      |> fun jwt -> { Token = jwt; Name = name; Id = PlayerId id }
+
+    let cspToString : ClientSafePlayer -> string =
+      Json.srlz >> (fun b -> b.ToArray()) >> Convert.ToBase64String >> Uri.EscapeDataString
+
+    let loginPlayer (playerId, playerName, email) =
+      PlayerCommand (playerId, Login (playerName, email))
+      |> handleCommand
+      |> AsyncResult.map (fun () -> buildCsp (playerId, playerName))
+
+    let authOk idPrefix (ext:ExternalAuth) : HttpHandler =
+      fun next ctx ->
+        let redirectPath =
+          match ctx.Request.Cookies.TryGetValue(redirectPathKey) with
+          | true, path -> path
+          | _ -> ""
+        ctx.Response.Cookies.Delete (redirectPathKey)
+        let respond (result:Rresult<string>) : HttpFuncResult =
+          match result with
+          | Ok s -> redirectTo false s next ctx
+          | Error s ->
+          ServerErrors.INTERNAL_ERROR s next ctx
+        let buildRedirectUrl =
+          sprintf "%s/logged-in#player=%s" appConfig.clientHost
+        let appendRedirectPath url =
+          sprintf "%s&%s=%s" url redirectPathKey redirectPath
+        (sprintf "%s-%s" idPrefix ext.id |> PlayerId, PlayerName ext.name, ext.email)
+        |> (loginPlayer
+        >> Async.toTask (AsyncResult.map (cspToString >> buildRedirectUrl >> appendRedirectPath))
+        >> Task.bind respond)
+
+    let writeRedirectPathCookie : HttpHandler =
+      System.Threading.Thread.Sleep 2000
+      fun next ctx ->
+        ctx.Response.Cookies.Append(redirectPathKey, HttpContext.requestFormKey ctx redirectPathKey)
+        next ctx
+
+    // let removeRedirectPathCookie : HttpHandler =
+    //   fun next ctx ->
+    //     ctx.Response.Cookies.Delete (redirectPathKey)
+    //     next ctx
+
+    let facebookConfig : Login.Facebook.Configuration =
+      { clientId = appConfig.facebookClientId
+        clientSecret = appConfig.facebookClientSecret
+        baseUrl = appConfig.clientHost
+        middleWare = writeRedirectPathCookie
+        authError = ServerErrors.INTERNAL_ERROR
+        authOk = authOk "fb" }
+
+    let twitterConfig : Login.Twitter.Configuration =
+      { consumerKey = appConfig.twitterConsumerKey
+        consumerSecret = appConfig.twitterConsumerSecret
+        baseUrl = appConfig.clientHost
+        middleWare = writeRedirectPathCookie
+        authError = ServerErrors.INTERNAL_ERROR
+        authOk = authOk "tw" }
+
+    let printDocstore (deps:Dependencies) =
+      Documents.repo deps.ElasticSearch
+      |> fun repo -> repo.Print()
+      // |> Giraffe.ResponseWriters.json
+      |> string
+
+    choose [
+      Login.Facebook.handler facebookConfig
+      Login.Twitter.handler twitterConfig
+      POST >=> route  "/api/fixtureKo" >=> editFixtureKo handleCommand
+      POST >=> route  "/api/fixtureSet" >=> createFixtureSet handleCommand
+      POST >=> route  "/api/removePlayer" >=> removePlayer handleCommand
+      POST >=> route  "/api/classifyFixture" >=> classifyFixture deps handleCommand
+      POST >=> route  "/api/classifyAllFixtures" >=> classifyAllFixtures deps handleCommand
+      POST >=> routef "/api/classifyFixturesAfterGameweek/%i" (classifyFixturesAfterGameweek deps handleCommand)
+      POST >=> route  "/api/addPlayerToLeague" >=> addPlayerToLeague handleCommand
+      POST >=> route  "/api/removePlayerFromLeague" >=> removePlayerFromLeague handleCommand
+      POST >=> route  "/api/renameLeague" >=> renameLeague handleCommand
+      POST >=> route  "/api/overwritePredictionSet" >=> overwritePredictionSet handleCommand
+      POST >=> route  "/api/kickoffFixture" >=> kickOffFixture deps handleCommand
+      POST >=> route  "/api/appendFixtureToGameweek" >=> appendFixtureToGameweek handleCommand
+      POST >=> route  "/api/removeOpenFixture" >=> removeOpenFixture handleCommand
+      POST >=> route  "/api/testNotify" >=> testNotify deps
+      POST >=> route  "/api/backgroundTasks" >=> runBackgroundTasks deps handleCommand now
+      GET  >=> route  "/api/vapidPublicKey" >=> text appConfig.pushSubscriptionPublicKey
+      GET  >=> route  "/api/printDocstore" >=> warbler (fun _ -> printDocstore deps |> text)
+      GET  >=> route  "/api/now" >=> warbler (fun _ -> now().ToString("s") |> text)
+      GET  >=> route  "/api/utcnow" >=> warbler (fun _ -> DateTime.UtcNow.ToString("s") |> text)
+      Protocol.buildProtocol handleCommand deps appConfig now
+      htmlFile "public/index.html"
+    ]

@@ -13,7 +13,7 @@ module CommandHandler =
       (Result.retn (initEventVersion, init))
 
   let cleanEvents =
-    snd >> List.map (fun (DatedEvent (e, _)) -> e)
+    List.map (fun (DatedEvent (e, _)) -> e)
 
   let handle (readEvents:ReadEvents) (storeEvents:StoreEvents) (command:Command) : Ars<Unit> =
 

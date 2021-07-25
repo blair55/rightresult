@@ -3,7 +3,6 @@
 open FSharp.Core
 open Shared
 open Server.Infrastructure
-open Persistence
 
 module CreateLeagueSubscribers =
 
@@ -12,12 +11,12 @@ module CreateLeagueSubscribers =
       Created = created
       Name = leagueName } |> fun l ->
       deps.Graph.Cypher
-        .Create("(l:League {param})")
+        .Create("(l:League $param)")
         .WithParam("param", l)
-        .ExecuteWithoutResults()
+        .ExecuteWithoutResultsAsync().Wait()
 
   let private createLeagueLatestTableDoc (deps:Dependencies) created (leagueId, leagueName, _) =
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo ->
       repo.Insert
         (LeagueTableDocument (PrivateLeague leagueId, Full))
@@ -37,7 +36,7 @@ module CreateLeagueSubscribers =
             State = MatrixFixtureState.Open
             SortOrder = f.SortOrder })
         |> Map.ofList
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo ->
           { FixtureSetId = fsId
             LeagueName = leagueName
@@ -61,9 +60,9 @@ module LeagueRenamedSubscribers =
     deps.Graph.Cypher
       .Match("(l:League)")
       .Where(fun (l:LeagueNode) -> l.Id = string leagueId)
-      .Set("l.Name = {name}")
+      .Set("l.Name = $name")
       .WithParam("name", leagueName)
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ renameLeagueGraph ]
@@ -75,15 +74,15 @@ module LeagueJoinedSubscribers =
       .Match("(p:Player)", "(l:League)")
       .Where(fun (p:PlayerNode) -> p.Id = playerId)
       .AndWhere(fun (l:LeagueNode) -> l.Id = string leagueId)
-      .CreateUnique("(p)-[:IN_LEAGUE]->(l)")
+      .Merge("(p)-[r:IN_LEAGUE]->(l)")
       // .CreateUnique("(p)-[:IN_LEAGUE {r}]->(l)")
       // .WithParam("r", dict [ "Joined", created ])
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
   let private joinLeagueUpdateLatestTableDoc (deps:Dependencies) created (leagueId, playerId) =
     match deps.Queries.getPlayer playerId with
     | Some p ->
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo ->
         let members league =
           if List.exists (fun (pId, _) -> pId = playerId) league.Members
@@ -109,7 +108,7 @@ module LeagueLeftSubscribers =
       .AndWhere(fun (l:LeagueNode) -> l.Id = string leagueId)
       // .Match("(p)-[r:IN_LEAGUE]->(l)")
       .Delete("r")
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ leaveLeague ]
@@ -121,7 +120,7 @@ module LeagueRemovedSubscribers =
       .OptionalMatch("()-[r]->(league:League)")
       .Where(fun (l:LeagueNode) -> l.Id = string leagueId)
       .Delete("r, league")
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ removeLeague ]

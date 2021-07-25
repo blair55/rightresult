@@ -1,19 +1,21 @@
 source https://api.nuget.org/v3/index.json
-framework: netcoreapp3.1, netstandard2.0
-storage: none
+framework net5.0
+storage none
 
 nuget FSharp.Core
 nuget FSharp.Data
 nuget Fable.Remoting.Giraffe
 nuget Fable.JsonConverter
+nuget Giraffe
 nuget Microsoft.AspNetCore
 nuget Microsoft.AspNetCore.StaticFiles
 nuget jose-jwt
-nuget Neo4j.Driver.Signed 1.7.2
+nuget Neo4j.Driver.Signed
 nuget Newtonsoft.Json
-nuget EventStore.ClientAPI.NetCore
+nuget EventStore.Client.Grpc.Streams
 nuget Neo4jClient
 nuget WebPush
+nuget TaskBuilder.fs
 
 nuget Expecto
 
@@ -26,16 +28,17 @@ nuget Fable.FontAwesome.Free
 nuget Fable.Mocha
 nuget Fable.React
 nuget Fable.Remoting.Client
+nuget Feliz
+nuget Feliz.Bulma
 nuget Fulma
 nuget Fulma.Extensions.Wikiki.Quickview
 nuget Thoth.Elmish.Toast
 
 group Build
   source https://api.nuget.org/v3/index.json
-  framework: netstandard2.0
-  storage: none
+  framework net5.0
+  storage none
 
   nuget FSharp.Core
   nuget Fake.Core.Target
-  nuget Fake.DotNet.Cli
   nuget Fake.IO.FileSystem

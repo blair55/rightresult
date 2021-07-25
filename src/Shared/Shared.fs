@@ -517,6 +517,17 @@ module KickOff =
 /// - new awards added to hp ?
 /// - xss ?
 /// - undo allowing multiple league join events per player / revert 6250be3
+/// - asyncify
+/// - SSRify
+/// - femtoify
+/// - felizify
+/// - detect fixture ko change
+/// - landing page
+/// - points
+/// - server side tidy
+/// - reader monad dependencies
+/// - fix serviceworker error
+/// - page per fixture & swipe
 
 /// + add fixture score to matrix
 /// + real & predicted prem tables

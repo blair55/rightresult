@@ -3,7 +3,6 @@
 open FSharp.Core
 open Shared
 open Server.Infrastructure
-open Persistence
 
 module PredictionCreatedSubscribers =
 
@@ -28,7 +27,7 @@ module PredictionEditCypher =
       .Where(fun (player:PlayerNode) -> player.Id = pId)
       .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
       .Set(set)
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
 module PredictionIncHomeScoreSubscribers =
 
@@ -74,7 +73,7 @@ module PredictionDoubleDownAppliedSubscribers =
       .Where(fun (player:PlayerNode) -> player.Id = pId)
       .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
       .Set("pred.IsDoubleDown = true")
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ applyDoubleDown
@@ -88,7 +87,7 @@ module PredictionSetDoubleDownRemovedSubscribers =
       .Where(fun (player:PlayerNode) -> player.Id = pId)
       .AndWhere(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
       .Set("pred.IsDoubleDown = false")
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ removeDoubleDown
@@ -97,7 +96,7 @@ module PredictionSetDoubleDownRemovedSubscribers =
 module PredictionSetOverwrittenSubscribers =
 
   let private overwritePredictionSet (deps:Dependencies) _ (sourcePlayerId, destinationPlayerId, fsId) =
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo -> repo.Delete (PlayerFixtureSetsDocument destinationPlayerId)
     deps.NonQueries.deletePredictionSet (destinationPlayerId, fsId)
     deps.Queries.getPlayerFixtureSet sourcePlayerId fsId

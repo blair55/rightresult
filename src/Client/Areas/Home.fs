@@ -68,7 +68,7 @@ module HomeArea =
                     Heading.Is6
                   ]
                   [ Fa.i [ Fa.Solid.AngleDoubleDown ] []
-                    str " 2020/21"
+                    str " 2021/22"
                   ]
               ]
           ]
@@ -226,7 +226,7 @@ module HomeArea =
             InitIsSubscribableReceived
         ]
 
-  let safeDateTimeToString s =
+  let safeDateTimeToString (s:string) =
     match DateTime.TryParse s with
     | true, d -> d
     | _ -> DateTime.MinValue

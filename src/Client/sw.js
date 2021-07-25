@@ -17,4 +17,4 @@ self.addEventListener('notificationclick', function (event) {
   event.waitUntil(clients.openWindow('/fixtures'));
 });
 
-workbox.precaching.precacheAndRoute(self.__precacheManifest);
+workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);

@@ -4,7 +4,6 @@ open FSharp.Core
 open Shared
 open Server
 open Server.Infrastructure
-open Persistence
 
 module FixtureSubscribersAssistance =
 
@@ -29,20 +28,20 @@ module FixtureSubscribersAssistance =
     >> fun allPlayerIds -> (GlobalLeague, Global.leagueName, allPlayerIds) :: getPrivateLeaguesAndLeagueMembers deps
 
   let getPlayerPushSubscriptions (deps:Dependencies) : List<PlayerId * PushSubscription> =
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo -> repo.Read PlayerPushSubscriptions
     |> Option.defaultValue []
     |> List.distinct
 
   let buildColumn (deps:Dependencies) team =
     let getFormGuide team : FormFixture list =
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo ->
       repo.Read (FormGuideDocument team)
       |> Option.defaultValue []
       |> List.sortByDescending (fun f -> f.KickOff)
     let getPremTableRow team =
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo ->
       repo.Read RealPremTable
       |> Option.bind (fun (table:PremTable) -> Map.tryFind team table.Rows)
@@ -53,7 +52,7 @@ module FixtureSubscribersAssistance =
 
 module FixtureSetCreatedSubscribers =
 
-  open Infrastructure.PushNotifications
+  open Infrastructure.Push
   open FixtureSubscribersAssistance
 
   let createFixtureSet (deps:Dependencies) created (FixtureSetId fsId, GameweekNo gwno, fixtures:FixtureRecord list) =
@@ -100,7 +99,7 @@ module FixtureSetCreatedSubscribers =
           SortOrder = f.SortOrder
         })
       |> Map.ofList
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo ->
       FixtureSubscribersAssistance.leagueIdsAndNames deps
       |> List.iter (fun (leagueId, leagueName) ->
@@ -124,7 +123,7 @@ module FixtureSetCreatedSubscribers =
   let createFixtureDetails (deps:Dependencies) _ (_, _, fixtures) =
     fixtures
     |> List.iter (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo ->
         repo.Insert (FixtureDetailsDocument fId)
           { Id = fId; KickOff = ko; Home = buildColumn deps home; Away = buildColumn deps away })
@@ -142,13 +141,13 @@ module FixtureSetConcludedSubscribers =
     deps.NonQueries.concludeFixtureSet fsId
 
   let calculateGlobalGameweekWinner (deps:Dependencies) created (fsId, GameweekNo gwno) =
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo ->
     LeagueTableDocument (GlobalLeague, Week gwno)
     |> repo.Read
     |> Option.bind (fun table -> table.Members |> List.tryHead)
     |> Option.map (fun (playerId, m) ->
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo ->
         repo.Insert
           GlobalGameweekWinner
@@ -189,7 +188,7 @@ module FixtureKickedOffSubscribers =
       |> List.map (fun p -> p.Id, p.Name)
       |> Map.ofList
 
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo ->
     q.getFixtureSetGameweekNo fsId
     |> fun gwno ->
@@ -227,7 +226,7 @@ module FixtureKickedOffSubscribers =
       )
 
   let updatePredictedPremTableForAllPlayers deps _ (_, _) =
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo ->
     deps.Queries.getAllPlayers ()
     |> List.ofSeq
@@ -308,7 +307,7 @@ module FixtureClassifiedSubscribers =
       |> Map.ofList
 
     let getTable (leagueId, window) : LeagueTableDoc option =
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo -> repo.Read (LeagueTableDocument (leagueId, window))
 
     let buildLeagueTable
@@ -318,7 +317,7 @@ module FixtureClassifiedSubscribers =
       let previousTableMap =
         previousTable |> Option.map (fun t -> t.Members |> Map.ofList)
 
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo ->
       playerPredictions
       |> Map.map (fun playerId fixturePredictions ->
@@ -380,7 +379,7 @@ module FixtureClassifiedSubscribers =
             AveragePoints = 0.
             PlayerPoints = m }
         |> fun docRow ->
-          ElasticSearch.repo deps.ElasticSearch
+          Documents.repo deps.ElasticSearch
           |> fun repo ->
             repo.Upsert
               (PlayerFixtureSetsDocument player.Id)
@@ -390,7 +389,7 @@ module FixtureClassifiedSubscribers =
   let updateLeagueHistoryWindowDoc (deps:Dependencies) (docF, window, description) =
 
     let getLeagueTable (leagueId, window) : LeagueTableDoc option =
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo -> repo.Read (LeagueTableDocument (leagueId, window))
 
     let leagueIds =
@@ -407,7 +406,7 @@ module FixtureClassifiedSubscribers =
         |> List.tryHead // TODO: everyone in position 1
         |> function
         | Some (_, m) ->
-          ElasticSearch.repo deps.ElasticSearch
+          Documents.repo deps.ElasticSearch
           |> (fun repo ->
             repo.Upsert (docF leagueId)
               Map.empty
@@ -444,7 +443,7 @@ module FixtureClassifiedSubscribers =
       |> List.map (fun p -> p.Id, p.Name)
       |> Map.ofList
 
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo ->
     q.getFixtureSetGameweekNo fsId
     |> fun gwno ->
@@ -483,7 +482,7 @@ module FixtureClassifiedSubscribers =
         |> ignore)
 
   let updateRealPremTable deps _ _ =
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo ->
     deps.Queries.getAllFixtures ()
     |> List.ofSeq
@@ -493,7 +492,7 @@ module FixtureClassifiedSubscribers =
 
   let updateFormGuideDoc deps _ (_, fId, _) =
     let repo =
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
     let rebuildFormGuide team =
       deps.Queries.getFixturesForTeam team
       |> List.ofSeq
@@ -538,7 +537,7 @@ module FixtureClassifiedSubscribers =
     |> List.ofSeq
     |> List.filter (fun f -> f.ScoreLine.IsNone)
     |> List.iter (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo ->
         repo.Insert (FixtureDetailsDocument fId)
           { Id = fId; KickOff = ko; Home = buildColumn deps home; Away = buildColumn deps away })
@@ -563,7 +562,7 @@ module FixtureAppendedSubscribers =
   let createFixtureDetails (deps:Dependencies) _ (_, fixture) =
     fixture
     |> (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
       |> fun repo ->
         repo.Insert (FixtureDetailsDocument fId)
           { Id = fId; KickOff = ko; Home = buildColumn deps home; Away = buildColumn deps away })
@@ -619,7 +618,7 @@ module FixtureAppendedSubscribers =
           })
       |> Map.ofList
 
-    ElasticSearch.repo deps.ElasticSearch
+    Documents.repo deps.ElasticSearch
     |> fun repo ->
     FixtureSubscribersAssistance.leagueIdsAndNames deps
     |> List.choose (fun (leagueId, _) -> repo.Read (Matrix (leagueId, (GameweekNo gwno))))

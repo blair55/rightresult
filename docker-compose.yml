@@ -1,7 +1,7 @@
 version: "2"
 services:
   rr:
-    image: nickblair/rightresult:latest
+    image: nickblair/rightresult:fable3
     depends_on:
       - deps
     ports:
@@ -9,8 +9,8 @@ services:
     env_file:
       - .env
     environment:
-      - NEO4JURL=http://neo4j:7474/db/data
-      - EVENTSTOREURL=tcp://eventstore:1113
+      - NEO4JURL=http://neo4j:7474
+      - EVENTSTOREURL=esdb://eventstore:2113?tls=false
       - ELASTICSEARCHURL=http://elasticsearch:9200
       - CLIENTHOST=http://localhost:8080
 
@@ -22,20 +22,25 @@ services:
       - neo4j
 
   eventstore:
-    image: eventstore/eventstore
+    image: eventstore/eventstore:21.6.0-buster-slim
     volumes:
       - eventstore_volume:/var/lib/eventstore
     # volumes:
     # - ./eventstore/data:/var/lib/eventstore
     # - ./eventstore/log:/var/log/eventstore
-    # environment:
-    #   - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+    environment:
+      - EVENTSTORE_CLUSTER_SIZE=1
+      - EVENTSTORE_RUN_PROJECTIONS=None
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=false
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
     ports:
       - "1113:1113"
       - "2113:2113"
 
   neo4j:
-    image: neo4j:3.4.1
+    image: neo4j:4.3.2-community
     ports:
       - 7474:7474
       - 7687:7687

@@ -3,7 +3,6 @@
 open Shared
 open FSharp.Core
 open Server.Infrastructure
-open Persistence
 
 module PlayerCreatedSubscribers =
 
@@ -15,13 +14,13 @@ module PlayerCreatedSubscribers =
       LastLogin = created }
     |> fun p ->
       deps.Graph.Cypher
-        .Create("(p:Player {param})")
+        .Create("(p:Player $param)")
         .WithParam("param", p)
-        .ExecuteWithoutResults()
+        .ExecuteWithoutResultsAsync().Wait()
 
   let private addToGlobalLeague (deps:Dependencies) created (playerId, name, email) =
     let repo =
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
     repo.Upsert
       (LeagueTableDocument (GlobalLeague, Full))
       (LeagueTableDoc.Init Global.leagueName)
@@ -38,9 +37,9 @@ module PlayerLoggedInSubscribers =
     deps.Graph.Cypher
       .Match("(p:Player)")
       .Where(fun (p:PlayerNode) -> p.Id = id)
-      .Set("p.LastLogin = {Created}")
+      .Set("p.LastLogin = $Created")
       .WithParam("Created", created)
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ playerLoggedIn
@@ -53,11 +52,11 @@ module PlayerRemovedSubscribers =
       .Match("(p:Player)")
       .Where(fun (p:PlayerNode) -> p.Id = pId)
       .DetachDelete("p")
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
   let private removePlayerFromFullTables (deps:Dependencies) created playerId =
     let repo =
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
     deps.Queries.getPrivateLeagues ()
       |> List.ofSeq
       |> List.map (fun l -> PrivateLeague l.PrivateLeagueId)
@@ -75,11 +74,11 @@ module PlayerRemovedSubscribers =
 
 module PlayerSubscribedToPushSubscribers =
 
-  open Server.Infrastructure.PushNotifications
+  open Server.Infrastructure.Push
 
   let private saveSubscriptionDoc (deps:Dependencies) created (playerId, subscription) =
     let repo =
-      ElasticSearch.repo deps.ElasticSearch
+      Documents.repo deps.ElasticSearch
     repo.Upsert
       PlayerPushSubscriptions
       []
@@ -93,10 +92,10 @@ module PlayerSubscribedToPushSubscribers =
     deps.Graph.Cypher
       .Match("(p:Player)")
       .Where(fun (p:PlayerNode) -> p.Id = playerId)
-      .Create("(p)-[:SUBSCRIBED {rel}]->(s:Subscription {sub})")
+      .Create("(p)-[:SUBSCRIBED $rel]->(s:Subscription $sub)")
       .WithParam("sub", dict [ "auth", subscription.Endpoint ])
       .WithParam("rel", dict [ "Subscribed", created ])
-      .ExecuteWithoutResults()
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ saveSubscriptionDoc

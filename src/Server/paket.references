@@ -7,6 +7,7 @@ Fable.JsonConverter
 FSharp.Data
 jose-jwt
 Newtonsoft.Json
-EventStore.ClientAPI.NetCore
+EventStore.Client.Grpc.Streams
 Neo4jClient
 WebPush
+TaskBuilder.fs

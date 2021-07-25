@@ -112,11 +112,11 @@ let navToString s =
 let navTo r =
   (routeToPath >> sprintf "/%s" >> navToString) r
 
-let isValidGuid =
-  System.Guid.TryParse >> fst
+let isValidGuid (g:string) =
+  System.Guid.TryParse g |> fst
 
-let toGuid =
-  System.Guid.Parse
+let toGuid (g:string) =
+  System.Guid.Parse g
 
 open Shared
 

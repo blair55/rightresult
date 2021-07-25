@@ -42,19 +42,19 @@ module Events =
     StreamId of String
 
   type EventVersion =
-    EventVersion of int64
+    EventVersion of uint64
 
   let initEventVersion =
-    EventVersion -1L
+    EventVersion (uint64 -1)
 
   let incVer (EventVersion version) =
-    EventVersion (version + 1L)
+    EventVersion (version + 1UL)
 
   type DatedEvent =
     DatedEvent of Event * DateTimeOffset
 
   type ReadEvents =
-    StreamId -> Ars<EventVersion * DatedEvent list>
+    StreamId -> Ars<DatedEvent list>
 
   type StoreEvents =
     StreamId -> EventVersion -> Event list -> Rresult<Unit>

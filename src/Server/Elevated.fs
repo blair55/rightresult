@@ -1,16 +1,16 @@
 namespace Server.Elevated
 
-module Async = 
+module Async =
 
   let retn x = async {
     return x }
 
   let map f xAsync = async {
-    let! x = xAsync 
+    let! x = xAsync
     return f x }
 
   let bind f xAsync = async {
-    let! x = xAsync 
+    let! x = xAsync
     return! f x }
 
   let toTask f a =
@@ -21,21 +21,21 @@ module Result =
   let retn =
     Ok
 
-  let bind f xResult = 
+  let bind f xResult =
     match xResult with
     | Ok x -> f x
     | Error errs -> Error errs
 
-  let apply f xResult = 
+  let apply f xResult =
     match f, xResult with
     | Ok f, Ok x -> Ok (f x)
     | Error errs, _ -> Error errs
     | _, Error errs -> Error errs
-  
-  let (<*>) = apply 
+
+  let (<*>) = apply
   let (<!>) = Result.map
 
-  let lift2 f x y = 
+  let lift2 f x y =
       f <!> x <*> y
 
   let traverseResultM f list =
@@ -51,28 +51,28 @@ module Result =
     let folder head tail =
       f head >>= (fun h -> tail >>= (fun t -> retn (cons h t)))
 
-    List.foldBack folder list (retn []) 
+    List.foldBack folder list (retn [])
 
 module AsyncResult =
 
-  let retn x = 
+  let retn x =
     x |> Result.retn |> Async.retn
 
-  let map f = 
-    f |> Result.map |> Async.map 
+  let map f =
+    f |> Result.map |> Async.map
 
-  let apply fAsyncResult xAsyncResult = 
-    fAsyncResult |> Async.bind (fun fResult -> 
-    xAsyncResult |> Async.map (fun xResult -> 
+  let apply fAsyncResult xAsyncResult =
+    fAsyncResult |> Async.bind (fun fResult ->
+    xAsyncResult |> Async.map (fun xResult ->
     Result.apply fResult xResult))
 
   let bind f xAsyncResult = async {
-    let! xResult = xAsyncResult 
+    let! xResult = xAsyncResult
     match xResult with
     | Ok x -> return! f x
     | Error err -> return (Error err) }
 
-open FSharp.Control.Tasks
+open FSharp.Control.Tasks.V2
 open System.Threading.Tasks
 
 module Task =
@@ -81,11 +81,11 @@ module Task =
     return x }
 
   let map f (xTask:Task<'a>) = task {
-    let! x = xTask 
+    let! x = xTask
     return f x }
 
   let bind f (xTask:Task<'a>) = task {
-    let! x = xTask 
+    let! x = xTask
     return! f x }
 
   let toAsync t =

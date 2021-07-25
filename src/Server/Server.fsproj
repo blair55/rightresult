@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
@@ -20,13 +20,24 @@
     <Compile Include="Models/Player.fs" />
     <Compile Include="Models/PredictionSet.fs" />
     <Compile Include="CommandHandling.fs" />
-    <Compile Include="Infrastructure.fs" />
+    <Compile Include="Infrastructure/Json.fs" />
+    <Compile Include="Infrastructure/Documents.fs" />
+    <Compile Include="Infrastructure/EventStore.fs" />
+    <Compile Include="Infrastructure/Graph.fs" />
+    <Compile Include="Infrastructure/Push.fs" />
+    <Compile Include="Infrastructure/Time.fs" />
+    <Compile Include="Infrastructure/Index.fs" />
     <Compile Include="Subscribers/FixtureSetSubscribers.fs" />
     <Compile Include="Subscribers/PredictionSubscribers.fs" />
     <Compile Include="Subscribers/PlayerCreatedSubscribers.fs" />
     <Compile Include="Subscribers/LeagueSubscribers.fs" />
-    <Compile Include="HttpHandlers/FixtureSourcing.fs" />
-    <None Include="HttpHandlers/PremFixturesSample.json" />
+    <Compile Include="Config.fs" />
+    <Compile Include="Application/FixtureSourcing.fs" />
+    <Compile Include="Application/Classifier.fs" />
+    <Compile Include="Application/Whistler.fs" />
+    <Compile Include="Application/Protocol.fs" />
+    <Compile Include="Application/HttpHandlers.fs" />
+    <None Include="Application/PremFixturesSample.json" />
     <Compile Include="EventHandling.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>
