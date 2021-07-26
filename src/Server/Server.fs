@@ -13,29 +13,21 @@ open Server.Infrastructure
 
 module Server =
 
-  let now () =
-    DateTime.UtcNow
-    |> Time.toUkTime
-
   let configureApp (app:IApplicationBuilder) =
-    let appConfig =
-      Config.buildAppConfig Environment.GetEnvironmentVariable
-    let elasticSearch = ()
-      // DocumentStore Map.empty
-    let eventStore =
-      // EventStore.eventStoreConnection appConfig.eventStoreUrl appConfig.eventStoreUsername appConfig.eventStorePassword
-      EventStore.eventStoreConnection appConfig.eventStoreUrl
-    let graphClient =
-      Graph.client appConfig.neo4jUrl
-    let queries =
-      Graph.queries graphClient
-    let nonQueries =
-      Graph.nonQueries graphClient
+    let appConfig = Config.buildAppConfig Environment.GetEnvironmentVariable
+    let elasticSearch = () // DocumentStore Map.empty
+    let eventStore = EventStore.eventStoreConnection appConfig.eventStoreUrl
+    let graphClient = Graph.client appConfig.neo4jUrl
+    let queries = Graph.queries graphClient
+    let nonQueries = Graph.nonQueries graphClient
+    let now () = Time.toUkTime DateTime.UtcNow
+
     let pushNotify =
       Push.send
         { Subject = "https://rightresu.lt"
           Public = appConfig.pushSubscriptionPublicKey
           Private = appConfig.pushSubscriptionPrivateKey }
+
     let handleCommand =
       CommandHandler.handle
         (EventStore.readStreamEvents eventStore)
@@ -61,7 +53,7 @@ module Server =
     services
 #if DEBUG
 #else
-      .AddHostedService<RecurringTasks>()
+      .AddHostedService<Server.Application.BackgroundTasks.RecurringTasks>()
 #endif
       .AddGiraffe() |> ignore
 

@@ -158,11 +158,11 @@ module HttpHandlers =
     >> Task.bind (respond next ctx))
 
   let classifyAllFixtures (deps:Dependencies) handleCommand =
-    Classifier.classifyAllFixtures handleCommand deps.Queries
+    BackgroundTasks.Classifier.classifyAllFixtures handleCommand deps.Queries
     Successful.OK "Ok"
 
   let classifyFixturesAfterGameweek (deps:Dependencies) handleCommand gwno =
-    Classifier.classifyFixturesAfterGameweek handleCommand deps.Queries (GameweekNo gwno)
+    BackgroundTasks.Classifier.classifyFixturesAfterGameweek handleCommand deps.Queries (GameweekNo gwno)
     Successful.OK "Ok"
 
   [<CLIMutable>]
@@ -290,31 +290,6 @@ module HttpHandlers =
       |> Task.toAsync
       |> Async.RunSynchronously
 
-  let backgroundTasks handleCommand queries now =
-    Whistler.kickOffFixtures handleCommand queries (now())
-    Classifier.concludeGameweek handleCommand queries
-    Classifier.classifyKickedOffFixtures handleCommand queries
-
-  let runBackgroundTasks (deps:Dependencies) handleCommand now =
-    fun next (ctx:HttpContext) ->
-      backgroundTasks handleCommand deps.Queries now
-      Successful.OK "Ok" next ctx
-
-  type RecurringTasks (inf, now) =
-
-    interface IHostedService with
-      member __.StartAsync ct =
-        printfn "STARTING RECURRING TASKS"
-        let (_, _, _, _, queries, _, _, handleCommand) = inf
-        async {
-          while not ct.IsCancellationRequested do
-            backgroundTasks handleCommand queries now
-            return! Async.Sleep 60000
-        } |> Async.StartAsTask |> ignore
-        Tasks.Task.CompletedTask
-      member __.StopAsync _ =
-        printfn "STOPPING RECURRING TASKS"
-        Tasks.Task.CompletedTask
 
   let webApp handleCommand (deps:Dependencies) (appConfig:ApplicationConfiguration) now =
 
@@ -387,6 +362,11 @@ module HttpHandlers =
       |> fun repo -> repo.Print()
       // |> Giraffe.ResponseWriters.json
       |> string
+
+    let runBackgroundTasks (deps:Dependencies) handleCommand now =
+      fun next (ctx:HttpContext) ->
+        BackgroundTasks.backgroundTasks handleCommand deps.Queries now
+        Successful.OK "Ok" next ctx
 
     choose [
       Login.Facebook.handler facebookConfig

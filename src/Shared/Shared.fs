@@ -275,6 +275,7 @@ and PredictionPointsMonoid =
       CorrectResults=ppm1.CorrectResults+ppm2.CorrectResults
       DoubleDownCorrectScores=ppm1.DoubleDownCorrectScores+ppm2.DoubleDownCorrectScores
       DoubleDownCorrectResults=ppm1.DoubleDownCorrectResults+ppm2.DoubleDownCorrectResults }
+
 and [<CLIMutable>] PlayerViewModel =
   { Id : PlayerId
     Name : PlayerName

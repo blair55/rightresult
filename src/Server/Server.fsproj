@@ -33,8 +33,7 @@
     <Compile Include="Subscribers/LeagueSubscribers.fs" />
     <Compile Include="Application/Config.fs" />
     <Compile Include="Application/FixtureSourcing.fs" />
-    <Compile Include="Application/Classifier.fs" />
-    <Compile Include="Application/Whistler.fs" />
+    <Compile Include="Application/BackgroundTasks.fs" />
     <Compile Include="Application/Protocol.fs" />
     <Compile Include="Application/HttpHandlers.fs" />
     <None Include="Application/PremFixturesSample.json" />
