@@ -57,7 +57,7 @@ module Events =
     StreamId -> Ars<DatedEvent list>
 
   type StoreEvents =
-    StreamId -> EventVersion -> Event list -> Rresult<Unit>
+    StreamId -> EventVersion -> Event list -> Ars<Unit>
 
 module HandlerHelper =
 

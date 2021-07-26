@@ -17,9 +17,9 @@ module Server =
     DateTime.UtcNow
     |> Time.toUkTime
 
-  let inf =
+  let configureApp (app:IApplicationBuilder) =
     let appConfig =
-      Application.Config.buildAppConfig Environment.GetEnvironmentVariable
+      Config.buildAppConfig Environment.GetEnvironmentVariable
     let elasticSearch = ()
       // DocumentStore Map.empty
     let eventStore =
@@ -40,24 +40,18 @@ module Server =
       CommandHandler.handle
         (EventStore.readStreamEvents eventStore)
         (EventStore.store eventStore)
-    appConfig, elasticSearch, eventStore, graphClient, queries, nonQueries, pushNotify, handleCommand
 
+    let deps =
+      { Graph = graphClient
+        Queries = queries
+        NonQueries = nonQueries
+        ElasticSearch = elasticSearch
+        PushNotify = pushNotify }
 
-  let configureApp (app:IApplicationBuilder) =
-    let (appConfig, elasticSearch, eventStore, graphClient, queries, nonQueries, pushNotify, handleCommand) =
-      inf
-    { Graph = graphClient
-      Queries = queries
-      NonQueries = nonQueries
-      ElasticSearch = elasticSearch
-      PushNotify = pushNotify }
-    |> fun deps ->
-    EventHandling.onEvent deps
-    |> fun onEvent ->
     Graph.deleteAll graphClient
     // ElasticSearch.setUpIndicies appConfig.elasticSearchUrl elasticSearch
     // EventStore.readFromBeginningAndSubscribeFromEnd eventStore onEvent
-    EventStore.subscribeToAll eventStore onEvent |> Json.srlzToString |> printfn "subscription: %s"
+    EventStore.subscribeToAll eventStore (EventHandling.onEvent deps) |> Json.srlzToString |> printfn "subscription: %s"
     Push.semaphore <- true
     app
       .UseStaticFiles()

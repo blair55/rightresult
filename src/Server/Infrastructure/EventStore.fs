@@ -33,18 +33,19 @@ let toEventStoreEvent (event:Event) =
   let case, _ = FSharpValue.GetUnionFields(event, typeof<Event>)
   EventData(Uuid.NewUuid(), case.Name, Json.srlz event)
 
+let store (client:EventStoreClient) (StreamId streamId) (EventVersion expected) events =
+  try
+    events
+      |> List.map toEventStoreEvent
+      |> fun events -> client.AppendToStreamAsync(streamId, StreamRevision expected, events)
+      |> Async.AwaitTask
+      |> Async.map (ignore >> Ok)
+  with
+    | :? WrongExpectedVersionException as ex -> WrongEventVersionError ex.Message |> Error |> Async.retn
+
 let subscribeToAll (client:EventStoreClient) onEvent =
   client.SubscribeToAllAsync(
     (fun _ (e:ResolvedEvent) _ ->
       try toDatedEvent e |> onEvent
       with ex -> eprintfn "%A" ex
       Task.CompletedTask), filterOptions=SubscriptionFilterOptions(filter=EventTypeFilter.ExcludeSystemEvents())).Result
-
-let store (client:EventStoreClient) (StreamId streamId) (EventVersion expected) =
-  try
-    List.map toEventStoreEvent
-    >> fun events -> client.AppendToStreamAsync(streamId, StreamRevision expected, events).Wait()
-    >> Ok
-  with
-    | :? WrongExpectedVersionException as ex ->
-      fun _ -> WrongEventVersionError ex.Message |> Result.Error

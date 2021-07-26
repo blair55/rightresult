@@ -21,10 +21,10 @@ module CommandHandler =
       readEvents >> AsyncResult.map cleanEvents >> Async.map (Result.bind (foldToResult folder))
 
     let applyAndStore apply streamId (v, state) =
-      state |> (apply >> Result.bind (storeEvents streamId v))
+      state |> (apply >> Async.retn >> AsyncResult.bind (storeEvents streamId v))
 
     let getStateApplyAndStore streamId folder apply =
-      streamId |> (getState folder >> Async.map (Result.bind (applyAndStore apply streamId)))
+      streamId |> (getState folder >> AsyncResult.bind (applyAndStore apply streamId))
 
     match command with
 
