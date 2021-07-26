@@ -1,5 +1,7 @@
 namespace Server.Elevated
 
+open System.Threading.Tasks
+
 module Async =
 
   let retn x = async {
@@ -61,6 +63,9 @@ module AsyncResult =
   let map f =
     f |> Result.map |> Async.map
 
+  let mapError f =
+    f |> Result.mapError |> Async.map
+
   let apply fAsyncResult xAsyncResult =
     fAsyncResult |> Async.bind (fun fResult ->
     xAsyncResult |> Async.map (fun xResult ->
@@ -72,8 +77,20 @@ module AsyncResult =
     | Ok x -> return! f x
     | Error err -> return (Error err) }
 
+  let AwaitTask (t:Task) = Async.AwaitTask t |> Async.map Result.retn
+
+  let AwaitTaskOf (t:Task<'a>) = Async.AwaitTask t |> Async.map Result.retn
+
+
+  type AsyncResultBuilder() =
+      member __.Return(x) = retn x
+      member __.ReturnFrom(m: Async<Result<_, _>>) = m
+      member __.Bind(m, f) = bind f m
+      member __.Zero() = Error()
+
+  let asyncResult = AsyncResultBuilder()
+
 open FSharp.Control.Tasks.V2
-open System.Threading.Tasks
 
 module Task =
 
