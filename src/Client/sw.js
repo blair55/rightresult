@@ -1,5 +1,8 @@
-workbox.core.skipWaiting();
-workbox.core.clientsClaim();
+import { clientsClaim } from 'workbox-core';
+import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+
+self.skipWaiting()
+clientsClaim();
 
 self.addEventListener('push', event => {
   var notification = event.data.json();
@@ -17,4 +20,5 @@ self.addEventListener('notificationclick', function (event) {
   event.waitUntil(clients.openWindow('/fixtures'));
 });
 
-workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
+cleanupOutdatedCaches();
+precacheAndRoute(self.__WB_MANIFEST);

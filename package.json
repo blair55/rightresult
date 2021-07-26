@@ -28,7 +28,8 @@
     "webpack-dev-server": "^3.8.2",
     "webpack-pwa-manifest": "^4.3.0",
     "whatwg-fetch": "^3.6.2",
-    "workbox-webpack-plugin": "6.1.5"
+    "workbox-precaching": "^6.1.5",
+    "workbox-webpack-plugin": "^6.1.5"
   },
   "dependencies": {
     "bulma": "0.9.3",
