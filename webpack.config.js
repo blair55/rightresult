@@ -97,6 +97,7 @@ var commonPluginsLast = new WorkboxPlugin.InjectManifest({
 module.exports = {
   // In development, bundle styles together with the code so they can also
   // trigger hot reloads. In production, put them in a separate CSS file.
+  stats: false,
   entry: isProduction
     ? {
       app: [
@@ -145,6 +146,7 @@ module.exports = {
     historyApiFallback: true,
     hot: true,
     inline: true,
+    stats: false
   },
   // - sass-loaders: transforms SASS/SCSS into JS
   // - file-loader: Moves files referenced in the code (fonts, images) into output folder
