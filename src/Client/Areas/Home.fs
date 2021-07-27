@@ -183,14 +183,26 @@ module HomeArea =
   let subscribeToPush () : JS.Promise<PushSubscription> =
     jsNative
 
-  let noNetworkView model =
-    Components.card
-      [ Message.message [ Message.Color IsWarning ] [
-            Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-              [ str "No network!"
-              ]
-          ]
-      ]
+  let noNetworkView model dispatch =
+    div [] [
+      Components.card
+        [ Message.message [ Message.Color IsWarning ] [
+              Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
+                [ str "No network!"
+                ]
+            ]
+        ]
+      Components.card
+        [ Menu.menu []
+            [ Menu.list []
+                [
+                  // Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] [ str "Global League" ]
+                  // Menu.Item.li [ Menu.Item.OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ] [ str model.Player.Name ]
+                  Menu.Item.li [ Menu.Item.OnClick (fun _ -> Logout |> dispatch) ] [ str "Log out" ]
+                ]
+            ]
+        ]
+    ]
 
   let view model dispatch =
     match model.TotalPoints, model.GlobalGwWinner with
@@ -198,7 +210,7 @@ module HomeArea =
       div [Class "home"] (loadedView model (points, winner) dispatch)
     | WebError _, _
     | _, WebError _ ->
-      noNetworkView model
+      noNetworkView model dispatch
     | _ ->
       div [] []
 
