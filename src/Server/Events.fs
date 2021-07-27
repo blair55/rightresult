@@ -51,7 +51,7 @@ module Events =
     EventVersion (version + 1UL)
 
   type DatedEvent =
-    DatedEvent of Event * DateTimeOffset
+    DatedEvent of Event * DateTime
 
   type ReadEvents =
     StreamId -> Ars<DatedEvent list>

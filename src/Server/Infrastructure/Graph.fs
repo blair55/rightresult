@@ -126,7 +126,6 @@ let queries (gc:GraphClient) : Queries =
         .Return(fun () -> Return.As<DateTime>("min(f.KickOff)"))
         .ResultsAsync.Result
       |> Seq.head
-      |> DateTimeOffset
       |> KickOff
 
     getPredictionsForPlayer = fun (PlayerId playerId) ->

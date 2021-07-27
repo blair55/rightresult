@@ -33,8 +33,8 @@ type FixtureSetId = FixtureSetId of Guid
 type FixtureId = FixtureId of Guid
 type Team = Team of string
 type TeamLine = TeamLine of home:Team * away:Team
-type KickOff = KickOff of DateTimeOffset
-type PredictionEditDate = PredictionEditDate of DateTimeOffset
+type KickOff = KickOff of DateTime
+type PredictionEditDate = PredictionEditDate of DateTime
 type Score =
   | Score of int
     member this.Inc () =
@@ -68,7 +68,7 @@ and PredictionRecord =
     FixtureId : FixtureId
     IsDoubleDown : bool
     ScoreLine : ScoreLine
-    Created : DateTimeOffset
+    Created : DateTime
   }
 and LeagueRecord =
   { LeagueName : LeagueName
@@ -152,35 +152,35 @@ type DocumentId =
     DocumentId of string
 and [<CLIMutable>] PlayerNode =
   { Id : string
-    Created : DateTimeOffset
-    LastLogin : DateTimeOffset
+    Created : DateTime
+    LastLogin : DateTime
     Name : string
     Email : string }
 and [<CLIMutable>] LeagueNode =
   { Id : string
-    Created : DateTimeOffset
+    Created : DateTime
     Name : string }
 and [<CLIMutable>] FixtureSetNode =
   { Id : string
     GameweekNo : int
     Year : int
     Month : int
-    Created : DateTimeOffset
+    Created : DateTime
     IsConcluded : bool }
 and [<CLIMutable>] PredictionNode =
   { PlayerId : string
     FixtureId : string
-    Created : DateTimeOffset
+    Created : DateTime
     IsDoubleDown : bool
     HomeScore : int
     AwayScore : int }
 and [<CLIMutable>] FixtureNode =
   { Id : string
     FixtureSetId : string
-    Created : DateTimeOffset
+    Created : DateTime
     GameweekNo : int
     SortOrder : int
-    KickOff : DateTimeOffset
+    KickOff : DateTime
     HomeTeam : string
     AwayTeam : string
     HasKickedOff : bool
@@ -499,7 +499,7 @@ module Global =
 module KickOff =
 
   let groupFormat (KickOff ko) =
-    ko.DateTime.ToString("ddd MMM d, yyyy")
+    ko.ToString("ddd MMM d, yyyy")
 
   let isLessThan (KickOff ko) now =
     ko < now

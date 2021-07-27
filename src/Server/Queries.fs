@@ -6,7 +6,7 @@ open Shared
 module Queries =
 
   type Queries =
-    { getKickedOffFixtures : DateTimeOffset -> FixtureRecord seq
+    { getKickedOffFixtures : DateTime -> FixtureRecord seq
       getAllFixtures : unit -> FixtureRecord seq
       getFixturesInFixtureSet : FixtureSetId -> FixtureRecord seq
       getFixturesInLatestFixtureSet : unit -> (FixtureSetId * GameweekNo * (FixtureRecord seq)) option

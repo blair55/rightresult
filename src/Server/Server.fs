@@ -22,7 +22,8 @@ let compositionRoot () =
   let queries = Graph.queries graphClient
   let nonQueries = Graph.nonQueries graphClient
   // let now () = Time.toUkTime DateTime.UtcNow
-  let now () = DateTimeOffset.UtcNow
+  let now () = DateTime.Now
+
   let validateToken = Jwt.appTokenToJwtPlayer appConfig.encryptionKey >> Ok
 
   let pushNotify =

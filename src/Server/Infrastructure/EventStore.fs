@@ -14,7 +14,7 @@ let eventStoreConnection url  =
   new EventStoreClient(EventStoreClientSettings.Create url)
 
 let private toDatedEvent (e:ResolvedEvent) =
-  DatedEvent(Json.dsrlz<Event> e.Event.Data, DateTimeOffset e.Event.Created)
+  DatedEvent(Json.dsrlz<Event> e.Event.Data, e.Event.Created)
 
 let readStreamEvents (client:EventStoreClient) (StreamId streamId) = async {
   try

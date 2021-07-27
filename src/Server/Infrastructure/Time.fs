@@ -2,10 +2,10 @@
 
 open System
 
-// let private tz =
-//   TimeZoneInfo.FindSystemTimeZoneById("Europe/London")
+let private tz =
+  TimeZoneInfo.FindSystemTimeZoneById("Europe/London")
 
-// let toUkTime (date:DateTime) =
-//   tz.GetUtcOffset date
-//   |> date.Add
-//   |> DateTimeOffset
+let toUkTime (date:DateTime) =
+  tz.GetUtcOffset date
+  |> date.Add
+  // |> DateTimeOffset

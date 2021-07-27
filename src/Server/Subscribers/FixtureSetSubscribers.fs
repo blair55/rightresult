@@ -61,8 +61,8 @@ module FixtureSetCreatedSubscribers =
     |> fun { KickOff = KickOff minKo } ->
     { FixtureSetNode.Id = string fsId
       GameweekNo = gwno
-      Year = minKo.DateTime.Year
-      Month = minKo.DateTime.Month
+      Year = minKo.Year
+      Month = minKo.Month
       Created = created
       IsConcluded = false }
     |> deps.NonQueries.createFixtureSet
@@ -436,7 +436,7 @@ module FixtureClassifiedSubscribers =
   let updateLeagueHistoryMonthSetDoc deps _ (FixtureSetId fsId, _, _) =
     deps.Queries.getFixtureSetEarliestKickOff (FixtureSetId fsId)
     |> fun (KickOff ko) ->
-    (LeagueAllMonthHistory, Month (ko.DateTime.Year, ko.Month), (ko.ToString("MMMM yyyy")))
+    (LeagueAllMonthHistory, Month (ko.Year, ko.Month), (ko.ToString("MMMM yyyy")))
     |> updateLeagueHistoryWindowDoc deps
 
   let updateMatrixDoc deps _ (fsId, fId, resultScoreLine) =

@@ -28,7 +28,7 @@ module HttpHandlers =
     { FixtureId : Guid
       Home : string
       Away : string
-      KickOff : DateTimeOffset }
+      KickOff : DateTime }
 
   let createFixtureSet handleCommand next (ctx:HttpContext) =
     let respond next ctx (result:Rresult<Unit>) =
@@ -64,7 +64,7 @@ module HttpHandlers =
   type EditFixtureKoHttp =
     { FixtureSetId : Guid
       FixtureId : Guid
-      KickOff : DateTimeOffset }
+      KickOff : DateTime }
 
   let editFixtureKo handleCommand next (ctx:HttpContext) =
     let respond next ctx (result:Rresult<Unit>) =
@@ -87,7 +87,7 @@ module HttpHandlers =
     { FixtureSetId : Guid
       Home : string
       Away : string
-      KickOff : DateTimeOffset }
+      KickOff : DateTime }
 
   let appendFixtureToGameweek handleCommand next (ctx:HttpContext) =
     let respond next ctx = function
