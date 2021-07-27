@@ -143,7 +143,7 @@ module HomeArea =
                   Delete.delete [ Delete.OnClick (fun _ -> dispatch DismissSubscribePrompt) ] []
                 ]
               Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-                [ str "Receive notifications on this device when fixtures are added and more news!"
+                [ str "Get push notifications on this device"
                 ]
             ]
         ]

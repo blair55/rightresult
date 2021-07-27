@@ -56,8 +56,8 @@ var commonPlugins = [
   }),
   new WebpackPwaManifest({
     name: "Right Result",
-    background_color: "#00d1b2",
-    theme_color: "#00d1b2",
+    background_color: "#114B5F",
+    theme_color: "#114B5F",
     orientation: "omit",
     ios: true,
     icons: [
@@ -146,7 +146,8 @@ module.exports = {
     historyApiFallback: true,
     hot: true,
     inline: true,
-    stats: false
+    progress: false,
+    quiet: true
   },
   // - sass-loaders: transforms SASS/SCSS into JS
   // - file-loader: Moves files referenced in the code (fonts, images) into output folder
