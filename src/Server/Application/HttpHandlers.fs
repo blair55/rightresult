@@ -1,7 +1,6 @@
 namespace Server.Application
 
 open System
-open System.Threading
 
 open Shared
 open Shared.Routes
@@ -14,7 +13,6 @@ open Server.Infrastructure.Push
 open Config
 
 open Microsoft.AspNetCore
-open Microsoft.Extensions.Hosting
 
 module HttpHandlers =
 
@@ -158,11 +156,11 @@ module HttpHandlers =
     >> Task.bind (respond next ctx))
 
   let classifyAllFixtures (deps:Dependencies) handleCommand =
-    BackgroundTasks.Classifier.classifyAllFixtures handleCommand deps.Queries
+    BackgroundTasks.Classifier.classifyAllFixtures handleCommand deps
     Successful.OK "Ok"
 
   let classifyFixturesAfterGameweek (deps:Dependencies) handleCommand gwno =
-    BackgroundTasks.Classifier.classifyFixturesAfterGameweek handleCommand deps.Queries (GameweekNo gwno)
+    BackgroundTasks.Classifier.classifyFixturesAfterGameweek handleCommand deps (GameweekNo gwno)
     Successful.OK "Ok"
 
   [<CLIMutable>]
@@ -291,7 +289,9 @@ module HttpHandlers =
       |> Async.RunSynchronously
 
 
-  let webApp handleCommand (deps:Dependencies) (appConfig:ApplicationConfiguration) now =
+  let webApp (handleCommand:Command -> Ars<Unit>) (deps:Dependencies) =
+
+    let appConfig = deps.ApplicationConfiguration
 
     let buildCsp (PlayerId id, PlayerName name) =
       { Jwt.JwtPlayer.sub = ""
@@ -360,12 +360,11 @@ module HttpHandlers =
     let printDocstore (deps:Dependencies) =
       Documents.repo deps.ElasticSearch
       |> fun repo -> repo.Print()
-      // |> Giraffe.ResponseWriters.json
       |> string
 
-    let runBackgroundTasks (deps:Dependencies) handleCommand now =
+    let runBackgroundMinuteTasks deps handleCommand =
       fun next (ctx:HttpContext) ->
-        BackgroundTasks.backgroundTasks handleCommand deps.Queries now
+        BackgroundTasks.minuteTasks |> List.iter(fun f -> f handleCommand deps)
         Successful.OK "Ok" next ctx
 
     choose [
@@ -385,11 +384,11 @@ module HttpHandlers =
       POST >=> route  "/api/appendFixtureToGameweek" >=> appendFixtureToGameweek handleCommand
       POST >=> route  "/api/removeOpenFixture" >=> removeOpenFixture handleCommand
       POST >=> route  "/api/testNotify" >=> testNotify deps
-      POST >=> route  "/api/backgroundTasks" >=> runBackgroundTasks deps handleCommand now
+      POST >=> route  "/api/bgMinuteTasks" >=> runBackgroundMinuteTasks deps handleCommand
       GET  >=> route  "/api/vapidPublicKey" >=> text appConfig.pushSubscriptionPublicKey
       GET  >=> route  "/api/printDocstore" >=> warbler (fun _ -> printDocstore deps |> text)
-      GET  >=> route  "/api/now" >=> warbler (fun _ -> now().ToString("s") |> text)
+      GET  >=> route  "/api/now" >=> warbler (fun _ -> deps.Now().ToString("s") |> text)
       GET  >=> route  "/api/utcnow" >=> warbler (fun _ -> DateTime.UtcNow.ToString("s") |> text)
-      Protocol.buildProtocol handleCommand deps appConfig now
+      Protocol.buildProtocol handleCommand deps
       htmlFile "public/index.html"
     ]

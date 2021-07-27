@@ -163,11 +163,20 @@ module FixtureSetConcludedSubscribers =
 
 module FixtureKoEditedSubscribers =
 
+  open Infrastructure.Push
+
   let editFixtureKo (deps:Dependencies) _ (_, fId, ko) =
     deps.NonQueries.editFixtureKo (fId, ko)
 
+  let notifyPlayers (deps:Dependencies) _ (_, fId, KickOff ko) =
+    let { FixtureRecord.TeamLine = TeamLine (Team h, Team a) } = deps.Queries.getFixtureRecord fId
+    let m = { PushMessage.Title = "New kickoff time!"; Body = $"""{h} v {a} is now at {ko.ToString("r")}""" }
+    FixtureSubscribersAssistance.getPlayerPushSubscriptions deps
+    |> List.iter (fun (_, ps) -> deps.PushNotify m ps)
+
   let all =
     [ editFixtureKo
+      notifyPlayers
     ]
 
 module FixtureKickedOffSubscribers =

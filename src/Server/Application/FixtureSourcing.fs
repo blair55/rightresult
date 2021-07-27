@@ -46,7 +46,8 @@ module FixtureSourcing =
 
   let private getNewPremGwFixtures no =
     PremFixtures.Load(premFixturesUrl no)
-    |> Seq.map(fun f -> toUkTime f.KickoffTime.DateTime, f.TeamH |> premTeamIdToName, f.TeamA |> premTeamIdToName)
+    // |> Seq.map(fun f -> toUkTime f.KickoffTime.DateTime |> KickOff, toTeam f.TeamH, toTeam f.TeamA)
+    |> Seq.map(fun f -> f.KickoffTime |> KickOff, toTeam f.TeamH, toTeam f.TeamA)
     |> Seq.toList
 
   let getNewPremGwResults no =
@@ -69,7 +70,7 @@ module FixtureSourcing =
     |> (getNewGameweekNo
       >> (fun gwno ->
       getNewPremGwFixtures gwno
-      |> List.map (fun (ko, h, a) -> KickOff ko, KickOff.groupFormat (KickOff ko), Team h, Team a)
+      |> List.map (fun (ko, h, a) -> ko, KickOff.groupFormat ko, h, a)
       |> fun items -> { NewFixtureSetViewModel.GameweekNo = GameweekNo gwno; Fixtures = items }))
 
   let addNewFixtureSet (deps:Dependencies) =
@@ -84,11 +85,24 @@ module FixtureSourcing =
         { FixtureRecord.Id = FixtureId (Guid.NewGuid())
           FixtureSetId = fsId
           GameweekNo = GameweekNo gwno
-          KickOff = KickOff ko
-          TeamLine = TeamLine (Team h, Team a)
+          KickOff = ko
+          TeamLine = TeamLine (h, a)
           ScoreLine = None
           SortOrder = i
           HasKickedOff = false })
       |> fun fixtures -> GameweekNo gwno, fixtures
       |> CreateFixtureSet
       |> fun fscmd -> FixtureSetCommand (fsId, fscmd)))
+
+  let getEditedFixtureKickOffs (deps:Dependencies) =
+    deps.Queries.getUnconcludedFixtureSets ()
+    |> List.ofSeq
+    |> List.collect (fun (_, GameweekNo gwno, legacyFixtures) ->
+      let latestFixtures = getNewPremGwFixtures gwno
+      legacyFixtures
+      |> List.choose (fun leg ->
+          latestFixtures
+          |> List.tryFind (fun (_, h, a) -> TeamLine (h, a) = leg.TeamLine)
+          |> Option.map (fun (ko, _, _) -> leg, ko))
+      |> List.filter (fun (leg, ko) -> leg.KickOff <> ko)
+      |> List.map (fun (leg, ko) -> leg.FixtureSetId, leg.Id, ko))

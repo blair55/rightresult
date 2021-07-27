@@ -17,13 +17,12 @@ open Microsoft.AspNetCore
 
 module Protocol =
 
-  let buildProtocol handleCommand (deps:Dependencies) (config:ApplicationConfiguration) now : HttpHandler =
+  let buildProtocol (handleCommand:Command -> Ars<Unit>) (deps:Dependencies) : HttpHandler =
 
-    let q =
-      deps.Queries
-
-    let validateToken =
-      Jwt.appTokenToJwtPlayer config.encryptionKey >> Ok
+    let q = deps.Queries
+    let now = deps.Now
+    let validateToken = deps.ValidateToken
+    let config = deps.ApplicationConfiguration
 
     let getFixturesForPlayer (from, size) (jwtPlayer:Jwt.JwtPlayer) : Map<FixtureId, FixturePredictionViewModel> =
 
@@ -89,6 +88,7 @@ module Protocol =
         validateToken
         >> Async.retn
         >> AsyncResult.map (createCreateLeagueCommand newLeagueId)
+        // >> AsyncResult.mapError CommandApplicationError
         >> AsyncResult.bind handleCommand
         >> AsyncResult.map (fun () -> newLeagueId))
 
@@ -126,7 +126,7 @@ module Protocol =
         >> Async.retn
         >> AsyncResult.map buildCmd
         >> AsyncResult.bind handleCommand
-        >> AsyncResult.bind (fun _ -> AsyncResult.retn (PredictionAction (fsId, fId, team, vec))))
+        >> AsyncResult.bind (fun () -> AsyncResult.retn (PredictionAction (fsId, fId, team, vec))))
 
     let doDoubleDown (appToken:AppToken) (fsId, fId) =
       let buildCmd (jwtPlayer:Jwt.JwtPlayer) =

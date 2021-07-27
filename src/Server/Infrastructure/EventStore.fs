@@ -49,3 +49,4 @@ let subscribeToAll (client:EventStoreClient) onEvent =
       try toDatedEvent e |> onEvent
       with ex -> eprintfn "%A" ex
       Task.CompletedTask), filterOptions=SubscriptionFilterOptions(filter=EventTypeFilter.ExcludeSystemEvents())).Result
+    |> ignore

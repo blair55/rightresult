@@ -1,8 +1,9 @@
-﻿namespace Server
+﻿module Server.EntryPoint
 
 open System
 
 open Giraffe
+open Server
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
@@ -10,62 +11,90 @@ open Microsoft.Extensions.DependencyInjection
 
 open Server.Application
 open Server.Infrastructure
+open Server.Config
 
-module Server =
 
-  let configureApp (app:IApplicationBuilder) =
-    let appConfig = Config.buildAppConfig Environment.GetEnvironmentVariable
-    let elasticSearch = () // DocumentStore Map.empty
-    let eventStore = EventStore.eventStoreConnection appConfig.eventStoreUrl
-    let graphClient = Graph.client appConfig.neo4jUrl
-    let queries = Graph.queries graphClient
-    let nonQueries = Graph.nonQueries graphClient
-    let now () = Time.toUkTime DateTime.UtcNow
+let compositionRoot () =
+  let appConfig = buildAppConfig Environment.GetEnvironmentVariable
+  let elasticSearch = () // DocumentStore Map.empty
+  let eventStore = EventStore.eventStoreConnection appConfig.eventStoreUrl
+  let graphClient = Graph.client appConfig.neo4jUrl
+  let queries = Graph.queries graphClient
+  let nonQueries = Graph.nonQueries graphClient
+  // let now () = Time.toUkTime DateTime.UtcNow
+  let now () = DateTimeOffset.UtcNow
+  let validateToken = Jwt.appTokenToJwtPlayer appConfig.encryptionKey >> Ok
 
-    let pushNotify =
-      Push.send
-        { Subject = "https://rightresu.lt"
-          Public = appConfig.pushSubscriptionPublicKey
-          Private = appConfig.pushSubscriptionPrivateKey }
+  let pushNotify =
+    Push.send
+      { Subject = "https://rightresu.lt"
+        Public = appConfig.pushSubscriptionPublicKey
+        Private = appConfig.pushSubscriptionPrivateKey }
 
-    let handleCommand =
-      CommandHandler.handle
-        (EventStore.readStreamEvents eventStore)
-        (EventStore.store eventStore)
+  let handleCommand =
+    CommandHandler.handle
+      (EventStore.readStreamEvents eventStore)
+      (EventStore.store eventStore)
 
-    let deps =
-      { Graph = graphClient
-        Queries = queries
-        NonQueries = nonQueries
-        ElasticSearch = elasticSearch
-        PushNotify = pushNotify }
+  let deps =
+    { Now = now
+      Graph = graphClient
+      Queries = queries
+      NonQueries = nonQueries
+      EventStore = eventStore
+      ElasticSearch = elasticSearch
+      PushNotify = pushNotify
+      ValidateToken = validateToken
+      ApplicationConfiguration = appConfig }
 
-    Graph.deleteAll graphClient
-    // ElasticSearch.setUpIndicies appConfig.elasticSearchUrl elasticSearch
-    // EventStore.readFromBeginningAndSubscribeFromEnd eventStore onEvent
-    EventStore.subscribeToAll eventStore (EventHandling.onEvent deps) |> Json.srlzToString |> printfn "subscription: %s"
-    Push.semaphore <- true
-    app
-      .UseStaticFiles()
-      .UseGiraffe(HttpHandlers.webApp handleCommand deps appConfig now)
+  deps, handleCommand
 
-  let configureServices (services:IServiceCollection) =
-    services
-#if DEBUG
-#else
-      .AddHostedService<Server.Application.BackgroundTasks.RecurringTasks>()
-#endif
-      .AddGiraffe() |> ignore
 
-  let port = 8085
-  // let publicPath = Path.Combine(Directory.GetCurrentDirectory(), "public")
+[<EntryPoint>]
+let main = function
+  | [| "bgminute" as a |]  ->
+      printfn "running %s" a
+      let deps, handleCommand = compositionRoot()
+      BackgroundTasks.minuteTasks |> List.iter(fun f -> f handleCommand deps)
+      0
 
-  WebHost
-    .CreateDefaultBuilder()
-    .UseWebRoot("public")
-    // .UseContentRoot("public")
-    .Configure(Action<IApplicationBuilder> configureApp)
-    .ConfigureServices(configureServices)
-    .UseUrls(sprintf "http://0.0.0.0:%i/" port)
-    .Build()
-    .Run()
+  | [| "bgdaily" as a |] ->
+      printfn "running %s" a
+      let deps, handleCommand = compositionRoot()
+      BackgroundTasks.dailyTasks |> List.iter(fun f -> f handleCommand deps)
+      0
+
+  | _ ->
+
+      printfn "web server"
+      let configureApp (app:IApplicationBuilder) =
+        let deps, handleCommand = compositionRoot ()
+        Graph.deleteAll deps.Graph
+        // ElasticSearch.setUpIndicies appConfig.elasticSearchUrl elasticSearch
+        EventStore.subscribeToAll deps.EventStore (EventHandling.onEvent deps)
+        Push.semaphore <- true
+        app
+          .UseStaticFiles()
+          .UseGiraffe(HttpHandlers.webApp handleCommand deps)
+
+      let configureServices (services:IServiceCollection) =
+        services
+      // #if DEBUG
+      // #else
+      //     .AddHostedService<Server.Application.BackgroundTasks.RecurringTasks>()
+      // #endif
+          .AddGiraffe() |> ignore
+
+      let port = 8085
+      // let publicPath = Path.Combine(Directory.GetCurrentDirectory(), "public")
+
+      WebHost
+        .CreateDefaultBuilder()
+        .UseWebRoot("public")
+        // .UseContentRoot("public")
+        .Configure(Action<IApplicationBuilder> configureApp)
+        .ConfigureServices(configureServices)
+        .UseUrls(sprintf "http://0.0.0.0:%i/" port)
+        .Build()
+        .Run()
+      0

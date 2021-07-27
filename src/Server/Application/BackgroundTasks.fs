@@ -1,17 +1,15 @@
 module Server.Application.BackgroundTasks
 
-open System
-open System.Threading
 open Shared
 open Server.Commands
 open Server.Queries
-open Microsoft.Extensions.Hosting
+open Server.Infrastructure
 
 module Classifier =
 
-  let private classifyFixtures desc (handle:Command -> Ars<Unit>) (q:Queries) (fixturesFunc:Queries -> FixtureRecord seq) =
+  let private classifyFixtures desc (handle:Command -> Ars<Unit>) (fixturesFunc:Unit -> FixtureRecord seq) =
     let fixtures =
-      fixturesFunc q
+      fixturesFunc ()
       |> List.ofSeq
     fixtures
     |> List.map (fun f -> f.GameweekNo)
@@ -32,30 +30,31 @@ module Classifier =
         | Error e -> printfn "ERROR CLASSIFYING\n%A" e
       | None -> ())
 
-  let classifyKickedOffFixtures (handle:Command -> Ars<Unit>) (q:Queries) =
-    classifyFixtures "@@@@@@@@@@@@@@@@@ KICKED OFF FIXTURES" handle q (fun q -> q.getFixturesAwaitingResults ())
+  let classifyKickedOffFixtures (handle:Command -> Ars<Unit>) (deps:Dependencies) =
+    classifyFixtures "@@@@@@@@@@@@@@@@@ KICKED OFF FIXTURES" handle deps.Queries.getFixturesAwaitingResults
 
-  let classifyAllFixtures (handle:Command -> Ars<Unit>) (q:Queries) =
-    classifyFixtures "@@@@@@@@@@@@@@@@@ CLASS ALL" handle q (fun q -> q.getAllFixtures ())
+  let classifyAllFixtures (handle:Command -> Ars<Unit>) (deps:Dependencies) =
+    classifyFixtures "@@@@@@@@@@@@@@@@@ CLASS ALL" handle deps.Queries.getAllFixtures
 
-  let classifyFixturesAfterGameweek (handle:Command -> Ars<Unit>) (q:Queries) (GameweekNo gwno) =
-    classifyFixtures "@@@@@@@@@@@@@@@@@ CLASS AFTER GW" handle q (fun q -> q.getAllFixtures () |> Seq.filter(fun { GameweekNo = GameweekNo g } -> g > gwno))
+  let classifyFixturesAfterGameweek (handle:Command -> Ars<Unit>) (deps:Dependencies) (GameweekNo gwno) =
+    classifyFixtures "@@@@@@@@@@@@@@@@@ CLASS AFTER GW" handle (deps.Queries.getAllFixtures >> Seq.filter(fun { GameweekNo = GameweekNo g } -> g > gwno))
 
-  let concludeGameweek (handle:Command -> Ars<Unit>) (q:Queries) =
-    q.getUnconcludedFixtureSets ()
+  let concludeGameweek (handle:Command -> Ars<Unit>) (deps:Dependencies) =
+    deps.Queries.getUnconcludedFixtureSets ()
     |> Seq.iter (fun (fsId, gwno, fixtures) ->
       if fixtures |> Seq.forall (fun f -> f.ScoreLine.IsSome) then
         printfn "CONCLUDING GW %A %A" fsId gwno
         FixtureSetCommand (fsId, ConcludeFixtureSet gwno)
         |> handle
         |> Async.RunSynchronously
-        |> ignore
+        |> ignore<Rresult<Unit>>
       else ())
+
 
 module Whistler =
 
-  let kickOffFixtures (handle:Command -> Ars<Unit>) (q:Queries) (now:DateTimeOffset) =
-    q.getKickedOffFixtures now
+  let kickOffFixtures (handle:Command -> Ars<Unit>) (deps:Dependencies) =
+    deps.Queries.getKickedOffFixtures (deps.Now())
     |> List.ofSeq
     |> List.iter (
       fun f ->
@@ -68,23 +67,20 @@ module Whistler =
         | Error e -> printfn "ERROR KICKING OFF\n%A" e)
 
 
-let backgroundTasks handleCommand queries now =
-  Whistler.kickOffFixtures handleCommand queries (now())
-  Classifier.concludeGameweek handleCommand queries
-  Classifier.classifyKickedOffFixtures handleCommand queries
+let minuteTasks =
+  [ Whistler.kickOffFixtures
+    Classifier.concludeGameweek
+    Classifier.classifyKickedOffFixtures ]
 
-type RecurringTasks (inf, now) =
+let private editFixtureKickOffs (handle:Command -> Ars<Unit>) deps =
+  FixtureSourcing.getEditedFixtureKickOffs deps
+  |> List.iter(fun (fsId, fId, ko) ->
+      FixtureSetCommand (fsId, EditFixtureKickOff (fId, ko))
+      |> handle
+      |> Async.RunSynchronously
+      |> function
+      | Ok _ -> printfn "Editing fixture kick off\n%A" fId
+      | Error e -> printfn "ERROR EDITING FIXTURE KICK OFF\n%A" e)
 
-  interface IHostedService with
-    member __.StartAsync ct =
-      printfn "STARTING RECURRING TASKS"
-      let (_, _, _, _, queries, _, _, handleCommand) = inf
-      async {
-        while not ct.IsCancellationRequested do
-          backgroundTasks handleCommand queries now
-          return! Async.Sleep 60000
-      } |> Async.StartAsTask |> ignore
-      Tasks.Task.CompletedTask
-    member __.StopAsync _ =
-      printfn "STOPPING RECURRING TASKS"
-      Tasks.Task.CompletedTask
+let dailyTasks =
+  [ editFixtureKickOffs ]

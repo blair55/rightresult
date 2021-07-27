@@ -14,7 +14,7 @@ let client url =
 
 let synchronously x = Async.AwaitTask x |> Async.RunSynchronously
 
-let deleteAll (graph:GraphClient) =
+let deleteAll (graph:IGraphClient) =
   graph.Cypher
     .Match("(n)")
     .DetachDelete("n")
@@ -70,15 +70,6 @@ let queries (gc:GraphClient) : Queries =
         .Return<FixtureNode>("f")
         .ResultsAsync.Result
       |> Seq.map buildFixtureRecord
-
-    getFixture = fun (FixtureId fId) ->
-      gc.Cypher
-        .Match("(f:Fixture)")
-        .Where(fun (f:FixtureNode) -> f.Id = string fId)
-        .Return<FixtureNode>("f")
-        .ResultsAsync.Result
-      |> Seq.head
-      |> buildFixtureRecord
 
     getFixturesInFixtureSet = fun (FixtureSetId fsId) ->
       gc.Cypher

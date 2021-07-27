@@ -524,6 +524,7 @@ module KickOff =
 /// - femtoify
 /// - felizify
 /// - detect fixture ko change
+/// dcr --no-deps --rm rr bgdaily
 /// - landing page
 /// - points
 /// - server side tidy

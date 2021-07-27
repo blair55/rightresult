@@ -8,7 +8,6 @@ module Queries =
   type Queries =
     { getKickedOffFixtures : DateTimeOffset -> FixtureRecord seq
       getAllFixtures : unit -> FixtureRecord seq
-      getFixture : FixtureId -> FixtureRecord
       getFixturesInFixtureSet : FixtureSetId -> FixtureRecord seq
       getFixturesInLatestFixtureSet : unit -> (FixtureSetId * GameweekNo * (FixtureRecord seq)) option
       getFixturesAwaitingResults : unit -> FixtureRecord seq
