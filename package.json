@@ -1,11 +1,11 @@
 {
   "private": true,
   "scripts": {
-    "both": "env-cmd dotnet run",
+    "start": "env-cmd dotnet run",
     "server": "env-cmd dotnet run RunServer",
     "bgmin": "env-cmd dotnet run RunBgMinute",
     "bgday": "env-cmd dotnet run RunBgDaily",
-    "start": "webpack-dev-server",
+    "start:frontend": "webpack-dev-server",
     "build": "webpack -p",
     "test:live": "webpack-dev-server --config webpack.tests.config.js"
   },
