@@ -55,7 +55,7 @@ module AddFixtureSet =
           ]
       ]
 
-  let fixtureView (KickOff ko, _, home, away) =
+  let fixtureView (KickOff ko, _, TeamLine (home, away)) =
     rowOf3
       [ Components.teamName home ]
       [ Tag.tag [] [ str (ko.ToString("HH:mm")) ] ]
@@ -70,7 +70,7 @@ module AddFixtureSet =
   let fixturesView = function
     | Success f ->
       f.Fixtures
-      |> List.groupBy (fun (_, koStr, _, _) -> koStr)
+      |> List.groupBy (fun (_, koStr, _) -> koStr)
       |> List.map fixtureGroup
       |> div []
     | _ -> div [] []

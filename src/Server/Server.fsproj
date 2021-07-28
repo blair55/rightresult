@@ -27,6 +27,7 @@
     <Compile Include="Infrastructure/Graph.fs" />
     <Compile Include="Infrastructure/Push.fs" />
     <Compile Include="Infrastructure/Time.fs" />
+    <Compile Include="Infrastructure/PremFixtures.fs" />
     <Compile Include="Infrastructure/Index.fs" />
     <Compile Include="Subscribers/FixtureSetSubscribers.fs" />
     <Compile Include="Subscribers/PredictionSubscribers.fs" />
@@ -36,6 +37,7 @@
     <Compile Include="Application/BackgroundTasks.fs" />
     <Compile Include="Application/Protocol.fs" />
     <Compile Include="Application/HttpHandlers.fs" />
+    <Compile Include="Application/TestData.fs" />
     <None Include="Application/PremFixturesSample.json" />
     <Compile Include="EventHandling.fs" />
     <Compile Include="Server.fs" />

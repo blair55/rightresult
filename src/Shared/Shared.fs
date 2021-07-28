@@ -48,6 +48,9 @@ type ScoreLine =
     static member Init =
       ScoreLine (Score 0, Score 0)
 
+// type FixtureState =
+
+
 type PointsCategory =
   | CorrectScore
   | CorrectResult
@@ -206,7 +209,7 @@ and FixtureState =
   | Classified of result:ScoreLine * points:int * PointsCategory
 and NewFixtureSetViewModel =
   { GameweekNo : GameweekNo
-    Fixtures : (KickOff * string * Team * Team) list }
+    Fixtures : (KickOff * string * TeamLine) list }
 and PlayerLeagueViewModel =
   { Position : int
     Movement : int
@@ -256,6 +259,25 @@ and MatrixPrediction =
     IsDoubleDown : bool
     Points : (int * PointsCategory) option
   }
+
+// and PredictionPointsMonoid =
+//   { Points : int
+//     CorrectScores : int
+//     CorrectResults : int
+//     DoubleDownCorrectScores : int
+//     DoubleDownCorrectResults : int }
+//   static member Init =
+//     { Points=0
+//       CorrectScores=0
+//       CorrectResults=0
+//       DoubleDownCorrectScores=0
+//       DoubleDownCorrectResults=0 }
+//   static member (+) (ppm1:PredictionPointsMonoid, ppm2:PredictionPointsMonoid) =
+//     { Points=ppm1.Points+ppm2.Points
+//       CorrectScores=ppm1.CorrectScores+ppm2.CorrectScores
+//       CorrectResults=ppm1.CorrectResults+ppm2.CorrectResults
+//       DoubleDownCorrectScores=ppm1.DoubleDownCorrectScores+ppm2.DoubleDownCorrectScores
+//       DoubleDownCorrectResults=ppm1.DoubleDownCorrectResults+ppm2.DoubleDownCorrectResults }
 
 and PredictionPointsMonoid =
   { Points : int
@@ -523,7 +545,9 @@ module KickOff =
 /// - SSRify
 /// - femtoify
 /// - felizify
-/// - detect fixture ko change
+/// + detect fixture ko change
+/// - fix push!
+/// - only run bg tasks when web available
 /// dcr --no-deps --rm rr bgdaily
 /// - landing page
 /// - points

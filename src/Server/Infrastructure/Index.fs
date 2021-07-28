@@ -12,4 +12,5 @@ type Dependencies =
     ElasticSearch : Unit
     PushNotify : Push.PushNotify
     ValidateToken: AppToken -> Result<Server.Jwt.JwtPlayer, RemoteError>
-    ApplicationConfiguration: Server.Config.ApplicationConfiguration }
+    ApplicationConfiguration: Server.Config.ApplicationConfiguration
+    FixtureSources: PremFixtures.FixtureSources }

@@ -1,7 +1,5 @@
 open Fake.Core
 open Fake.IO
-// open Farmer
-// open Farmer.Builders
 
 open Helpers
 
@@ -41,12 +39,6 @@ Target.create "Run" (fun _ ->
       "client", dotnet "fable watch --run webpack-dev-server" clientPath ]
     |> runParallel
 )
-
-Target.create "RunServer" (fun _ -> run dotnet "run" serverPath)
-
-Target.create "RunBgMinute" (fun _ -> run dotnet "run bgminute" serverPath)
-
-Target.create "RunBgDaily" (fun _ -> run dotnet "run bgdaily" serverPath)
 
 Target.create "RunTests" (fun _ ->
     run dotnet "build" sharedTestsPath

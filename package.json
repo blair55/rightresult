@@ -2,9 +2,11 @@
   "private": true,
   "scripts": {
     "start": "env-cmd dotnet run",
-    "server": "env-cmd dotnet run RunServer",
-    "bgmin": "env-cmd dotnet run RunBgMinute",
-    "bgday": "env-cmd dotnet run RunBgDaily",
+    "run:server": "env-cmd dotnet run -p src/Server",
+    "reload:server": "docker-compose down -v && docker-compose up -d deps && wait-on tcp:7474 -t 10000 && npm run run:server",
+    "run:bgmin": "env-cmd dotnet run -p src/Server bgminute",
+    "run:bgday": "env-cmd dotnet run -p src/Server bgdaily",
+    "run:generate": "env-cmd dotnet run -p src/Server generate",
     "start:frontend": "webpack-dev-server",
     "build": "webpack -p",
     "test:live": "webpack-dev-server --config webpack.tests.config.js"
@@ -25,6 +27,7 @@
     "sass": "^1.36.0",
     "sass-loader": "^9.0.3",
     "style-loader": "^1.2.1",
+    "wait-on": "^6.0.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.9",
     "webpack-dev-server": "^3.8.2",
