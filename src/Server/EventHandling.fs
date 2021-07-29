@@ -112,6 +112,10 @@ module EventHandling =
       PredictionSetDoubleDownRemovedSubscribers.all
       |> List.iter (fun f -> f deps created (playerId, fsId))
 
-    | PredictionHomeScoreSet (playerId, fsId, fId, score) -> ()
+    | PredictionHomeScoreSet (playerId, fsId, fId, score) ->
+      PredictionSetHomeScoreSubscribers.all
+      |> List.iter (fun f -> f deps playerId fId score)
 
-    | PredictionAwayScoreSet (playerId, fsId, fId, score) -> ()
+    | PredictionAwayScoreSet (playerId, fsId, fId, score) ->
+      PredictionSetAwayScoreSubscribers.all
+      |> List.iter (fun f -> f deps playerId fId score)

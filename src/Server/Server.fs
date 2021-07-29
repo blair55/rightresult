@@ -83,8 +83,11 @@ let main =
     let deps, handleCommand = compositionRoot ()
 
     TestData.generate deps
-    |> fun x -> printfn "command\n%A" x;  x
     |> List.map (handleCommand >> Async.RunSynchronously)
+    |> List.iter
+         (function
+         | Error e -> sprintf "%A" e |> failwith
+         | _ -> ())
     |> printfn "Test data\n%A"
 
     0

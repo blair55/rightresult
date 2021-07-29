@@ -321,10 +321,8 @@ module HttpHandlers =
           | Ok s -> redirectTo false s next ctx
           | Error s ->
           ServerErrors.INTERNAL_ERROR s next ctx
-        let buildRedirectUrl =
-          sprintf "%s/logged-in#player=%s" appConfig.clientHost
-        let appendRedirectPath url =
-          sprintf "%s&%s=%s" url redirectPathKey redirectPath
+        let buildRedirectUrl = sprintf "%s/logged-in#player=%s" appConfig.clientHost
+        let appendRedirectPath url = sprintf "%s&%s=%s" url redirectPathKey redirectPath
         (sprintf "%s-%s" idPrefix ext.id |> PlayerId, PlayerName ext.name, ext.email)
         |> (loginPlayer
         >> Async.toTask (AsyncResult.map (cspToString >> buildRedirectUrl >> appendRedirectPath))
@@ -370,6 +368,7 @@ module HttpHandlers =
     choose [
       Login.Facebook.handler facebookConfig
       Login.Twitter.handler twitterConfig
+      GET  >=> routef "/api/testlogin/%s/%s/%s" (fun (prefix, playerId, name) -> authOk prefix { id = playerId; name = name; email = "" })
       POST >=> route  "/api/fixtureKo" >=> editFixtureKo handleCommand
       POST >=> route  "/api/fixtureSet" >=> createFixtureSet handleCommand
       POST >=> route  "/api/removePlayer" >=> removePlayer handleCommand
