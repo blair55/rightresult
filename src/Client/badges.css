@@ -769,7 +769,9 @@
   background-position: -75px -125px;
 }
 .badge-25.BRE {
-  background-position: -100px -125px;
+  background-image: url("/images/bre25.png");
+  background-position: 0px 0px;
+  background-size: 25px 25px;
 }
 .badge-25.BRG {
   background-position: -125px -125px;
@@ -1537,7 +1539,9 @@
   background-position: -150px -250px;
 }
 .badge-50.BRE {
-  background-position: -200px -250px;
+  background-image: url("/images/bre50.png");
+  background-position: 0px 0px;
+  background-size: 50px 50px;
 }
 .badge-50.BRG {
   background-position: -250px -250px;

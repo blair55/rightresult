@@ -17,3 +17,4 @@ deploy/
 eventstore/
 elasticsearch/
 .env
+.DS_Store
