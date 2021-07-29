@@ -21,18 +21,18 @@ module PredictionCreatedSubscribers =
 
 module PredictionEditCypher =
 
-  let edit (deps:Dependencies) (PlayerId pId) (FixtureId fId) set =
+  let edit (deps:Dependencies) (PlayerId pId) (FixtureId fId) =
     deps.Graph.Cypher
       .Match("(player:Player)-[:PREDICTED]->(p:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
       .Where(fun (player:PlayerNode) -> player.Id = pId)
       .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
-      .Set(set)
-      .ExecuteWithoutResultsAsync().Wait()
 
 module PredictionIncHomeScoreSubscribers =
 
   let private incHomeScore (deps:Dependencies) _ (pId, fsId, fId) =
-    PredictionEditCypher.edit deps pId fId "p.HomeScore = p.HomeScore + 1"
+    (PredictionEditCypher.edit deps pId fId)
+      .Set("p.HomeScore = p.HomeScore + 1")
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ incHomeScore
@@ -41,7 +41,9 @@ module PredictionIncHomeScoreSubscribers =
 module PredictionDecHomeScoreSubscribers =
 
   let private decHomeScore (deps:Dependencies) _ (pId, fsId, fId) =
-    PredictionEditCypher.edit deps pId fId "p.HomeScore = p.HomeScore - 1"
+    (PredictionEditCypher.edit deps pId fId)
+      .Set("p.HomeScore = p.HomeScore - 1")
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ decHomeScore
@@ -50,7 +52,9 @@ module PredictionDecHomeScoreSubscribers =
 module PredictionIncAwayScoreSubscribers =
 
   let private incAwayScore (deps:Dependencies) _ (pId, fsId, fId) =
-    PredictionEditCypher.edit deps pId fId "p.AwayScore = p.AwayScore + 1"
+    (PredictionEditCypher.edit deps pId fId)
+      .Set("p.AwayScore = p.AwayScore + 1")
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ incAwayScore
@@ -59,10 +63,36 @@ module PredictionIncAwayScoreSubscribers =
 module PredictionDecAwayScoreSubscribers =
 
   let private decAwayScore (deps:Dependencies) _ (pId, fsId, fId) =
-    PredictionEditCypher.edit deps pId fId "p.AwayScore = p.AwayScore - 1"
+    (PredictionEditCypher.edit deps pId fId)
+      .Set("p.AwayScore = p.AwayScore - 1")
+      .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ decAwayScore
+    ]
+
+module PredictionSetHomeScoreSubscribers =
+
+  let private setHomeScore (deps:Dependencies) pId fId (Score score) =
+    (PredictionEditCypher.edit deps pId fId)
+      .Set("p.HomeScore = $HomeScore")
+      .WithParam("HomeScore", score)
+      .ExecuteWithoutResultsAsync().Wait()
+
+  let all =
+    [ setHomeScore
+    ]
+
+module PredictionSetAwayScoreSubscribers =
+
+  let private setAwayScore (deps:Dependencies) pId fId (Score score) =
+    (PredictionEditCypher.edit deps pId fId)
+      .Set("p.AwayScore = $AwayScore")
+      .WithParam("AwayScore", score)
+      .ExecuteWithoutResultsAsync().Wait()
+
+  let all =
+    [ setAwayScore
     ]
 
 module PredictionDoubleDownAppliedSubscribers =
