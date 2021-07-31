@@ -16,6 +16,7 @@ open Thoth.Elmish.Toast
 open Routes
 open Areas
 open Areas.Fixtures
+open Areas.Gameweek
 open Areas.Leagues
 open Areas.Players
 open Shared
@@ -26,6 +27,7 @@ type Area =
   | LoginArea
   | HomeArea of HomeArea.Model
   | FixturesArea of FixturesArea.Model
+  | GameweekArea of GameweekArea.Model
   | LeaguesArea of LeaguesArea.Model
   | PlayersArea of PlayersArea.Model
 
@@ -39,6 +41,7 @@ type Msg =
   | NavTo of Route
   | HomeMsg of HomeArea.Msg
   | FixturesMsg of FixturesArea.Msg
+  | GameweekMsg of GameweekArea.Msg
   | LeaguesMsg of LeaguesArea.Msg
   | PlayersMsg of PlayersArea.Msg
 
@@ -72,6 +75,10 @@ let update msg (model:Model) : Model * Cmd<Msg> =
   | Some p, FixturesArea m, FixturesMsg msg ->
     let m, cmd = FixturesArea.update api p msg m
     { model with Area = FixturesArea m }, Cmd.map FixturesMsg cmd
+
+  | Some p, GameweekArea m, GameweekMsg msg ->
+    let m, cmd = GameweekArea.update api p msg m
+    { model with Area = GameweekArea m }, Cmd.map GameweekMsg cmd
 
   | Some p, LeaguesArea m, LeaguesMsg msg ->
     let m, cmd = LeaguesArea.update api p msg m
@@ -110,6 +117,12 @@ let footabs model dispatch : ReactElement =
           desc "Fixtures"
         ]
     ]
+  let gameweek =
+    [ a [ OnClick (fun _ -> NavTo (GameweekRoute GameweekInitRoute) |> dispatch) ]
+        [ Fa.i [ Fa.Regular.Futbol ] []
+          desc "Gameweek"
+        ]
+    ]
   let leagues =
     [ a [ OnClick (fun _ -> NavTo (LeaguesRoute PlayerLeaguesRoute) |> dispatch) ]
         [ Fa.i [ Fa.Solid.Trophy ] []
@@ -118,7 +131,7 @@ let footabs model dispatch : ReactElement =
     ]
   let players =
     [ a [ OnClick (fun _ -> NavTo (PlayersRoute AllPlayersRoute) |> dispatch) ]
-        [ Fa.i [ Fa.Solid.User ] []
+        [ Fa.i [ Fa.Regular.User ] []
           desc "Players"
         ]
     ]
@@ -135,30 +148,36 @@ let footabs model dispatch : ReactElement =
   | HomeArea _ ->
     tabs
       [ Tabs.tab [ Tabs.Tab.IsActive true ] home
-        Tabs.tab [] fixtures
+        Tabs.tab [] gameweek
         Tabs.tab [] leagues
         Tabs.tab [] players ]
   | FixturesArea _ ->
     tabs
       [ Tabs.tab [] home
-        Tabs.tab [ Tabs.Tab.IsActive true ] fixtures
+        Tabs.tab [ Tabs.Tab.IsActive true ] gameweek
+        Tabs.tab [] leagues
+        Tabs.tab [] players ]
+  | GameweekArea _ ->
+    tabs
+      [ Tabs.tab [] home
+        Tabs.tab [ Tabs.Tab.IsActive true ] gameweek
         Tabs.tab [] leagues
         Tabs.tab [] players ]
   | LeaguesArea _ ->
     tabs
       [ Tabs.tab [] home
-        Tabs.tab [] fixtures
+        Tabs.tab [] gameweek
         Tabs.tab [ Tabs.Tab.IsActive true ] leagues
         Tabs.tab [] players ]
   | PlayersArea _ ->
     tabs
       [ Tabs.tab [] home
-        Tabs.tab [] fixtures
+        Tabs.tab [] gameweek
         Tabs.tab [] leagues
         Tabs.tab [ Tabs.Tab.IsActive true ] players ]
 
 let logoBar =
-  Navbar.navbar [Navbar.Color IsPrimary; Navbar.HasShadow ]
+  Navbar.navbar [Navbar.Color IsPrimary; Navbar.HasShadow; Navbar.Props [ Style [ MarginBottom "1em" ] ] ]
     [ Navbar.Brand.div []
         [ div [ Style [ Padding "1em" ] ]
             [ Heading.h5 [ Heading.Modifiers [ Modifier.TextColor IsWhite; Modifier.TextTransform TextTransform.UpperCase ] ]
@@ -182,6 +201,7 @@ let area model dispatch =
   | LoginArea      -> LoginArea.view dispatch
   | HomeArea m     -> HomeArea.view m (HomeMsg >> dispatch)
   | FixturesArea m -> FixturesArea.view m (FixturesMsg >> dispatch)
+  | GameweekArea m -> GameweekArea.view m (GameweekMsg >> dispatch)
   | LeaguesArea m  -> LeaguesArea.view m (LeaguesMsg >> dispatch)
   | PlayersArea m  -> PlayersArea.view m (PlayersMsg >> dispatch)
 
@@ -231,7 +251,7 @@ let urlUpdate route model =
         { model with Player = loadPlayerFromBrowserStorage() }, nav
       match getFragmentValue "player", getFragmentValue "redirectPath" with
       | Some playerString, Some path when path <> "" ->
-        loginInAndRedirect playerString (navToString path)
+        loginInAndRedirect playerString (Navigation.newUrl path)
       | Some playerString, _ ->
         loginInAndRedirect playerString (navTo HomeRoute)
       | _ -> model, []
@@ -243,6 +263,10 @@ let urlUpdate route model =
   | Some p, Some (FixtureRoute r) ->
     let m, cmd = FixturesArea.urlUpdate api p r
     { model with Area = FixturesArea m }, Cmd.map FixturesMsg cmd
+
+  | Some p, Some (GameweekRoute r) ->
+    let m, cmd = GameweekArea.urlUpdate api p r
+    { model with Area = GameweekArea m }, Cmd.map GameweekMsg cmd
 
   | Some p, Some (LeaguesRoute r) ->
     let m, cmd = LeaguesArea.urlUpdate api p r
@@ -259,7 +283,9 @@ let urlUpdate route model =
 let init route =
   let player =
     try loadPlayerFromBrowserStorage()
-    with _ -> Browser.WebStorage.localStorage.removeItem playerStorageKey; None
+    with _ -> None
+  if Option.isNone player then
+    Browser.WebStorage.localStorage.removeItem playerStorageKey
   urlUpdate route
     { Player = player
       ErrorMsg = None

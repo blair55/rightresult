@@ -34,6 +34,7 @@ type FixtureId = FixtureId of Guid
 type Team = Team of string
 type TeamLine = TeamLine of home:Team * away:Team
 type KickOff = KickOff of DateTime
+type KickOffString = KickOffString of string
 type PredictionEditDate = PredictionEditDate of DateTime
 type Score =
   | Score of int
@@ -190,26 +191,29 @@ and [<CLIMutable>] FixtureNode =
     HasResult : bool
     HomeScore : int
     AwayScore : int }
-and FixturePredictionViewModel =
+
+type FixturePredictionViewModel =
   { Id : FixtureId
     FixtureSetId : FixtureSetId
     GameweekNo : GameweekNo
     SortOrder : int
     KickOff : KickOff
+    KickOffString : KickOffString
     FormattedKickOff : string
     TeamLine : TeamLine
     IsDoubleDown : bool
     State : FixtureState
     Prediction : ScoreLine option
     InProgress : bool
-    IsDoubleDownAvailable : bool }
+    IsDoubleDownAvailable : bool
+    Neighbours: FixtureId option * FixtureId option }
 and FixtureState =
   | Open
   | KickedOff
   | Classified of result:ScoreLine * points:int * PointsCategory
 and NewFixtureSetViewModel =
   { GameweekNo : GameweekNo
-    Fixtures : (KickOff * string * TeamLine) list }
+    Fixtures : (KickOff * KickOffString * TeamLine) list }
 and PlayerLeagueViewModel =
   { Position : int
     Movement : int
@@ -335,11 +339,22 @@ and PlayerFixtureSetKickedOffViewModelRow =
   { FixtureId : FixtureId
     TeamLine : TeamLine
     KickOff : KickOff
-    KickOffString : string
+    KickOffString : KickOffString
     SortOrder : int
     Points : PredictionPointsMonoid
     ResultAndPoints : (ScoreLine * PointsCategory) option
     Prediction : (ScoreLine * bool) option
+  }
+
+type GameweekFixturesViewModel =
+  { GameweekNo: GameweekNo
+    FixtureSetId: FixtureSetId
+    Fixtures: Map<FixtureId, FixturePredictionViewModel>
+    IsDoubleDownAvailable: bool
+    Neighbours: GameweekNo option * GameweekNo option
+    TotalPoints: int
+    AveragePoints: decimal
+    Rank: int
   }
 
 type PredictionAction =
@@ -493,6 +508,8 @@ type IProtocol =
     getRealPremTable : AppToken -> Ars<PremTable>
     getPredictedPremTable : AppToken -> Ars<PremTable>
     getFixtureDetails : AppToken -> FixtureId -> Ars<FixtureDetails>
+    getEarliestOpenGwno : AppToken -> Ars<GameweekNo>
+    getGameweekFixtures : AppToken -> GameweekNo -> Ars<GameweekFixturesViewModel>
     submitFeedback : string -> AppToken -> Ars<Unit>
     addNewFixtureSet : AppToken -> Ars<Unit>
     prediction : AppToken -> PredictionAction -> Ars<PredictionAction>
@@ -521,7 +538,7 @@ module Global =
 module KickOff =
 
   let groupFormat (KickOff ko) =
-    ko.ToString("ddd MMM d, yyyy")
+    KickOffString (ko.ToString("ddd d MMM yyyy"))
 
   let isLessThan (KickOff ko) now =
     ko < now

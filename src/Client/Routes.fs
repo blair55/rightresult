@@ -1,17 +1,22 @@
 module Routes
 
 open Elmish.UrlParser
+open Elmish.Navigation
 
 type Route =
   | LoginRoute
   | HomeRoute
   | FixtureRoute of FixtureRoute
+  | GameweekRoute of GameweekRoute
   | LeaguesRoute of LeaguesRoute
   | LoggedInRoute
   | PlayersRoute of PlayersRoute
 and FixtureRoute =
   | OmniFixturesRoute
   | AddFixtureSetRoute
+and GameweekRoute =
+  | GameweekInitRoute
+  | GameweekFixturesRoute of int
 and LeaguesRoute =
   | PlayerLeaguesRoute
   | GlobalLeagueRoute
@@ -35,6 +40,8 @@ let loginPath         = "login"
 let loggedInPath      = "logged-in"
 let fixturesPath      = "fixtures"
 let addFixtureSetPath = "fixtures/add"
+let gwPath            = "gameweek"
+let gwFixturesPath    = sprintf "gameweek/%i"
 let leaguesPath       = "leagues"
 let globalleaguePath  = "leagues/global"
 let createLeaguePath  = "leagues/create"
@@ -61,6 +68,8 @@ let route : Parser<Route -> Route, _> =
     map LoggedInRoute      (s loggedInPath)
     map (OmniFixturesRoute  |> FixtureRoute) (s fixturesPath)
     map (AddFixtureSetRoute |> FixtureRoute) (s fixturesPath </> s "add")
+    map (GameweekInitRoute  |> GameweekRoute) (s gwPath)
+    map (GameweekFixturesRoute >> GameweekRoute) (s gwPath </> i32)
     map (PlayerLeaguesRoute |> LeaguesRoute) (s leaguesPath)
     map (GlobalLeagueRoute  |> LeaguesRoute) (s leaguesPath </> s "global")
     map (CreateLeagueRoute  |> LeaguesRoute) (s leaguesPath </> s "create")
@@ -86,6 +95,10 @@ let private routeToPath = function
     match r with
     | OmniFixturesRoute      -> fixturesPath
     | AddFixtureSetRoute     -> addFixtureSetPath
+  | GameweekRoute r ->
+    match r with
+    | GameweekInitRoute         -> gwPath
+    | GameweekFixturesRoute gw  -> gwFixturesPath gw
   | LeaguesRoute r ->
     match r with
     | PlayerLeaguesRoute        -> leaguesPath
@@ -106,11 +119,11 @@ let private routeToPath = function
     | PlayerRoute playerId     -> playerPath playerId
     | PlayerFixtureSetRoute (pId, fsId) -> playerFixtureSetPath pId fsId
 
-let navToString s =
-  (Elmish.Navigation.Navigation.newUrl) s
-
 let navTo r =
-  (routeToPath >> sprintf "/%s" >> navToString) r
+  (routeToPath >> sprintf "/%s" >> Navigation.newUrl) r
+
+let pushTo r =
+  (routeToPath >> sprintf "/%s" >> Navigation.modifyUrl) r
 
 let isValidGuid (g:string) =
   System.Guid.TryParse g |> fst

@@ -15,6 +15,17 @@ open Server
 open Config
 open Microsoft.AspNetCore
 
+module Neighbours =
+
+  let build items =
+    let paired = List.pairwise items
+    let find a b x = List.tryFind (a >> (=) x) paired |> Option.map b
+    List.fold (fun m x -> Map.add x (find snd fst x, find fst snd x) m) Map.empty items
+
+  let get m x =
+    Map.tryFind x m |> Option.bind fst,
+    Map.tryFind x m |> Option.bind snd
+
 module Protocol =
 
   let buildProtocol (handleCommand:Command -> Ars<Unit>) (deps:Dependencies) : HttpHandler =
@@ -23,6 +34,19 @@ module Protocol =
     let now = deps.Now
     let validateToken = deps.ValidateToken
     let config = deps.ApplicationConfiguration
+
+    let getClassifiedInfo (pred:PredictionRecord option) (result:ScoreLine) =
+      pred
+      |> Option.map (fun p -> p.ScoreLine, p.IsDoubleDown)
+      |> Points.getPointsForPrediction result
+      |> fun (points, category) -> result, points.Points, category
+      |> FixtureState.Classified
+
+    let isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno =
+      List.exists (fun ({ FixtureRecord.GameweekNo = fgwno; KickOff = (KickOff ko) }, pred:PredictionRecord option) ->
+        match pred with
+        | Some p when p.IsDoubleDown && fgwno = gwno && (now()) > ko -> true
+        | _ -> false)
 
     let getFixturesForPlayer (from, size) (jwtPlayer:Jwt.JwtPlayer) : Map<FixtureId, FixturePredictionViewModel> =
 
@@ -33,20 +57,6 @@ module Protocol =
         |> List.skip from
         |> List.truncate size
 
-      let isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno =
-        fixturesAndPredictions
-        |> List.exists (fun ({ FixtureRecord.GameweekNo = fgwno; KickOff = (KickOff ko) }, pred) ->
-          match pred with
-          | Some p when p.IsDoubleDown && fgwno = gwno && (now()) > ko -> true
-          | _ -> false)
-
-      let getClassifiedInfo (pred:PredictionRecord option) (result:ScoreLine) =
-        pred
-        |> Option.map (fun p -> p.ScoreLine, p.IsDoubleDown)
-        |> Points.getPointsForPrediction result
-        |> fun (points, category) -> result, points.Points, category
-        |> FixtureState.Classified
-
       fixturesAndPredictions
       |> List.map (fun ({ FixtureRecord.KickOff = KickOff ko } as f, pred) ->
         f.Id,
@@ -55,6 +65,7 @@ module Protocol =
           GameweekNo = f.GameweekNo
           SortOrder = f.SortOrder
           KickOff = f.KickOff
+          KickOffString = KickOff.groupFormat f.KickOff
           FormattedKickOff = ko.Date.ToString("ddd MMM d, yyyy")
           TeamLine = f.TeamLine
           State =
@@ -65,8 +76,52 @@ module Protocol =
           Prediction = pred |> Option.map (fun p -> p.ScoreLine)
           IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
           InProgress = false
-          IsDoubleDownAvailable = not <| isAnyDoubleDownFixtureForGameweekAlreadyKickedOff f.GameweekNo })
+          IsDoubleDownAvailable = not <| isAnyDoubleDownFixtureForGameweekAlreadyKickedOff f.GameweekNo fixturesAndPredictions
+          Neighbours = None, None })
       |> Map.ofSeq
+
+    let getGameweekFixtures gwno (jwtPlayer:Jwt.JwtPlayer) : Rresult<GameweekFixturesViewModel> =
+      match q.getGameweekNoFixtureSet gwno with
+      | None -> Error (ValidationError "bad gwno")
+      | Some fsId ->
+        let fixturesAndPredictions =
+          q.getPlayerFixtureSet (PlayerId jwtPlayer.playerId) fsId
+          |> List.ofSeq
+          |> List.sortBy (fun (f, _) -> f.SortOrder)
+        let gwNeighbours = Neighbours.build (q.getGameweekNos() |> List.sort)
+        let fxNeighbours = Neighbours.build (fixturesAndPredictions |> List.map (fun (f, _) -> f.Id))
+        fixturesAndPredictions
+        |> List.map (fun ({ FixtureRecord.KickOff = KickOff ko } as f, pred) ->
+          f.Id,
+          { FixturePredictionViewModel.Id = f.Id
+            FixtureSetId = f.FixtureSetId
+            GameweekNo = f.GameweekNo
+            SortOrder = f.SortOrder
+            KickOff = f.KickOff
+            KickOffString = KickOff.groupFormat f.KickOff
+            FormattedKickOff = ko.Date.ToString("ddd MMM d, yyyy")
+            TeamLine = f.TeamLine
+            State =
+              match f.ScoreLine with
+              | Some scoreLine -> scoreLine |> getClassifiedInfo pred
+              | _ when (now()) < ko -> FixtureState.Open
+              | _ -> FixtureState.KickedOff
+            Prediction = pred |> Option.map (fun p -> p.ScoreLine)
+            IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
+            InProgress = false
+            IsDoubleDownAvailable = false
+            Neighbours = Neighbours.get fxNeighbours f.Id })
+        |> Map.ofList
+        |> fun fixtures ->
+            { GameweekFixturesViewModel.GameweekNo = gwno
+              FixtureSetId = fsId
+              Fixtures = fixtures
+              IsDoubleDownAvailable = not <| isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno fixturesAndPredictions
+              Neighbours = Neighbours.get gwNeighbours gwno
+              TotalPoints = 0
+              AveragePoints = 0m
+              Rank = 0
+            } |> Ok
 
     let getLeaguesPlayerIsIn (jwtPlayer:Jwt.JwtPlayer) : Map<PrivateLeagueId, PlayerLeagueViewModel> =
       PlayerId jwtPlayer.playerId
@@ -296,7 +351,7 @@ module Protocol =
     let protocol =
       { getFixtures = fun fromSize t -> t |> (vt >> Result.map (getFixturesForPlayer fromSize) >> Async.retn)
         getFixturesLength = vt >> Result.map (fun _ -> q.getFixturesLength()) >> Async.retn
-        getMaxGameweekNo = vt >> Result.map (fun _ -> q.getMaxGameweekNo() |> function | Some gwno -> gwno | None -> GameweekNo 1) >> Async.retn
+        getMaxGameweekNo = vt >> Result.map (fun _ -> q.getMaxGameweekNo() |> Option.defaultValue (GameweekNo 1)) >> Async.retn
         getPlayerLeagues = vt >> Result.map getLeaguesPlayerIsIn >> Async.retn
         getPrivateLeagueInfo = fun leagueId t -> t |> (vt >> Result.bind (fun _ -> getPrivateLeagueInfo leagueId) >> Async.retn)
         getLeagueTable = fun leagueId window t -> t |> (vt >> Result.bind (fun _ -> getLeagueWindow leagueId window) >> Async.retn)
@@ -314,6 +369,9 @@ module Protocol =
         getRealPremTable = vt >> Result.map (fun _ -> getRealPremTable ()) >> Async.retn
         getPredictedPremTable = vt >> Result.map getPredictedPremTable >> Async.retn
         getFixtureDetails = fun t fId -> t |> (vt >> fun _ -> getFixtureDetails fId |> Async.retn)
+        getEarliestOpenGwno = vt >> Result.map (fun _ -> q.getEarliestOpenGwno() |> Option.defaultValue (GameweekNo 1)) >> Async.retn
+        getGameweekFixtures = fun t gwno -> t |> (vt >> Result.bind (getGameweekFixtures gwno) >> Async.retn)
+
         submitFeedback = fun fb t -> t |> (vt >> Result.map (submitFeedback config fb) >> Async.retn)
         addNewFixtureSet = vt >> (fun _ -> FixtureSourcing.addNewFixtureSet deps) >> handleCommand
         prediction = makePrediction

@@ -17,6 +17,9 @@
     <Compile Include="Areas\Fixtures\AddFixtureSet.fs" />
     <Compile Include="Areas\Fixtures\FixturesArea.fs" />
 
+    <Compile Include="Areas\Gameweek\GameweekFixtures.fs" />
+    <Compile Include="Areas\Gameweek\GameweekArea.fs" />
+
     <Compile Include="Areas\Leagues\CreateLeague.fs" />
     <Compile Include="Areas\Leagues\Leagues.fs" />
     <Compile Include="Areas\Leagues\League.fs" />

@@ -140,7 +140,10 @@ module LeagueHistory =
   let view (model:Model) dispatch =
     match model.LeagueName, model.FixtureSets, model.Months with
     | Success leagueName, Success fs, Success months -> leagueView dispatch model leagueName fs months
-    | _ -> div [] [ str "Could not find league history" ]
+    | WebError _, _, _
+    | _, WebError _, _
+    | _, _, WebError _ -> div [] [ str "Could not find league history" ]
+    | _ -> div [] [ ]
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with

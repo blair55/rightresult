@@ -8,15 +8,16 @@ $fa_font_path: "~@fortawesome/fontawesome-free/webfonts"
 @import '~@fortawesome/fontawesome-free/scss/brands.scss'
 
 // OpenSans
-$FontPathOpenSans: "~open-sans-fonts/open-sans"
-@import '~open-sans-fonts/open-sans'
-body
-  font-family: 'Open Sans' !important
+// $FontPathOpenSans: "~open-sans-fonts/open-sans"
+// @import '~open-sans-fonts/open-sans'
+// body
+//   font-family: 'Open Sans' !important
 
 @import "~bulma/sass/utilities/initial-variables"
 
 $primary: #114B5F
-$link: $primary
+$secondary: #AA4465
+$link: #5AB1BB
 $info: #5AB1BB
 $success: #DCF763
 $warning: #FFAD05
@@ -24,13 +25,36 @@ $danger: #F0803C
 $dark: $grey-darker
 $text: $grey-dark
 $background: #F1F8F9
+$background-alt: #E2F1F3
 $body-background-color: $background
 $white-ter: $background
+
+// $family-primary:
+$radius: 0
+$shadow: none
+$body-line-height: 1
+// $border: solid 1px $light
+
+
+$modal-card-head-background-color: $background
+$modal-card-head-padding: 0
+$modal-card-head-radius: 0
+$modal-card-foot-radius: 0
+
+
+
+
+
 
 // Bulma
 @import "~bulma/bulma"
 @import "~bulma-quickview/dist/css/bulma-quickview.sass"
 @import "~bulma/sass/utilities/derived-variables"
+
+.button
+  border: solid 2px $dark !important
+  text-transform: uppercase
+  font-weight: bold
 
 .navbar
   min-height: 0px
@@ -38,8 +62,8 @@ $white-ter: $background
 .navbar .tabs.is-toggle ul li a
   border-radius: 0
 
-.navbar.is-fixed-bottom.has-shadow
-  box-shadow: 0 1px 4px 0 rgba(10, 10, 10, 0.3)
+// .navbar.is-fixed-bottom.has-shadow
+//   box-shadow: 0 1px 4px 0 rgba(10, 10, 10, 0.3)
 
 .table tr.is-selected
   background-color: $light
@@ -110,7 +134,7 @@ table.table th.text-left
     border-color: $background
     border-style: solid
     border-width: 1px
-    border-radius: 4px
+    border-radius: 0px
     color: $dark
     display: inline-flex
     justify-content: center
@@ -245,6 +269,42 @@ table.table th.text-left
       font-size: 0.6em
       text-transform: uppercase
       color: #aaa
+
+.page-title
+  // padding-left: 1em
+  margin-bottom: 1em
+.page-title span
+  color: $white-ter
+  background-color: $secondary
+  padding: 0.3em 0.5em
+  font-weight: bold
+  text-transform: uppercase
+
+.gw-date
+  text-transform: uppercase
+  background-color: $warning
+  padding: 0.3em 0.5em
+  font-weight: bold
+.gw-fixture-list .gw-fixture-item
+  margin-bottom: 1em
+  padding: 1em 0
+.gw-fixture-list .gw-fixture-item:nth-child(odd)
+  background-color: $background-alt
+
+.kick-off-time
+  background-color: $info
+  padding: 0.3em 0.5em
+  color: $white-ter
+  font-size: 0.7rem
+  font-weight: bold
+
+.short-team-name
+  background-color: $primary
+  text-transform: uppercase
+  font-weight: bold
+  padding: 0.3em 0.5em
+  color: $white-ter
+
 
 .team-title.ARS
   background-image: linear-gradient(180deg, #e10512 50%, rgb(0, 0, 0, 0) 50%)

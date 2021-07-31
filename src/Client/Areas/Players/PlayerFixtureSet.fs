@@ -102,7 +102,7 @@ module PlayerFixtureSet =
           [ r ]
       ]
 
-  let fixtureGroup (koStr, fixtures) =
+  let fixtureGroup (KickOffString koStr, fixtures) =
     div [ Style [ MarginBottom "1.5em" ] ]
       [ Components.subHeading koStr
         div [] (fixtures |> List.map fixtureSetView)

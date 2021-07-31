@@ -187,6 +187,23 @@ let queries (gc:GraphClient) : Queries =
       |> Seq.head
       |> fun fs -> GameweekNo fs.GameweekNo
 
+    getGameweekNoFixtureSet = fun (GameweekNo gwno) ->
+      gc.Cypher
+        .Match("(fs:FixtureSet)")
+        .Where(fun (fs:FixtureSetNode) -> fs.GameweekNo = gwno)
+        .Return(fun () -> Return.As<Guid>("fs.Id"))
+        .ResultsAsync.Result
+      |> Seq.tryHead
+      |> Option.map FixtureSetId
+
+    getGameweekNos = fun () ->
+      gc.Cypher
+        .Match("(fs:FixtureSet)")
+        .Return(fun () -> Return.As<int>("fs.GameweekNo"))
+        .ResultsAsync.Result
+      |> List.ofSeq
+      |> List.map GameweekNo
+
     getFixtureSetYearAndMonth = fun (FixtureSetId fsId) ->
       gc.Cypher
         .Match("(fs:FixtureSet)")
@@ -249,9 +266,10 @@ let queries (gc:GraphClient) : Queries =
     getPlayerFixtureSet = fun (PlayerId playerId) (FixtureSetId fsId) ->
       gc.Cypher
         .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet {Id:$fsId})")
-        .OptionalMatch("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(f)-[:IN_FIXTURESET]->(fs)")
+        .OptionalMatch("(player:Player {Id:$playerId})-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(f)-[:IN_FIXTURESET]->(fs)")
         .WithParam("fsId", fsId)
-        .Where(fun (player:PlayerNode) -> player.Id = playerId)
+        .WithParam("playerId", playerId)
+        // .Where(fun (player:PlayerNode) -> player.Id = playerId)
         .Return(fun f pred -> f.As<FixtureNode>(), pred.As<PredictionNode>())
         .ResultsAsync.Result
       |> Seq.map(fun (f, p) ->
@@ -296,6 +314,17 @@ let queries (gc:GraphClient) : Queries =
       |> Seq.map (fun f -> f.GameweekNo)
       |> Seq.sortDescending
       |> Seq.tryHead
+      |> Option.map GameweekNo
+
+    getEarliestOpenGwno = fun () ->
+      gc.Cypher
+        .Match("(f1:Fixture)")
+        .Where(fun (f1:FixtureNode) -> f1.HasResult = false)
+        .Match("(f2:Fixture)")
+        .Return(fun () -> Return.As<Nullable<int>>("coalesce(min(f1.GameweekNo), max(f2.GameweekNo))"))
+        .ResultsAsync.Result
+      |> Seq.tryHead
+      |> Option.bind Option.ofNullable
       |> Option.map GameweekNo
 
     getPredictionsAggregate = fun (FixtureId fId) ->

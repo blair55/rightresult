@@ -20,6 +20,8 @@ module Queries =
       getPlayersInPrivateLeague : PrivateLeagueId -> PlayerRecord list
       getAllPlayers : unit -> PlayerRecord list
       getFixtureSetGameweekNo : FixtureSetId -> GameweekNo
+      getGameweekNoFixtureSet : GameweekNo -> FixtureSetId option
+      getGameweekNos : unit -> GameweekNo list
       getFixtureSetYearAndMonth : FixtureSetId -> int * int
       getFixtureRecord : FixtureId -> FixtureRecord
       getUnconcludedFixtureSets : unit -> (FixtureSetId * GameweekNo * FixtureRecord list) seq
@@ -32,6 +34,7 @@ module Queries =
       getPrivateLeague : PrivateLeagueId -> LeagueRecord option
       getFixtureByTeams : Team -> Team -> FixtureRecord
       getMaxGameweekNo : unit -> GameweekNo option
+      getEarliestOpenGwno : unit -> GameweekNo option
       getPredictionsAggregate : FixtureId -> PredictionsAggregate
       getFixturesForTeam : Team -> FixtureRecord seq
     }
