@@ -139,6 +139,12 @@ type WebData<'a> =
   | Success of 'a
   | WebError of RemoteError
 
+module WebData =
+
+  let map f = function
+    | Success wd -> f wd |> Success
+    | wd -> wd
+
 let resultToWebData = function
   | Ok a    -> Success a
   | Error e -> WebError e
