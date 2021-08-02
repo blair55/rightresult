@@ -57,7 +57,7 @@ module AddFixtureSet =
       ]
     ]
 
-  let fixtureViewFlex (KickOff ko as kickoff, _, TeamLine (home, away)) =
+  let fixtureViewFlex (kickoff, _, TeamLine (home, away)) =
     rowOf3
       [ Text.div
           [ Modifiers

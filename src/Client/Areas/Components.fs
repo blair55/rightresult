@@ -40,7 +40,7 @@ module Components =
             str (
               string (
                 total.CorrectResults
-                + total.DoubleDownCorrectResults
+                // + total.DoubleDownCorrectResults
               )
             )
           ]
@@ -53,7 +53,7 @@ module Components =
             str (
               string (
                 total.CorrectScores
-                + total.DoubleDownCorrectScores
+                // + total.DoubleDownCorrectScores
               )
             )
           ]
@@ -113,7 +113,8 @@ module Components =
     ]
 
   let toShortPoints (m: PredictionPointsMonoid) =
-    m.Points, m.CorrectResults + m.DoubleDownCorrectResults, m.CorrectScores + m.DoubleDownCorrectScores
+    // m.Points, m.CorrectResults + m.DoubleDownCorrectResults, m.CorrectScores + m.DoubleDownCorrectScores
+    m.Points, m.CorrectResults, m.CorrectScores
 
   let table (league: LeagueTableDoc) activePlayerId (playerClick: PlayerId -> Unit) =
     let playerLink pId (m: LeagueTableMember) =
@@ -249,10 +250,10 @@ module Components =
       str (badgeAbbrv team)
     ]
 
-  let kickOffTime (KickOff ko) =
+  let kickOffTime (ko:KickOff) =
     Text.span [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is2) ]
                 Props [ Class "kick-off-time" ] ] [
-      str (ko.ToString("HH:mm"))
+      str (ko.Raw.ToString("HH:mm"))
     ]
 
   let gameweekDate (KickOffString s) =

@@ -42,15 +42,23 @@ module Protocol =
     //   |> fun (points, category) -> result, points.Points, category
     //   |> FixtureState.Classified
 
+    let getPoints { FixtureRecord.State = state } pred =
+      match state, pred with
+      | FixtureState.Classified result, Some { PredictionRecord.IsDoubleDown = isDoubleDown; ScoreLine = pred } ->
+        let vectors = Points.getPointVectors result pred isDoubleDown
+        let (ppm, cat) = Points.getPointsForPrediction result pred vectors
+        cat, ppm, vectors
+      | _ -> Incorrect, PredictionPointsMonoid.Init, []
+
     let isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno =
-      List.exists (fun ({ FixtureRecord.GameweekNo = fgwno; KickOff = (KickOff ko) }, pred:PredictionRecord option) ->
+      List.exists (fun ({ FixtureRecord.GameweekNo = fgwno; KickOff = ko }, pred:PredictionRecord option) ->
         match pred with
-        | Some p when p.IsDoubleDown && fgwno = gwno && (now()) > ko -> true
+        | Some p when p.IsDoubleDown && fgwno = gwno && (now()) > ko.Raw -> true
         | _ -> false)
 
-    let fixtureStateFirstMinuteHack now ({KickOff= KickOff ko} as f:FixtureRecord) =
+    let fixtureStateFirstMinuteHack now ({KickOff = ko } as f:FixtureRecord) =
       match f.State with
-      | FixtureState.Open when (now()) > ko -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed 0)
+      | FixtureState.Open when (now()) > ko.Raw -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed 0)
       | s -> s
 
     let getFixturesForPlayer (from, size) (jwtPlayer:Jwt.JwtPlayer) : Map<FixtureId, FixturePredictionViewModel> =
@@ -63,7 +71,7 @@ module Protocol =
         |> List.truncate size
 
       fixturesAndPredictions
-      |> List.map (fun ({ FixtureRecord.KickOff = KickOff ko } as f, pred) ->
+      |> List.map (fun (f, pred) ->
         f.Id,
         { FixturePredictionViewModel.Id = f.Id
           FixtureSetId = f.FixtureSetId
@@ -74,9 +82,9 @@ module Protocol =
           TeamLine = f.TeamLine
           State = fixtureStateFirstMinuteHack now f
           Prediction = pred |> Option.map (fun p -> p.ScoreLine)
+          Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points=p}, v) -> p, v
           IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
           InProgress = false
-          IsDoubleDownAvailable = not <| isAnyDoubleDownFixtureForGameweekAlreadyKickedOff f.GameweekNo fixturesAndPredictions
           Neighbours = None, None })
       |> Map.ofSeq
 
@@ -91,7 +99,7 @@ module Protocol =
         let gwNeighbours = Neighbours.build (q.getGameweekNos() |> List.sort)
         let fxNeighbours = Neighbours.build (fixturesAndPredictions |> List.map (fun (f, _) -> f.Id))
         fixturesAndPredictions
-        |> List.map (fun ({ FixtureRecord.KickOff = KickOff ko } as f, pred) ->
+        |> List.map (fun (f, pred) ->
           f.Id,
           { FixturePredictionViewModel.Id = f.Id
             FixtureSetId = f.FixtureSetId
@@ -107,8 +115,8 @@ module Protocol =
               // | _ -> FixtureState.KickedOff
             Prediction = pred |> Option.map (fun p -> p.ScoreLine)
             IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
+            Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points=p}, v) -> p, v
             InProgress = false
-            IsDoubleDownAvailable = false
             Neighbours = Neighbours.get fxNeighbours f.Id })
         |> Map.ofList
         |> fun fixtures ->
@@ -259,25 +267,18 @@ module Protocol =
               fixturesAndPredictionsInFixtureSet
               |> List.filter (fun (f, _) -> KickOff.isLessThan f.KickOff (now()))
               |> List.map (fun (f, pred) ->
-                let predictionDd =
-                  if KickOff.isLessThan f.KickOff (now()) then
-                    Option.map (fun (p:PredictionRecord) -> p.ScoreLine, p.IsDoubleDown) pred
-                  else None
-                // let resultAndPoints =
-                //   Option.map (fun sl -> sl, Points.getPointsForPrediction sl predictionDd) f.ScoreLine
+                let predictionDd = Option.map (fun (p:PredictionRecord) -> p.ScoreLine, p.IsDoubleDown) pred
+                let (cat, ppm, _) = getPoints f pred
                 { PlayerFixtureSetKickedOffViewModelRow.FixtureId = f.Id
                   TeamLine = f.TeamLine
                   KickOff = f.KickOff
                   KickOffString = KickOff.groupFormat f.KickOff
                   SortOrder = f.SortOrder
                   Prediction = predictionDd
-                  // TODO: Adapt to new points
-                  Points = PredictionPointsMonoid.Init
-                    // resultAndPoints
-                    // |> Option.map (fun (_, ppmcat) -> fst ppmcat)
-                    // |> function | Some p -> p | None -> PredictionPointsMonoid.Init
-                  ResultAndPoints = None
-                    // Option.map (fun (sl, ppmcat) -> sl, snd ppmcat) resultAndPoints
+                  Points = ppm
+                  ResultAndPoints =
+                    FixtureState.classifiedScoreLine f.State
+                    |> Option.map (fun sl -> sl, cat)
                 })
               |> List.sortBy (fun p -> p.SortOrder)
           }

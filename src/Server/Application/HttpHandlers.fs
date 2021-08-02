@@ -45,7 +45,7 @@ module HttpHandlers =
           { FixtureRecord.Id = FixtureId (Guid.NewGuid())
             FixtureSetId = fsId
             GameweekNo = GameweekNo fs.GameweekNo
-            KickOff = KickOff f.KickOff
+            KickOff = KickOff.create f.KickOff
             TeamLine = TeamLine (Team f.Home, Team f.Away)
             State = FixtureState.Open
             SortOrder = 0 })
@@ -71,7 +71,7 @@ module HttpHandlers =
       | Ok () -> Successful.OK "Ok" next ctx
       | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
     let editFixtureKoCmd (e:EditFixtureKoHttp) =
-      (FixtureId e.FixtureId, KickOff e.KickOff)
+      (FixtureId e.FixtureId, KickOff.create e.KickOff)
       |> EditFixtureKickOff
       |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd)
     ctx
@@ -99,7 +99,7 @@ module HttpHandlers =
       { Id = FixtureId (Guid.NewGuid())
         FixtureSetId = FixtureSetId e.FixtureSetId
         GameweekNo = GameweekNo 0
-        KickOff = KickOff e.KickOff
+        KickOff = KickOff.create e.KickOff
         TeamLine = TeamLine (Team e.Home, Team e.Away)
         State = FixtureState.Open
         SortOrder = 0 }

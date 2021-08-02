@@ -45,7 +45,7 @@ module PremFixtures =
     |> List.ofSeq
 
   let (|FixtureKickoff|) (f: PremFixtures.Fixture) =
-    KickOff(toUkTime f.KickoffTime.DateTime)
+    KickOff.create (toUkTime f.KickoffTime.DateTime)
 
   let (|FixtureTeamLine|) (f: PremFixtures.Fixture) =
     TeamLine(toTeam f.TeamH, toTeam f.TeamA)

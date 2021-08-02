@@ -57,18 +57,18 @@ module FixtureSetCreatedSubscribers =
 
   let createFixtureSet (deps:Dependencies) created (FixtureSetId fsId, GameweekNo gwno, fixtures:FixtureRecord list) =
     fixtures
-    |> List.minBy (fun { KickOff = KickOff ko } -> ko)
-    |> fun { KickOff = KickOff minKo } ->
+    |> List.minBy (fun { KickOff = ko } -> ko.Raw)
+    |> fun { KickOff = minKo } ->
     { FixtureSetNode.Id = string fsId
       GameweekNo = gwno
-      Year = minKo.Year
-      Month = minKo.Month
+      Year = minKo.Raw.Year
+      Month = minKo.Raw.Month
       Created = created
       IsConcluded = false }
     |> deps.NonQueries.createFixtureSet
 
     fixtures
-    |> List.sortBy (fun { KickOff = KickOff ko } -> ko)
+    |> List.sortBy (fun { KickOff = ko } -> ko.Raw)
     |> List.mapi (
       FixtureNode.init (FixtureSetId fsId) (GameweekNo gwno) created)
     |> List.iter (deps.NonQueries.createFixture (FixtureSetId fsId))
@@ -153,9 +153,9 @@ module FixtureKoEditedSubscribers =
   let editFixtureKo (deps:Dependencies) _ (_, fId, ko) =
     deps.NonQueries.editFixtureKo (fId, ko)
 
-  let notifyPlayers (deps:Dependencies) _ (_, fId, KickOff ko) =
+  let notifyPlayers (deps:Dependencies) _ (_, fId, ko:KickOff) =
     let { FixtureRecord.TeamLine = TeamLine (Team h, Team a) } = deps.Queries.getFixtureRecord fId
-    let m = { PushMessage.Title = "New kickoff time!"; Body = $"""{h} v {a} is now at {ko.ToString("r")}""" }
+    let m = { PushMessage.Title = "New kickoff time!"; Body = $"""{h} v {a} is now at {ko.Raw.ToString("r")}""" }
     FixtureSubscribersAssistance.getPlayerPushSubscriptions deps
     |> List.iter (fun (_, ps) -> deps.PushNotify m ps)
 
@@ -246,21 +246,28 @@ module FixtureClassifiedSubscribers =
   open Points
   open FixtureSubscribersAssistance
 
-  let fixturePredictionToPoints (f:FixtureRecord, p:PredictionRecord) =
-    FixtureState.classifiedScoreLine f.State
+  let fixturePredictionToPoints ({ FixtureRecord.State = state }, { PredictionRecord.IsDoubleDown = isDoubleDown; ScoreLine = pred }) =
+    FixtureState.classifiedScoreLine state
     |> Option.map (fun result ->
-      Some (p.ScoreLine, p.IsDoubleDown)
-      |> Points.getPointsForPrediction result
-      |> fst)
+      let vectors = Points.getPointVectors result pred isDoubleDown
+      Points.getPointsForPrediction result pred vectors |> fst)
     |> Option.defaultValue PredictionPointsMonoid.Init
+
+  // let fixturePredictionToPoints (f:FixtureRecord, p:PredictionRecord) =
+  //   FixtureState.classifiedScoreLine f.State
+  //   |> Option.map (fun result ->
+  //     Some (p.ScoreLine, p.IsDoubleDown)
+  //     |> Points.getPointsForPrediction result
+  //     |> fst)
+  //   |> Option.defaultValue PredictionPointsMonoid.Init
 
   type PositionNumber = PositionNumber of int
   type PositionCollection = PositionCollection of (PlayerId * LeagueTableMember) list
 
   let sort (ppm:PredictionPointsMonoid) =
     ppm.Points,
-    ppm.CorrectScores + ppm.DoubleDownCorrectScores,
-    ppm.CorrectResults + ppm.DoubleDownCorrectResults
+    ppm.CorrectScores,
+    ppm.CorrectResults
 
   let standingAlgo =
     List.sortByDescending (fun (_, m:LeagueTableMember) -> sort m.Points)
@@ -419,8 +426,8 @@ module FixtureClassifiedSubscribers =
 
   let updateLeagueHistoryMonthSetDoc deps _ (FixtureSetId fsId, _, _) =
     deps.Queries.getFixtureSetEarliestKickOff (FixtureSetId fsId)
-    |> fun (KickOff ko) ->
-    (LeagueAllMonthHistory, Month (ko.Year, ko.Month), (ko.ToString("MMMM yyyy")))
+    |> fun (ko:KickOff) ->
+    (LeagueAllMonthHistory, Month (ko.Raw.Year, ko.Raw.Month), (ko.Raw.ToString("MMMM yyyy")))
     |> updateLeagueHistoryWindowDoc deps
 
   let updateMatrixDoc deps _ (fsId, fId, resultScoreLine) =
@@ -453,7 +460,8 @@ module FixtureClassifiedSubscribers =
                 | Some mPlayer ->
                   match mPlayer.Predictions.TryFind fId with
                   | Some mPrediction ->
-                    Points.getPointsForPrediction resultScoreLine (Some (mPrediction.Prediction, mPrediction.IsDoubleDown))
+                    let vectors = Points.getPointVectors resultScoreLine mPrediction.Prediction mPrediction.IsDoubleDown
+                    Points.getPointsForPrediction resultScoreLine mPrediction.Prediction vectors
                     |> fun (m, cat) ->
                       mPlayer.Predictions.Add(fId, { mPrediction with Points = Some (m.Points, cat) })
                       |> fun predictions ->

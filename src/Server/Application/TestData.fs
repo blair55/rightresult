@@ -4,6 +4,7 @@ open System
 open Shared
 open Server.Commands
 open Server.Infrastructure
+open Server.Infrastructure.Time
 
 module TestData =
 
@@ -11,7 +12,7 @@ module TestData =
     { FixtureRecord.Id = FixtureId(Guid.NewGuid())
       FixtureSetId = fsId
       GameweekNo = gwno
-      KickOff = KickOff ko
+      KickOff = KickOff.create ko
       TeamLine = TeamLine tl
       State = FixtureState.Open
       SortOrder = 0 }
@@ -22,6 +23,9 @@ module TestData =
     let now = deps.Now()
     let halveList l = List.splitAt (List.length l / 2) l
 
+    let addToKo (now: DateTime) i =
+      now.AddHours(float i)
+
     let fixtures =
       Teams.all
       |> halveList
@@ -29,9 +33,9 @@ module TestData =
       |> halveList
       |> fun (closeds, opens) ->
            (closeds
-            |> List.mapi (fun i tl -> buildFixture fsId gwno tl (now.AddHours(float -i))))
+            |> List.mapi (fun i tl -> buildFixture fsId gwno tl (addToKo now -i)))
            @ (opens
-              |> List.mapi (fun i tl -> buildFixture fsId gwno tl (now.AddHours(float i))))
+              |> List.mapi (fun i tl -> buildFixture fsId gwno tl (addToKo now i)))
       |> List.sortByDescending (fun f -> f.KickOff)
 
     let fId1 = fixtures.[0] |> fun f -> f.Id

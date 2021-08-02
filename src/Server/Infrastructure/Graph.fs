@@ -28,7 +28,7 @@ let private buildFixtureRecord (f:FixtureNode) =
   { FixtureRecord.Id = FixtureId (Guid.Parse f.Id)
     FixtureSetId = buildFixtureSetId f.FixtureSetId
     GameweekNo = GameweekNo f.GameweekNo
-    KickOff = KickOff f.KickOff
+    KickOff = KickOff.create f.KickOff
     TeamLine = TeamLine (Team f.HomeTeam, Team f.AwayTeam)
     State =  FixtureState.fromNode f
     SortOrder = f.SortOrder
@@ -124,7 +124,7 @@ let queries (gc:GraphClient) : Queries =
         .Return(fun () -> Return.As<DateTime>("min(f.KickOff)"))
         .ResultsAsync.Result
       |> Seq.head
-      |> KickOff
+      |> KickOff.create
 
     getPredictionsForPlayer = fun (PlayerId playerId) ->
       gc.Cypher
@@ -359,15 +359,16 @@ let nonQueries (gc:GraphClient) : NonQueries =
       gc.Cypher
         .Match("(f:Fixture)")
         .Where(fun (f:FixtureNode) -> f.Id = string fId)
-        .Set($"f.State = {FixtureState.InPlayStr}")
+        .Set("f.State = $state")
+        .WithParam("state", FixtureState.InPlayStr)
         .ExecuteWithoutResultsAsync().Wait()
 
-    editFixtureKo = fun (FixtureId fId, KickOff ko) ->
+    editFixtureKo = fun (FixtureId fId, ko) ->
       gc.Cypher
         .Match("(f:Fixture)")
         .Where(fun (f:FixtureNode) -> f.Id = string fId)
         .Set("f.KickOff = $ko")
-        .WithParam("ko", ko)
+        .WithParam("ko", ko.Raw)
         .ExecuteWithoutResultsAsync().Wait()
 
     createFixtureSet = fun fs ->
@@ -400,9 +401,10 @@ let nonQueries (gc:GraphClient) : NonQueries =
       gc.Cypher
         .Match("(f:Fixture)")
         .Where(fun (f:FixtureNode) -> f.Id = string fId)
-        .Set($"f.State = {FixtureState.ClassifiedStr}")
+        .Set("f.State = $state")
         .Set("f.HomeScore = $homeScore")
         .Set("f.AwayScore = $awayScore")
+        .WithParam("state", FixtureState.ClassifiedStr)
         .WithParam("homeScore", homeScore)
         .WithParam("awayScore", awayScore)
         .ExecuteWithoutResultsAsync().Wait()

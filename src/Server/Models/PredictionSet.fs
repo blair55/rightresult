@@ -52,8 +52,8 @@ module PredictionSet =
 
   let apply (playerId, fsId, cmd, (fixtures:FixtureSetState)) ((predictions, dd):PredictionSetState) : Rresult<Event list> =
 
-    let makeSureFixtureIsEditable (PredictionEditDate date) errMsg { FixtureRecord.KickOff = (KickOff ko) } =
-      if date < ko then Ok ()
+    let makeSureFixtureIsEditable (PredictionEditDate date) errMsg { FixtureRecord.KickOff = ko } =
+      if date < ko.Raw then Ok ()
       else ValidationError errMsg |> Error
 
     let datedPredictionCommandHandler fId = function

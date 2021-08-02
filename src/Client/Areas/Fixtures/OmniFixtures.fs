@@ -169,7 +169,6 @@ module OmniFixtures =
   let footItem item = Card.Footer.a [] item
 
   let openFixtureView dispatch (f:FixturePredictionViewModel) =
-    let (KickOff ko) = f.KickOff
     let homeScore = Option.map (fun (ScoreLine (Score h, _)) -> h) f.Prediction
     let awayScore = Option.map (fun (ScoreLine (_, Score a)) -> a) f.Prediction
 
@@ -198,7 +197,7 @@ module OmniFixtures =
     let doubleDownButton dispatch (f:FixturePredictionViewModel) =
       let icon i =
         [ Fa.i [ i ] [] ]
-      match f.IsDoubleDownAvailable, f.Prediction, f.IsDoubleDown with
+      match false, f.Prediction, f.IsDoubleDown with
       | true, Some _, false -> button [Button.Color IsLight] (if f.InProgress then ignore else fun _ -> SetDoubleDown (f.FixtureSetId, f.Id) |> dispatch) (icon Fa.Solid.AngleDoubleDown)
       | true, Some _, true  -> button [Button.Color IsWarning] (if f.InProgress then ignore else fun _ -> RemoveDoubleDown f.FixtureSetId |> dispatch) (icon Fa.Solid.AngleDoubleDown)
       | _ -> disabledIcon Fa.Solid.AngleDoubleDown
@@ -208,7 +207,7 @@ module OmniFixtures =
       | Some p -> ScoreBox.openScoreBox p
       | None -> ScoreBox.emptyScoreBox()
 
-    [ fixtureTitleBar (ko.ToString("HH:mm"), IsWhite, IsPrimary, f.IsDoubleDown, rhs)
+    [ fixtureTitleBar (f.KickOff.Raw.ToString("HH:mm"), IsWhite, IsPrimary, f.IsDoubleDown, rhs)
 
       Card.content
         [ Props
@@ -341,7 +340,7 @@ module OmniFixtures =
   let view (model:Model) dispatch =
     let dateGroupedFixtures =
       Map.toList model.Fixtures
-      |> List.groupBy (fun (_, { KickOff = (KickOff ko) }) -> ko.Date)
+      |> List.groupBy (fun (_, { KickOff = ko }) -> ko.Raw.Date)
       |> List.sortBy (fun (date, _) -> date)
     div [ ]
       [ Components.pageTitle "Fixtures"

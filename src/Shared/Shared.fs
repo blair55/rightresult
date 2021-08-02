@@ -33,7 +33,12 @@ type FixtureSetId = FixtureSetId of Guid
 type FixtureId = FixtureId of Guid
 type Team = Team of string
 type TeamLine = TeamLine of home:Team * away:Team
-type KickOff = KickOff of DateTime
+type KickOff =
+  private | KickOff of DateTime
+  member this.Raw =
+      let (KickOff ko) = this
+      ko
+
 type KickOffString = KickOffString of string
 type PredictionEditDate = PredictionEditDate of DateTime
 type Score =
@@ -48,9 +53,17 @@ type ScoreLine =
   | ScoreLine of home:Score * away:Score
     static member Init =
       ScoreLine (Score 0, Score 0)
+    member this.Difference =
+      let (ScoreLine (Score h, Score a)) = this
+      h - a
 
-// type FixtureState =
-
+[<RequireQualifiedAccess>]
+type PointVector =
+  | Result
+  | HomeScore
+  | AwayScore
+  | GoalDifference
+  | DoubleDown
 
 type PointsCategory =
   | CorrectScore
@@ -222,15 +235,15 @@ module FixtureState =
   let isClassified = classifiedScoreLine >> Option.isSome
 
 module FixtureNode =
-  let init (fsId:FixtureSetId)
+  let init (FixtureSetId fsId)
            (GameweekNo gwno)
            created
            sortOrder
            { FixtureRecord.Id = FixtureId fId
              KickOff = KickOff ko
              TeamLine = TeamLine (Team home, Team away) }  =
-    { FixtureNode.Id = string fId
-      FixtureSetId = string fsId
+    { FixtureNode.Id = string<Guid> fId
+      FixtureSetId = string<Guid> fsId
       Created = created
       GameweekNo = gwno
       SortOrder = sortOrder
@@ -253,10 +266,10 @@ type FixturePredictionViewModel =
     IsDoubleDown : bool
     State : FixtureState
     Prediction : ScoreLine option
+    Points : int * PointVector list
     InProgress : bool
-    IsDoubleDownAvailable : bool
     Neighbours: FixtureId option * FixtureId option }
-
+// and Points = Points of int
 // and FixtureState =
 //   | Open
 //   | KickedOff
@@ -315,43 +328,24 @@ and MatrixPrediction =
     Points : (int * PointsCategory) option
   }
 
-// and PredictionPointsMonoid =
-//   { Points : int
-//     CorrectScores : int
-//     CorrectResults : int
-//     DoubleDownCorrectScores : int
-//     DoubleDownCorrectResults : int }
-//   static member Init =
-//     { Points=0
-//       CorrectScores=0
-//       CorrectResults=0
-//       DoubleDownCorrectScores=0
-//       DoubleDownCorrectResults=0 }
-//   static member (+) (ppm1:PredictionPointsMonoid, ppm2:PredictionPointsMonoid) =
-//     { Points=ppm1.Points+ppm2.Points
-//       CorrectScores=ppm1.CorrectScores+ppm2.CorrectScores
-//       CorrectResults=ppm1.CorrectResults+ppm2.CorrectResults
-//       DoubleDownCorrectScores=ppm1.DoubleDownCorrectScores+ppm2.DoubleDownCorrectScores
-//       DoubleDownCorrectResults=ppm1.DoubleDownCorrectResults+ppm2.DoubleDownCorrectResults }
-
 and PredictionPointsMonoid =
   { Points : int
     CorrectScores : int
-    CorrectResults : int
-    DoubleDownCorrectScores : int
-    DoubleDownCorrectResults : int }
+    CorrectResults : int }
+    // DoubleDownCorrectScores : int
+    // DoubleDownCorrectResults : int }
   static member Init =
     { Points=0
       CorrectScores=0
-      CorrectResults=0
-      DoubleDownCorrectScores=0
-      DoubleDownCorrectResults=0 }
+      CorrectResults=0 }
+      // DoubleDownCorrectScores=0
+      // DoubleDownCorrectResults=0 }
   static member (+) (ppm1:PredictionPointsMonoid, ppm2:PredictionPointsMonoid) =
     { Points=ppm1.Points+ppm2.Points
       CorrectScores=ppm1.CorrectScores+ppm2.CorrectScores
-      CorrectResults=ppm1.CorrectResults+ppm2.CorrectResults
-      DoubleDownCorrectScores=ppm1.DoubleDownCorrectScores+ppm2.DoubleDownCorrectScores
-      DoubleDownCorrectResults=ppm1.DoubleDownCorrectResults+ppm2.DoubleDownCorrectResults }
+      CorrectResults=ppm1.CorrectResults+ppm2.CorrectResults }
+      // DoubleDownCorrectScores=ppm1.DoubleDownCorrectScores+ppm2.DoubleDownCorrectScores
+      // DoubleDownCorrectResults=ppm1.DoubleDownCorrectResults+ppm2.DoubleDownCorrectResults }
 
 and [<CLIMutable>] PlayerViewModel =
   { Id : PlayerId
@@ -588,6 +582,8 @@ module Global =
 
 module KickOff =
 
+  let create d = DateTimeOffset(d).DateTime |> KickOff
+
   let groupFormat (KickOff ko) =
     KickOffString (ko.ToString("ddd d MMM yyyy"))
 
@@ -615,7 +611,7 @@ module KickOff =
 /// - felizify
 /// + detect fixture ko change
 /// - fix push!
-/// - only run bg tasks when web available
+/// - only run bg tasks when web available & tasks not running
 /// dcr --no-deps --rm rr bgdaily
 /// - landing page
 /// - points

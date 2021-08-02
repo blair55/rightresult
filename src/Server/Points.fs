@@ -14,24 +14,33 @@ module Points =
     elif home < away then AwayWin
     else Draw
 
-  let getPointsForPrediction result predictionDd =
+  let pointVectorFunction = function
+    | PointVector.Result -> (+) 2
+    | PointVector.HomeScore
+    | PointVector.AwayScore
+    | PointVector.GoalDifference -> (+) 1
+    | PointVector.DoubleDown -> (*) 2
+
+  let getPointVectors ((ScoreLine (hr, ar)) as result) ((ScoreLine (hp, ap)) as pred) dd =
+    seq {
+      if getScoreResult result = getScoreResult pred then yield PointVector.Result
+      if hr = hp then yield PointVector.HomeScore
+      if ar = ap then yield PointVector.AwayScore
+      if result.Difference = pred.Difference then yield PointVector.GoalDifference
+      if dd then yield PointVector.DoubleDown
+    } |> List.ofSeq
+
+  let sumVectorPoints =
+    List.fold (fun p v -> pointVectorFunction v p) 0
+
+  let getPointsForPrediction result pred vectors =
     let init =
-      PredictionPointsMonoid.Init
-    match predictionDd with
-    | Some (p, true) ->
-      if result = p
-      then { init with Points=6; DoubleDownCorrectScores=1 }, CorrectScore
-      elif getScoreResult result = getScoreResult p
-      then { init with Points=2; DoubleDownCorrectResults=1 }, CorrectResult
-      else init, Incorrect
-    | Some (p, false) ->
-      if result = p
-      then { init with Points=3; CorrectScores=1 }, CorrectScore
-      elif getScoreResult result = getScoreResult p
-      then { init with Points=1; CorrectResults=1 }, CorrectResult
-      else init, Incorrect
-    | None ->
-      init, Incorrect
+      { PredictionPointsMonoid.Init with Points = sumVectorPoints vectors }
+    if result = pred
+    then { init with CorrectScores=1 }, CorrectScore
+    elif getScoreResult result = getScoreResult pred
+    then { init with CorrectResults=1 }, CorrectResult
+    else init, Incorrect
 
   let getHomeAndAwayPremTableRowDiff (ScoreLine (Score homeScore, Score awayScore)) =
     { PremTableRow.Init with Played = 1 }
