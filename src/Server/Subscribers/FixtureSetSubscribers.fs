@@ -70,22 +70,7 @@ module FixtureSetCreatedSubscribers =
     fixtures
     |> List.sortBy (fun { KickOff = KickOff ko } -> ko)
     |> List.mapi (
-      fun i { FixtureRecord.Id = FixtureId fId
-              GameweekNo = GameweekNo gwno
-              KickOff = KickOff ko
-              TeamLine = TeamLine (Team home, Team away) } ->
-      { FixtureNode.Id = string fId
-        FixtureSetId = string fsId
-        Created = created
-        GameweekNo = gwno
-        SortOrder = i
-        KickOff = ko
-        HomeTeam = home
-        AwayTeam = away
-        HasKickedOff = false
-        HasResult = false
-        HomeScore = 0
-        AwayScore = 0 })
+      FixtureNode.init (FixtureSetId fsId) (GameweekNo gwno) created)
     |> List.iter (deps.NonQueries.createFixture (FixtureSetId fsId))
 
   let createMatrix (deps:Dependencies) created (fsId, gwno, fixtures:FixtureRecord list) =
@@ -262,13 +247,12 @@ module FixtureClassifiedSubscribers =
   open FixtureSubscribersAssistance
 
   let fixturePredictionToPoints (f:FixtureRecord, p:PredictionRecord) =
-    match f.ScoreLine with
-    | Some result ->
+    FixtureState.classifiedScoreLine f.State
+    |> Option.map (fun result ->
       Some (p.ScoreLine, p.IsDoubleDown)
       |> Points.getPointsForPrediction result
-      |> fst
-    | _ ->
-      PredictionPointsMonoid.Init
+      |> fst)
+    |> Option.defaultValue PredictionPointsMonoid.Init
 
   type PositionNumber = PositionNumber of int
   type PositionCollection = PositionCollection of (PlayerId * LeagueTableMember) list
@@ -495,7 +479,7 @@ module FixtureClassifiedSubscribers =
     |> fun repo ->
     deps.Queries.getAllFixtures ()
     |> List.ofSeq
-    |> List.choose (fun f -> f.ScoreLine |> Option.map (fun sl -> f.TeamLine, sl))
+    |> List.choose (fun f -> FixtureState.classifiedScoreLine f.State |> Option.map (fun sl -> f.TeamLine, sl))
     |> Points.buildTable PremTable.Init
     |> repo.Insert RealPremTable
 
@@ -506,7 +490,7 @@ module FixtureClassifiedSubscribers =
       deps.Queries.getFixturesForTeam team
       |> List.ofSeq
       |> List.sortBy (fun f -> f.KickOff)
-      |> List.choose (fun f -> f.ScoreLine |> Option.map (fun s -> f, s))
+      |> List.choose (fun f -> FixtureState.classifiedScoreLine f.State |> Option.map (fun sl -> f, sl))
       |> List.map (fun ({ TeamLine = TeamLine (homeTeam, _); KickOff = ko }, ScoreLine (homeScore, awayScore)) ->
         getScoreResult (ScoreLine (homeScore, awayScore))
         |> fun scoreResult ->
@@ -544,7 +528,7 @@ module FixtureClassifiedSubscribers =
     /// needed to update fd with first result when a team appears twice in one gw
     deps.Queries.getAllFixtures ()
     |> List.ofSeq
-    |> List.filter (fun f -> f.ScoreLine.IsNone)
+    |> List.filter (fun f -> FixtureState.isClassified f.State)
     |> List.iter (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
       Documents.repo deps.ElasticSearch
       |> fun repo ->
@@ -587,22 +571,7 @@ module FixtureAppendedSubscribers =
       |> List.head
       |> fun f -> f.GameweekNo
 
-    fixture
-    |> (fun { FixtureRecord.Id = FixtureId fId
-              KickOff = KickOff ko
-              TeamLine = TeamLine (Team home, Team away) } ->
-      { FixtureNode.Id = string fId
-        FixtureSetId = string fsId
-        Created = created
-        GameweekNo = gwno
-        SortOrder = List.length fixtures
-        KickOff = ko
-        HomeTeam = home
-        AwayTeam = away
-        HasKickedOff = false
-        HasResult = false
-        HomeScore = 0
-        AwayScore = 0 })
+    FixtureNode.init (FixtureSetId fsId) (GameweekNo gwno) created (List.length fixtures) fixture
     |> deps.NonQueries.createFixture (FixtureSetId fsId)
 
   let updateMatrix (deps:Dependencies) created (FixtureSetId fsId, fixture) =

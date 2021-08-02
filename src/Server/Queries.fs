@@ -10,7 +10,7 @@ module Queries =
       getAllFixtures : unit -> FixtureRecord seq
       getFixturesInFixtureSet : FixtureSetId -> FixtureRecord seq
       getFixturesInLatestFixtureSet : unit -> (FixtureSetId * GameweekNo * (FixtureRecord seq)) option
-      getFixturesAwaitingResults : unit -> FixtureRecord seq
+      getFixturesInPlay : unit -> FixtureRecord seq
       getPlayerPredictionsByFixture : PlayerId -> (FixtureRecord * PredictionRecord option) seq
       getPlayerPredictionForFixture : PlayerId -> FixtureId -> PredictionRecord option
       getFixtureSetEarliestKickOff : FixtureSetId -> KickOff
@@ -44,6 +44,7 @@ module Queries =
       editFixtureKo : FixtureId * KickOff -> unit
       createFixtureSet : FixtureSetNode -> unit
       createFixture : FixtureSetId -> FixtureNode -> unit
+      updateInPlayFixture : FixtureId * ScoreLine * MinutesPlayed -> unit
       classifyFixture : FixtureId * ScoreLine -> unit
       createPrediction : PredictionRecord -> unit
       deletePredictionSet : PlayerId * FixtureSetId -> unit

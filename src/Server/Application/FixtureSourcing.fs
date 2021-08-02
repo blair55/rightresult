@@ -40,9 +40,8 @@ module FixtureSourcing =
              GameweekNo = gwno
              KickOff = ko
              TeamLine = tl
-             ScoreLine = None
-             SortOrder = i
-             HasKickedOff = false })
+             State = FixtureState.Open
+             SortOrder = i })
     |> fun fixtures -> FixtureSetCommand(fsId, CreateFixtureSet(gwno, fixtures))
 
   let getEditedFixtureKickOffs

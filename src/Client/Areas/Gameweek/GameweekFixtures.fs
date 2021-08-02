@@ -164,7 +164,7 @@ module GameweekFixtures =
     dispatch
     ({ TeamLine = TeamLine (home, away)
        Prediction = pred } as fp: FixturePredictionViewModel)
-    (sl, points, rc)
+    (sl)
     =
     let prediction =
       match pred with
@@ -202,8 +202,8 @@ module GameweekFixtures =
   let fixtureSwitch dispatch (fp: FixturePredictionViewModel) open' inplay classified =
     match fp.State with
     | FixtureState.Open -> open' dispatch fp
-    | FixtureState.KickedOff -> inplay dispatch fp
-    | FixtureState.Classified (sl, points, rc) -> classified dispatch fp (sl, points, rc)
+    | FixtureState.InPlay(sl, mp) -> inplay dispatch fp
+    | FixtureState.Classified (sl) -> classified dispatch fp (sl)
 
   let fixtureGroup dispatch (koStr, fixtures) =
     div [ Style [ MarginBottom "1.5em" ] ] [ // Heading.h5 [ Heading.IsSubtitle ] [ str koStr ]
@@ -354,11 +354,12 @@ module GameweekFixtures =
 
   let inplayFixtureModalContent dispatch (fp: FixturePredictionViewModel) = [ str "in play" ]
 
-  let classifiedFixtureModalContent dispatch (fp: FixturePredictionViewModel) (sl, points, rc) =
+  let classifiedFixtureModalContent dispatch (fp: FixturePredictionViewModel) (sl) =
     [ Components.ScoreBox.resultScoreBox sl
       str "classified"
-      str (sprintf "points %i" points)
-      str (sprintf "%A" rc) ]
+      // str (sprintf "points %i" points)
+      // str (sprintf "%A" rc)
+      ]
 
 
   let fixtureModal

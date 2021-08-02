@@ -28,7 +28,7 @@ module FixtureSet =
 
     | FixtureClassified (_, fId, sl) ->
       fixtures.[fId]
-      |> fun f -> fixtures.Add (fId, { f with ScoreLine = Some sl }) |> Ok
+      |> fun f -> fixtures.Add (fId, { f with State = FixtureState.Classified sl }) |> Ok
 
     | FixtureAppended (_, f) ->
       fixtures.Add (f.Id, f) |> Ok
@@ -41,9 +41,9 @@ module FixtureSet =
   let folder =
     fold, Map.empty
 
-  let makeSureFixtureIsOpen { FixtureRecord.ScoreLine = sl } =
-    match sl with
-    | None _ -> Ok ()
+  let makeSureFixtureIsOpen { FixtureRecord.State = state } =
+    match state with
+    | FixtureState.Open -> Ok ()
     | _ -> ValidationError "Fixture not open" |> Error
 
   let apply (fsId, cmd) (fixtures:FixtureSetState) : Rresult<Event list> =

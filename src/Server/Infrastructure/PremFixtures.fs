@@ -66,20 +66,29 @@ module PremFixtures =
 
   type NewGameweek = NewGameweek of (GameweekNo -> (TeamLine * KickOff) list)
 
-  type GameweekResults = GameweekResults of (GameweekNo -> (TeamLine * ScoreLine) list)
+  type GameweekResults = GameweekResults of (GameweekNo -> GameweekResultState list)
+
+  and [<RequireQualifiedAccess>] GameweekResultState =
+    | InPlay of (TeamLine * ScoreLine * MinutesPlayed)
+    | Classified of (TeamLine * ScoreLine)
 
   let private newFixture f =
     match f, f with
     | FixtureTeamLine tl, FixtureKickoff ko -> tl, ko
 
+  let private resultState (f: PremFixtures.Fixture) =
+    match f.Started, f.FinishedProvisional, f, f with
+    | true, false, FixtureScoreLine sl, FixtureTeamLine tl ->
+      Some(GameweekResultState.InPlay(tl, sl, MinutesPlayed f.Minutes))
+    | true, true, FixtureScoreLine sl, FixtureTeamLine tl -> Some(GameweekResultState.Classified(tl, sl))
+    | _ -> None
+
+
   type FixtureSources =
     { NewGameweek: NewGameweek
       GameweekResults: GameweekResults }
 
+
   let fixturesSources =
     { NewGameweek = NewGameweek(newPremFixtures >> List.map newFixture)
-      GameweekResults =
-        GameweekResults(
-          newPremFixtures
-          >> List.choose (|FixtureIsFinished|_|)
-        ) }
+      GameweekResults = GameweekResults(newPremFixtures >> List.choose resultState) }

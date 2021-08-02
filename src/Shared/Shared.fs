@@ -63,10 +63,15 @@ type FixtureRecord =
     GameweekNo : GameweekNo
     KickOff : KickOff
     TeamLine : TeamLine
-    ScoreLine : ScoreLine option
-    HasKickedOff : bool
+    State: FixtureState
     SortOrder : int
   }
+and [<RequireQualifiedAccess>] FixtureState =
+  | Open
+  | InPlay of (ScoreLine * MinutesPlayed)
+  | Classified of ScoreLine
+
+and MinutesPlayed = MinutesPlayed of int
 and PredictionRecord =
   { PlayerId : PlayerId
     FixtureId : FixtureId
@@ -187,10 +192,55 @@ and [<CLIMutable>] FixtureNode =
     KickOff : DateTime
     HomeTeam : string
     AwayTeam : string
-    HasKickedOff : bool
-    HasResult : bool
+    State: string
+    MinutesPlayed: int
     HomeScore : int
     AwayScore : int }
+
+module FixtureState =
+
+  let [<Literal>] OpenStr = "open"
+  let [<Literal>] InPlayStr = "inplay"
+  let [<Literal>] ClassifiedStr = "classified"
+
+  let toString = function
+    | FixtureState.Open -> OpenStr
+    | FixtureState.InPlay _ -> InPlayStr
+    | FixtureState.Classified _ -> ClassifiedStr
+
+  let fromNode (f:FixtureNode) =
+    match f.State, f.MinutesPlayed, f.HomeScore, f.AwayScore with
+    | OpenStr, _, _, _ -> FixtureState.Open
+    | InPlayStr, mins, home, away -> FixtureState.InPlay (ScoreLine (Score home, Score away), MinutesPlayed mins)
+    | ClassifiedStr, _, home, away -> FixtureState.Classified (ScoreLine (Score home, Score away))
+    | s, _, _, _ -> failwith <| sprintf "could not parse fixture state %s" s
+
+  let classifiedScoreLine = function
+    | FixtureState.Classified result -> Some result
+    | _ -> None
+
+  let isClassified = classifiedScoreLine >> Option.isSome
+
+module FixtureNode =
+  let init (fsId:FixtureSetId)
+           (GameweekNo gwno)
+           created
+           sortOrder
+           { FixtureRecord.Id = FixtureId fId
+             KickOff = KickOff ko
+             TeamLine = TeamLine (Team home, Team away) }  =
+    { FixtureNode.Id = string fId
+      FixtureSetId = string fsId
+      Created = created
+      GameweekNo = gwno
+      SortOrder = sortOrder
+      KickOff = ko
+      State = FixtureState.OpenStr
+      MinutesPlayed = 0
+      HomeTeam = home
+      AwayTeam = away
+      HomeScore = 0
+      AwayScore = 0 }
 
 type FixturePredictionViewModel =
   { Id : FixtureId
@@ -199,7 +249,6 @@ type FixturePredictionViewModel =
     SortOrder : int
     KickOff : KickOff
     KickOffString : KickOffString
-    FormattedKickOff : string
     TeamLine : TeamLine
     IsDoubleDown : bool
     State : FixtureState
@@ -207,10 +256,12 @@ type FixturePredictionViewModel =
     InProgress : bool
     IsDoubleDownAvailable : bool
     Neighbours: FixtureId option * FixtureId option }
-and FixtureState =
-  | Open
-  | KickedOff
-  | Classified of result:ScoreLine * points:int * PointsCategory
+
+// and FixtureState =
+//   | Open
+//   | KickedOff
+//   | Classified of result:ScoreLine * points:int * PointsCategory
+
 and NewFixtureSetViewModel =
   { GameweekNo : GameweekNo
     Fixtures : (KickOff * KickOffString * TeamLine) list }

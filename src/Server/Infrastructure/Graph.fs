@@ -25,14 +25,13 @@ let private buildFixtureSetId (s:string) =
   FixtureSetId (Guid.Parse s)
 
 let private buildFixtureRecord (f:FixtureNode) =
-  { Id = FixtureId (Guid.Parse f.Id)
+  { FixtureRecord.Id = FixtureId (Guid.Parse f.Id)
     FixtureSetId = buildFixtureSetId f.FixtureSetId
     GameweekNo = GameweekNo f.GameweekNo
     KickOff = KickOff f.KickOff
     TeamLine = TeamLine (Team f.HomeTeam, Team f.AwayTeam)
-    ScoreLine = if f.HasResult then ScoreLine (Score f.HomeScore, Score f.AwayScore) |> Some else None
+    State =  FixtureState.fromNode f
     SortOrder = f.SortOrder
-    HasKickedOff = f.HasKickedOff
   }
 
 let private buildPredictionRecord (p:PredictionNode) =
@@ -58,8 +57,8 @@ let queries (gc:GraphClient) : Queries =
   { getKickedOffFixtures = fun now ->
       gc.Cypher
         .Match("(f:Fixture)")
-        .Where(fun (f:FixtureNode) -> now > f.KickOff)
-        .AndWhere(fun (f:FixtureNode) -> f.HasKickedOff = false)
+        .Where(fun (f:FixtureNode) -> f.State = FixtureState.OpenStr)
+        .AndWhere(fun (f:FixtureNode) -> now > f.KickOff)
         .Return<FixtureNode>("f")
         .ResultsAsync.Result
       |> Seq.map buildFixtureRecord
@@ -90,11 +89,10 @@ let queries (gc:GraphClient) : Queries =
       |> Option.map (fun (fixtures, fixtureSetId, maxGwno) ->
           FixtureSetId fixtureSetId, GameweekNo maxGwno, fixtures |> Seq.map buildFixtureRecord)
 
-    getFixturesAwaitingResults = fun () ->
+    getFixturesInPlay = fun () ->
       gc.Cypher
         .Match("(f:Fixture)")
-        .Where(fun (f:FixtureNode) -> f.HasKickedOff = true)
-        .AndWhere(fun (f:FixtureNode) -> f.HasResult = false)
+        .Where(fun (f:FixtureNode) -> f.State = FixtureState.InPlayStr)
         .Return<FixtureNode>("f")
         .ResultsAsync.Result
       |> Seq.map buildFixtureRecord
@@ -319,7 +317,7 @@ let queries (gc:GraphClient) : Queries =
     getEarliestOpenGwno = fun () ->
       gc.Cypher
         .Match("(f1:Fixture)")
-        .Where(fun (f1:FixtureNode) -> f1.HasResult = false)
+        .Where(fun (f1:FixtureNode) -> f1.State <> FixtureState.ClassifiedStr)
         .Match("(f2:Fixture)")
         .Return(fun () -> Return.As<Nullable<int>>("coalesce(min(f1.GameweekNo), max(f2.GameweekNo))"))
         .ResultsAsync.Result
@@ -361,7 +359,7 @@ let nonQueries (gc:GraphClient) : NonQueries =
       gc.Cypher
         .Match("(f:Fixture)")
         .Where(fun (f:FixtureNode) -> f.Id = string fId)
-        .Set("f.HasKickedOff = true")
+        .Set($"f.State = {FixtureState.InPlayStr}")
         .ExecuteWithoutResultsAsync().Wait()
 
     editFixtureKo = fun (FixtureId fId, KickOff ko) ->
@@ -386,11 +384,23 @@ let nonQueries (gc:GraphClient) : NonQueries =
         .WithParam("param", f)
         .ExecuteWithoutResultsAsync().Wait()
 
+    updateInPlayFixture = fun (FixtureId fId, ScoreLine (Score homeScore, Score awayScore), MinutesPlayed mp) ->
+      gc.Cypher
+        .Match("(f:Fixture)")
+        .Where(fun (f:FixtureNode) -> f.Id = string fId)
+        .Set("f.HomeScore = $homeScore")
+        .Set("f.AwayScore = $awayScore")
+        .Set("f.MinutesPlayed = $minutesPlayed")
+        .WithParam("homeScore", homeScore)
+        .WithParam("awayScore", awayScore)
+        .WithParam("minutesPlayed", mp)
+        .ExecuteWithoutResultsAsync().Wait()
+
     classifyFixture = fun (FixtureId fId, ScoreLine (Score homeScore, Score awayScore)) ->
       gc.Cypher
         .Match("(f:Fixture)")
         .Where(fun (f:FixtureNode) -> f.Id = string fId)
-        .Set("f.HasResult = true")
+        .Set($"f.State = {FixtureState.ClassifiedStr}")
         .Set("f.HomeScore = $homeScore")
         .Set("f.AwayScore = $awayScore")
         .WithParam("homeScore", homeScore)

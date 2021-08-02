@@ -13,9 +13,8 @@ module TestData =
       GameweekNo = gwno
       KickOff = KickOff ko
       TeamLine = TeamLine tl
-      ScoreLine = None
-      SortOrder = 0
-      HasKickedOff = false }
+      State = FixtureState.Open
+      SortOrder = 0 }
 
   let generate (deps: Dependencies) =
     let gwno = FixtureSourcing.getNewGameweekNo deps

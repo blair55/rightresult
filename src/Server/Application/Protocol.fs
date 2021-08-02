@@ -35,18 +35,23 @@ module Protocol =
     let validateToken = deps.ValidateToken
     let config = deps.ApplicationConfiguration
 
-    let getClassifiedInfo (pred:PredictionRecord option) (result:ScoreLine) =
-      pred
-      |> Option.map (fun p -> p.ScoreLine, p.IsDoubleDown)
-      |> Points.getPointsForPrediction result
-      |> fun (points, category) -> result, points.Points, category
-      |> FixtureState.Classified
+    // let getClassifiedInfo (pred:PredictionRecord option) (result:ScoreLine) =
+    //   pred
+    //   |> Option.map (fun p -> p.ScoreLine, p.IsDoubleDown)
+    //   |> Points.getPointsForPrediction result
+    //   |> fun (points, category) -> result, points.Points, category
+    //   |> FixtureState.Classified
 
     let isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno =
       List.exists (fun ({ FixtureRecord.GameweekNo = fgwno; KickOff = (KickOff ko) }, pred:PredictionRecord option) ->
         match pred with
         | Some p when p.IsDoubleDown && fgwno = gwno && (now()) > ko -> true
         | _ -> false)
+
+    let fixtureStateFirstMinuteHack now ({KickOff= KickOff ko} as f:FixtureRecord) =
+      match f.State with
+      | FixtureState.Open when (now()) > ko -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed 0)
+      | s -> s
 
     let getFixturesForPlayer (from, size) (jwtPlayer:Jwt.JwtPlayer) : Map<FixtureId, FixturePredictionViewModel> =
 
@@ -66,13 +71,8 @@ module Protocol =
           SortOrder = f.SortOrder
           KickOff = f.KickOff
           KickOffString = KickOff.groupFormat f.KickOff
-          FormattedKickOff = ko.Date.ToString("ddd MMM d, yyyy")
           TeamLine = f.TeamLine
-          State =
-            match f.ScoreLine with
-            | Some scoreLine -> scoreLine |> getClassifiedInfo pred
-            | _ when (now()) < ko -> FixtureState.Open
-            | _ -> FixtureState.KickedOff
+          State = fixtureStateFirstMinuteHack now f
           Prediction = pred |> Option.map (fun p -> p.ScoreLine)
           IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
           InProgress = false
@@ -99,13 +99,12 @@ module Protocol =
             SortOrder = f.SortOrder
             KickOff = f.KickOff
             KickOffString = KickOff.groupFormat f.KickOff
-            FormattedKickOff = ko.Date.ToString("ddd MMM d, yyyy")
             TeamLine = f.TeamLine
-            State =
-              match f.ScoreLine with
-              | Some scoreLine -> scoreLine |> getClassifiedInfo pred
-              | _ when (now()) < ko -> FixtureState.Open
-              | _ -> FixtureState.KickedOff
+            State = fixtureStateFirstMinuteHack now f
+              // match f.ScoreLine with
+              // | Some scoreLine -> scoreLine |> getClassifiedInfo pred
+              // | _ when (now()) < ko -> FixtureState.Open
+              // | _ -> FixtureState.KickedOff
             Prediction = pred |> Option.map (fun p -> p.ScoreLine)
             IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
             InProgress = false
@@ -264,20 +263,21 @@ module Protocol =
                   if KickOff.isLessThan f.KickOff (now()) then
                     Option.map (fun (p:PredictionRecord) -> p.ScoreLine, p.IsDoubleDown) pred
                   else None
-                let resultAndPoints =
-                  Option.map (fun sl -> sl, Points.getPointsForPrediction sl predictionDd) f.ScoreLine
+                // let resultAndPoints =
+                //   Option.map (fun sl -> sl, Points.getPointsForPrediction sl predictionDd) f.ScoreLine
                 { PlayerFixtureSetKickedOffViewModelRow.FixtureId = f.Id
                   TeamLine = f.TeamLine
                   KickOff = f.KickOff
                   KickOffString = KickOff.groupFormat f.KickOff
                   SortOrder = f.SortOrder
                   Prediction = predictionDd
-                  Points =
-                    resultAndPoints
-                    |> Option.map (fun (_, ppmcat) -> fst ppmcat)
-                    |> function | Some p -> p | None -> PredictionPointsMonoid.Init
-                  ResultAndPoints =
-                    Option.map (fun (sl, ppmcat) -> sl, snd ppmcat) resultAndPoints
+                  // TODO: Adapt to new points
+                  Points = PredictionPointsMonoid.Init
+                    // resultAndPoints
+                    // |> Option.map (fun (_, ppmcat) -> fst ppmcat)
+                    // |> function | Some p -> p | None -> PredictionPointsMonoid.Init
+                  ResultAndPoints = None
+                    // Option.map (fun (sl, ppmcat) -> sl, snd ppmcat) resultAndPoints
                 })
               |> List.sortBy (fun p -> p.SortOrder)
           }
