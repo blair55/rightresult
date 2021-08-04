@@ -17,12 +17,18 @@ module LoginArea =
   let view _ =
     div []
       [ Components.pageTitle "Login"
-        Card.card []
-          [ Card.content []
-              [ p [] [ str "You are logged out" ]
-              ]
-            Card.footer []
-              [ Card.Footer.a []
+        // Card.card []
+        //   [ Card.content []
+        //       [ p [] [ str "You are logged out" ]
+        //       ]
+        //   ]
+
+        Box.box' []
+          [
+            div [Class "block"]
+                [ p [] [ str "You are logged out" ]
+                ]
+            div [Class "block"]
                   [ form [ HTMLAttr.Method "POST"; Action Routes.redirectToFacebookPath ]
                       [
                         input [ Type "hidden"; Name redirectPathKey; Value (getQs redirectPathKey)]
@@ -32,26 +38,27 @@ module LoginArea =
                             Button.IsLink ]
                           // [ Icon.faIcon [ Icon.CustomClass "fab" ] [ Fable.Helpers.React.i [] [] ] //[ Fa.icon Fa.I.FacebookSquare; Fa.faLg ]
                             [ span [ Class "icon" ] [ i [ Class "fab fa-facebook-square fa-lg" ] [] ]
-                              span [] [ str "Login" ]
+                              span [] [ str "Login with facebook" ]
                             ]
                       ]
                   ]
-                Card.Footer.a []
+
+            div [Class "block"]
+
                   [ form [ HTMLAttr.Method "POST"; Action Routes.redirectToTwitterPath ]
                       [
                         input [ Type "hidden"; Name redirectPathKey; Value (getQs redirectPathKey)]
                         Button.button
-                          [ Button.IsExpanded
+                          [ Button.IsFullWidth
                             Button.Props [ Type "submit" ]
                             Button.IsLink ]
                           // [ Icon.faIcon [] [ Fa.icon Fa.I.TwitterSquare; Fa.faLg ]
                           //   span [] [ str "Login" ]
                           // ]
                           [ span [ Class "icon" ] [ i [ Class "fab fa-twitter-square fa-lg" ] [] ]
-                            span [] [ str "Login" ]
+                            span [] [ str "Login with twitter" ]
                           ]
                       ]
                   ]
-              ]
           ]
       ]

@@ -102,7 +102,7 @@ module PlayerFixtureSet =
           [ r ]
       ]
 
-  let fixtureGroup (KickOffString koStr, fixtures) =
+  let fixtureGroup (KickOffGroup koStr, fixtures) =
     div [ Style [ MarginBottom "1.5em" ] ]
       [ Components.subHeading koStr
         div [] (fixtures |> List.map fixtureSetView)
@@ -121,7 +121,7 @@ module PlayerFixtureSet =
         Components.subHeading <| sprintf "Gameweek %i" gwno
         totalPoints fixtures
         fixtures.Rows
-        |> List.groupBy (fun r -> r.KickOffString)
+        |> List.groupBy (fun r -> r.KickOffGroup)
         |> List.map fixtureGroup
         |> div [ Class "player-fixtureset" ]
       ]

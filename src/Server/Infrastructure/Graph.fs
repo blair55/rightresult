@@ -28,7 +28,7 @@ let private buildFixtureRecord (f:FixtureNode) =
   { FixtureRecord.Id = FixtureId (Guid.Parse f.Id)
     FixtureSetId = buildFixtureSetId f.FixtureSetId
     GameweekNo = GameweekNo f.GameweekNo
-    KickOff = KickOff.create f.KickOff
+    KickOff = Ko.create f.KickOff
     TeamLine = TeamLine (Team f.HomeTeam, Team f.AwayTeam)
     State =  FixtureState.fromNode f
     SortOrder = f.SortOrder
@@ -124,7 +124,7 @@ let queries (gc:GraphClient) : Queries =
         .Return(fun () -> Return.As<DateTime>("min(f.KickOff)"))
         .ResultsAsync.Result
       |> Seq.head
-      |> KickOff.create
+      |> Ko.create
 
     getPredictionsForPlayer = fun (PlayerId playerId) ->
       gc.Cypher

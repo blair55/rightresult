@@ -43,7 +43,7 @@ module FixtureSet =
 
   let makeSureFixtureIsOpen { FixtureRecord.State = state } =
     match state with
-    | FixtureState.Open -> Ok ()
+    | FixtureState.Open _ -> Ok ()
     | _ -> ValidationError "Fixture not open" |> Error
 
   let apply (fsId, cmd) (fixtures:FixtureSetState) : Rresult<Event list> =

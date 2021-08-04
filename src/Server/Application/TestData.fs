@@ -12,9 +12,9 @@ module TestData =
     { FixtureRecord.Id = FixtureId(Guid.NewGuid())
       FixtureSetId = fsId
       GameweekNo = gwno
-      KickOff = KickOff.create ko
+      KickOff = Ko.create ko
       TeamLine = TeamLine tl
-      State = FixtureState.Open
+      State = FixtureState.Open (Ko.create ko)
       SortOrder = 0 }
 
   let generate (deps: Dependencies) =
@@ -30,12 +30,14 @@ module TestData =
       Teams.all
       |> halveList
       ||> List.zip
-      |> halveList
-      |> fun (closeds, opens) ->
-           (closeds
-            |> List.mapi (fun i tl -> buildFixture fsId gwno tl (addToKo now -i)))
-           @ (opens
-              |> List.mapi (fun i tl -> buildFixture fsId gwno tl (addToKo now i)))
+      // |> halveList
+      // |> fun (closeds, opens) ->
+      //      (closeds
+      //       |> List.mapi (fun i tl -> buildFixture fsId gwno tl (addToKo now -i)))
+      //      @ (opens
+      //         |> List.mapi (fun i tl -> buildFixture fsId gwno tl (addToKo now i)))
+
+      |> List.mapi (fun i tl -> buildFixture fsId gwno tl (addToKo now i))
       |> List.sortByDescending (fun f -> f.KickOff)
 
     let fId1 = fixtures.[0] |> fun f -> f.Id

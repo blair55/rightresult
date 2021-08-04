@@ -56,9 +56,9 @@ module Protocol =
         | Some p when p.IsDoubleDown && fgwno = gwno && (now()) > ko.Raw -> true
         | _ -> false)
 
-    let fixtureStateFirstMinuteHack now ({KickOff = ko } as f:FixtureRecord) =
+    let fixtureStateFirstMinuteHack now (f:FixtureRecord) =
       match f.State with
-      | FixtureState.Open when (now()) > ko.Raw -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed 0)
+      | FixtureState.Open ko when (now()) > ko.Raw -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed 0)
       | s -> s
 
     let getFixturesForPlayer (from, size) (jwtPlayer:Jwt.JwtPlayer) : Map<FixtureId, FixturePredictionViewModel> =
@@ -78,7 +78,7 @@ module Protocol =
           GameweekNo = f.GameweekNo
           SortOrder = f.SortOrder
           KickOff = f.KickOff
-          KickOffString = KickOff.groupFormat f.KickOff
+          KickOffGroup = Ko.groupFormat f.KickOff
           TeamLine = f.TeamLine
           State = fixtureStateFirstMinuteHack now f
           Prediction = pred |> Option.map (fun p -> p.ScoreLine)
@@ -106,7 +106,7 @@ module Protocol =
             GameweekNo = f.GameweekNo
             SortOrder = f.SortOrder
             KickOff = f.KickOff
-            KickOffString = KickOff.groupFormat f.KickOff
+            KickOffGroup = Ko.groupFormat f.KickOff
             TeamLine = f.TeamLine
             State = fixtureStateFirstMinuteHack now f
               // match f.ScoreLine with
@@ -265,14 +265,14 @@ module Protocol =
             TotalPoints = PredictionPointsMonoid.Init
             Rows =
               fixturesAndPredictionsInFixtureSet
-              |> List.filter (fun (f, _) -> KickOff.isLessThan f.KickOff (now()))
+              |> List.filter (fun (f, _) -> Ko.isLessThan f.KickOff (now()))
               |> List.map (fun (f, pred) ->
                 let predictionDd = Option.map (fun (p:PredictionRecord) -> p.ScoreLine, p.IsDoubleDown) pred
                 let (cat, ppm, _) = getPoints f pred
                 { PlayerFixtureSetKickedOffViewModelRow.FixtureId = f.Id
                   TeamLine = f.TeamLine
                   KickOff = f.KickOff
-                  KickOffString = KickOff.groupFormat f.KickOff
+                  KickOffGroup = Ko.groupFormat f.KickOff
                   SortOrder = f.SortOrder
                   Prediction = predictionDd
                   Points = ppm

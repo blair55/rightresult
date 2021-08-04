@@ -21,11 +21,14 @@ $link: #5AB1BB
 $info: #5AB1BB
 $success: #DCF763
 $warning: #FFAD05
-$danger: #F0803C
+$warning-light:#FFEBC2
+$danger: #F05D5E // #F0803C
+$danger-light: #FCD9D9
+// $dark: $primary
 $dark: $grey-darker
 $text: $grey-dark
 $background: #F1F8F9
-$background-alt: #E2F1F3
+$background-alt: #D4EAED
 $body-background-color: $background
 $white-ter: $background
 
@@ -35,32 +38,41 @@ $shadow: none
 $body-line-height: 1
 // $border: solid 1px $light
 
-
 // $modal-card-head-background-color: $background
 // $modal-card-head-padding: 0
 // $modal-card-head-radius: 0
 // $modal-card-foot-radius: 0
 
-
-
-
-
+// $tabs-link-color: $primary
+// $navbar-tab-active-color: $primary
+// $navbar-item-color: $primary
+// $navbar-height:4em
 
 // Bulma
 @import "~bulma/bulma"
 @import "~bulma-quickview/dist/css/bulma-quickview.sass"
 @import "~bulma/sass/utilities/derived-variables"
 
+.home
+  .tile-box
+    .box
+      border-radius: 0
+      background-color: $background-alt
+      display: flex
+      font-weight: bold
+
+  .block
+    margin-bottom: 1em
 .button
   border: solid 2px $dark !important
   text-transform: uppercase
   font-weight: bold
 
-.navbar
-  min-height: 0px
+// .navbar
+//   min-height: 0px
 
-.navbar .tabs.is-toggle ul li a
-  border-radius: 0
+// .navbar .tabs.is-toggle ul li a
+//   border-radius: 0
 
 // .navbar.is-fixed-bottom.has-shadow
 //   box-shadow: 0 1px 4px 0 rgba(10, 10, 10, 0.3)
@@ -106,11 +118,12 @@ table.table th.text-left
     white-space: nowrap
     line-height: 2em
 
+.title em, .title span, .subtitle em, .subtitle span, h3
+  font-weight: bold !important
+
 .home
-  .hero
-    box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1)
   .hero-body
-    padding: 2rem 1.5rem
+    padding: 2rem 1rem
 
 .movement-up
   color: $success
@@ -270,33 +283,143 @@ table.table th.text-left
       text-transform: uppercase
       color: #aaa
 
-.page-title
+.page-title, .page-sub-title
   // padding-left: 1em
   margin-bottom: 1em
-.page-title span
-  color: $white-ter
-  background-color: $secondary
-  padding: 0.3em 0.5em
-  font-weight: bold
-  text-transform: uppercase
+  span
+    color: $white-ter
+    background-color: $secondary
+    display: inline-flex
+    padding: 0.3em 0.5em
+    font-weight: bold
+    text-transform: uppercase
+
+.page-sub-title
+  span
+    background-color: $warning
+    color: unset
 
 .gw-date
-  text-transform: uppercase
   background-color: $warning
   padding: 0.3em 0.5em
   font-weight: bold
-.gw-fixture-list .gw-fixture-item
-  margin-bottom: 1em
-  padding: 1em 0
-// .gw-fixture-list .gw-fixture-item:nth-child(odd)
-.gw-fixture-list .gw-fixture-item
+  text-transform: uppercase
+  display: inline-flex
+  white-space: nowrap
+
+.gw-fixture-item
   background-color: $background-alt
+  margin-bottom: 2em
+  padding-bottom: 1em
+
+.gw-fixture-item.gw-fixture-item-isdd
+  background-color: $warning-light
+.gw-fixture-item
+  position: relative
+  .gw-fixture-result-row
+    position: relative
+    top: -1em
+    margin-bottom: -0.6em
+
+  .gw-fixture-result-container
+    padding: 0.3em 0.1em 0.1em
+  .gw-fixture-result-desc
+    font-size: $size-small
+    display: flex
+    margin-bottom: 0.2em
+    span
+      flex-grow: 1
+      text-align: center
+      font-weight: bold
+
+  .gw-fixture-result-box
+    display: flex
+
+    div
+      text-align: center
+      font-weight: bold
+      margin: 0.1em
+      padding: 0.4em 0em
+      width: 2em
+
+
+  .gw-fixture-result-row.gw-fixture-open
+    .gw-fixture-result-desc
+      color: $white-ter
+    .gw-fixture-result-container
+      background-color: $info
+    .gw-fixture-result-box
+      div
+        background-color: $info-light
+
+  .gw-fixture-result-row.gw-fixture-inplay
+    .gw-fixture-result-container
+      background-color: $warning
+    .gw-fixture-result-box
+      div
+        background-color: $warning-light
+
+  .gw-fixture-result-row.gw-fixture-classified
+    .gw-fixture-result-container
+      background-color: $warning
+    .gw-fixture-result-box
+      div
+        background-color: $warning-light
+
+  .gw-fixture-pred-container
+    padding: 0.1em
+    position: relative
+    top: -0.2em
+    .gw-fixture-pred-box
+      display: flex
+      .pred-score
+        text-align: center
+        font-weight: bold
+        margin: 0.1em
+        padding: 0.4em 0em
+        width: 2em
+      .pred-dd
+        background-color: $warning
+        position: absolute
+        width: 1.2em
+        bottom: 0
+        text-align: center
+        height: 1.2em
+        left: 27px
+
+  .gw-fixture-pred-row.gw-fixture-nopred
+    .gw-fixture-pred-container
+      background-color: $danger
+    .gw-fixture-pred-box
+      .pred-score
+        background-color: $danger-light
+        color: $danger
+
+  .gw-fixture-pred-row.gw-fixture-haspred
+    .gw-fixture-pred-container
+      background-color: $info
+    .gw-fixture-pred-box
+      .pred-score
+        background-color: $info-light
+
+  .gw-fixture-item-arrow
+    position: absolute
+    right: 1em
+    top: 3em
+
 .gw-fixture-modal-container
   background-color: $background
   padding: 1em 0
 .gw-fixture-modal-content
-  padding: 0 1em
+  padding: 0
 
+.gw-fixture-modal-content
+  .gw-fixture-item-arrow
+    display: none
+
+.grayscale
+  filter: grayscale(1)
+  opacity: 0.4
 
 .kick-off-time
   background-color: $info
@@ -305,13 +428,17 @@ table.table th.text-left
   font-size: 0.7rem
   font-weight: bold
 
+  // position: relative
+  // margin: 0 auto
 .short-team-name
-  background-color: $primary
   text-transform: uppercase
   font-weight: bold
-  padding: 0.3em 0.5em
+  background-color: $primary
   color: $white-ter
-
+  display: inline-flex
+  justify-content: center
+  padding: 0.3em 0.5em
+  white-space: nowrap
 
 .team-title.ARS
   background-image: linear-gradient(180deg, #e10512 50%, rgb(0, 0, 0, 0) 50%)

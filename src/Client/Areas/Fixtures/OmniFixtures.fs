@@ -263,7 +263,7 @@ module OmniFixtures =
     div [ Style [ CSSProp.MarginBottom "1.5em" ] ]
       [ Card.card []
           (match f.State with
-            | FixtureState.Open -> openFixtureView dispatch f
+            | FixtureState.Open _ -> openFixtureView dispatch f
             | FixtureState.InPlay (sl, mp) -> kickedOffFixtureView dispatch f
             // | FixtureState.Classified (result, points, category) ->
             | FixtureState.Classified (sl) -> kickedOffFixtureView dispatch f
@@ -271,7 +271,7 @@ module OmniFixtures =
           )
       ]
 
-  let groupedDateView dispatch (KickOffString ko) (GameweekNo gwno) fixtures =
+  let groupedDateView dispatch (KickOffGroup ko) (GameweekNo gwno) fixtures =
     div []
       [ div [ Style [ MarginBottom "1em"; MarginLeft "1em" ] ]
           [ Heading.h5 [ Heading.IsSubtitle ] [ str <| sprintf "%s • GW%i" ko gwno ] ]
@@ -349,7 +349,7 @@ module OmniFixtures =
           (dateGroupedFixtures
           |> List.map (fun (_, items) ->
               let (_, first) = items.Head
-              groupedDateView dispatch first.KickOffString first.GameweekNo (List.map snd items)))
+              groupedDateView dispatch first.KickOffGroup first.GameweekNo (List.map snd items)))
 
         rowOf2
             (match model.Page.Prev with

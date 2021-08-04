@@ -90,7 +90,7 @@ let update msg (model:Model) : Model * Cmd<Msg> =
 
   | _ -> model, alert (LoginProblem "No user found")
 
-let footabs model dispatch : ReactElement =
+let footabs model dispatch : ReactElement option =
   let desc s =
     Text.span
       [ Modifiers [ Modifier.IsHidden (Screen.Mobile, true) ]
@@ -142,9 +142,10 @@ let footabs model dispatch : ReactElement =
     Tabs.tabs
       [ Tabs.IsCentered; Tabs.IsFullWidth; Tabs.IsToggle; Tabs.Size IsMedium ]
       ((if isIosStandalone then [ backButtonTab ] else []) @ tabList)
+    |> Some
 
   match model.Area with
-  | LoginArea _ -> div [] []
+  | LoginArea _ -> None // div [] []
   | HomeArea _ ->
     tabs
       [ Tabs.tab [ Tabs.Tab.IsActive true ] home
@@ -177,7 +178,7 @@ let footabs model dispatch : ReactElement =
         Tabs.tab [ Tabs.Tab.IsActive true ] players ]
 
 let logoBar =
-  Navbar.navbar [Navbar.Color IsPrimary; Navbar.HasShadow; Navbar.Props [ Style [ MarginBottom "1em" ] ] ]
+  Navbar.navbar [Navbar.Color IsPrimary; Navbar.Props [ Style [ MarginBottom "1em" ] ] ]
     [ Navbar.Brand.div []
         [ div [ Style [ Padding "1em" ] ]
             [ Heading.h5 [ Heading.Modifiers [ Modifier.TextColor IsWhite; Modifier.TextTransform TextTransform.UpperCase ] ]
@@ -189,12 +190,15 @@ let logoBar =
 
 let title model =
   match model.Area with
-  | HomeArea m -> div [] []
+  | HomeArea _ -> div [] []
   | _          -> logoBar
 
 let navBar model dispatch =
-  Navbar.navbar [ Navbar.IsFixedBottom; Navbar.HasShadow ]
-    [ footabs model dispatch ]
+  match footabs model dispatch with
+  | Some tabs -> // tabs
+      Navbar.navbar [ Navbar.IsFixedBottom ]
+        [ tabs ]
+  | _ -> div [] []
 
 let area model dispatch =
   match model.Area with

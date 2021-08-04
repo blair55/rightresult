@@ -18,14 +18,13 @@ open Browser.WebStorage
 module HomeArea =
 
   type Model =
-    { Player : ClientSafePlayer
-      TotalPoints : PredictionPointsMonoid WebData
-      GlobalGwWinner : WebData<GlobalGameweekWinner option>
-      ShowFeedbackModal : bool
-      FeedbackText : string
-      IsSubscribable : bool
-      IsSubscribing : bool
-    }
+    { Player: ClientSafePlayer
+      TotalPoints: PredictionPointsMonoid WebData
+      GlobalGwWinner: WebData<GlobalGameweekWinner option>
+      ShowFeedbackModal: bool
+      FeedbackText: string
+      IsSubscribable: bool
+      IsSubscribing: bool }
 
   type Msg =
     | Init of Result<string, exn>
@@ -44,175 +43,239 @@ module HomeArea =
     | Subscribed of PushSubscription
 
   let button attr txt onClick =
-    Button.button
-      ([ Button.OnClick onClick ] @ attr)
-      [ str txt ]
+    Button.button ([ Button.OnClick onClick ] @ attr) [ str txt ]
 
-  let heroBar (model:Model) points =
-    Hero.hero
-      [ Hero.Color IsPrimary
-        Hero.IsBold
-        Hero.Props
-          [ Style [ MarginBottom "1em" ] ]
-      ]
-      [ Hero.body []
-          [ Container.container []
-              [ Heading.h1
-                  [ Heading.Is3
-                    Heading.Modifiers
-                      [ Modifier.TextTransform TextTransform.UpperCase ]
-                  ]
-                  [ span [ ] [ str "Right Result" ] ]
-                Heading.h3
-                  [ Heading.IsSubtitle
-                    Heading.Is6
-                  ]
-                  [ Fa.i [ Fa.Solid.AngleDoubleDown ] []
-                    str " 2021/22"
-                  ]
-              ]
+  let heroBar (model: Model) points =
+    Hero.hero [ Hero.Color IsPrimary
+                Hero.Props [ Style [ MarginBottom "1em" ] ] ] [
+      Hero.body [] [
+        Container.container [] [
+          Heading.h1 [ Heading.Is3
+                       Heading.Modifiers [ Modifier.TextTransform TextTransform.UpperCase ] ] [
+            span [] [ str "Right Result" ]
           ]
-      ]
-
-  let playerBar dispatch
-      { Model.Player = { Id = PlayerId playerId; Name = name }
-      } points =
-    Hero.hero
-      [ Hero.Color IsLight
-        Hero.IsBold
-        Hero.Props
-          [ Style [ MarginBottom "1em" ]
-            OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch)
+          Heading.h3 [ Heading.IsSubtitle; Heading.Is6 ] [
+            Fa.i [ Fa.Solid.AngleDoubleDown ] []
+            str " 2021/22"
           ]
-      ]
-      [ Hero.body []
-          [ Container.container []
-              [ Heading.h4
-                  [ Heading.Modifiers
-                      [ Modifier.TextTransform TextTransform.UpperCase ]
-                  ]
-                  [ span [] [ str "My Points" ] ]
-                Components.pointsTotalView points
-              ]
-          ]
-      ]
-
-  let gwWinner dispatch = function
-    | Some
-      { GameweekNo = GameweekNo gwno
-        PlayerId = PlayerId playerId
-        Member = { LeagueTableMember.PlayerName = (PlayerName playerName); Points = m }
-      } ->
-      Hero.hero
-        [ Hero.Color IsWarning
-          Hero.IsBold
-          Hero.Props
-            [ Style [ MarginBottom "1em" ]
-              OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch)
-            ]
         ]
-        [ Hero.body []
-            [ Container.container []
-                [ Heading.h4
-                    [ Heading.Modifiers
-                        [ Modifier.TextTransform TextTransform.UpperCase ]
-                    ]
-                    [ span [] [ str <| sprintf "GW %i Winner" gwno ] ]
-                  Heading.h6
-                    [ Heading.IsSubtitle
-                    ]
-                    [ Fa.i [ Fa.Solid.Medal ] []
-                      str <| sprintf " %s • %ipts" playerName m.Points
-                    ]
-                ]
-            ]
+      ]
+    ]
+
+  let ``dah dit`` left right =
+    Columns.columns [ Columns.IsMobile
+                      Columns.Props [ Props.Style [ MarginBottom "1em" ] ] ] [
+      Column.column [ Column.Modifiers []
+                      Column.Width(Screen.All, Column.IsTwoThirds) ] [
+        Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column
+                               Modifier.FlexJustifyContent FlexJustifyContent.FlexStart ] ] [
+          div [] left
         ]
-    | None ->
-      div [] []
+      ]
+      Column.column [ Column.Modifiers []
+                      Column.Width(Screen.All, Column.IsOneThird) ] [
+        Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column ]
+                   Props [ Style [ Direction DirectionOptions.Rtl ] ] ] [
+          div [] right
+        ]
+      ]
+    ]
+
+  let ``dit dah`` left right =
+    Columns.columns [ Columns.IsMobile
+                      Columns.Props [ Props.Style [ MarginBottom "1em" ] ] ] [
+      Column.column [ Column.Modifiers []
+                      Column.Width(Screen.All, Column.IsOneThird) ] [
+        Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column
+                               Modifier.FlexJustifyContent FlexJustifyContent.FlexStart ] ] [
+          div [] left
+        ]
+      ]
+      Column.column [ Column.Modifiers []
+                    // Column.Width(Screen.All, Column.IsOneThird)
+                     ] [
+        Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column ]
+                   Props [ Style [ Direction DirectionOptions.Rtl ] ] ] [
+          div [] right
+        ]
+      ]
+    ]
+
+  let lightInfoBox e = Box.box' [] [ e ]
+
+  let playerBar dispatch { Model.Player = { Id = PlayerId playerId; Name = name } } (points: PredictionPointsMonoid) =
+
+    div [] [
+
+      ``dah dit`` [ div [] [
+                      Components.pageTitle "Welcome"
+                    ]
+                    div [ Class "tile-box" ] [
+                      lightInfoBox (str (string name))
+                    ] ] [
+        div [] [ Components.pageTitle "Points" ]
+        div [ Class "tile-box" ] [
+          lightInfoBox (str (string points.Points))
+        ]
+      ]
+      ``dit dah`` [ div [] [
+                      Components.pageTitle "Fixtures"
+                    ]
+                    div [ Class "tile-box" ] [
+                      lightInfoBox (str ("10"))
+                    ] ] [
+        div [] [
+          Components.pageTitle "GW 1 Leader"
+        ]
+        div [ Class "tile-box" ] [
+          lightInfoBox (str ("No one yet"))
+        ]
+      ]
+    ]
+
+  let gwWinner dispatch =
+    function
+    | Some { GameweekNo = GameweekNo gwno
+             PlayerId = PlayerId playerId
+             Member = { LeagueTableMember.PlayerName = (PlayerName playerName)
+                        Points = m } } ->
+      Hero.hero [ Hero.Color IsWarning
+                  Hero.IsBold
+                  Hero.Props [ Style [ MarginBottom "1em" ]
+                               OnClick
+                                 (fun _ ->
+                                   PlayerRoute playerId
+                                   |> PlayersRoute
+                                   |> NavTo
+                                   |> dispatch) ] ] [
+        Hero.body [] [
+          Container.container [] [
+            Heading.h4 [ Heading.Modifiers [ Modifier.TextTransform TextTransform.UpperCase ] ] [
+              span [] [
+                str <| sprintf "GW %i Winner" gwno
+              ]
+            ]
+            Heading.h6 [ Heading.IsSubtitle ] [
+              Fa.i [ Fa.Solid.Medal ] []
+              str <| sprintf " %s • %ipts" playerName m.Points
+            ]
+          ]
+        ]
+      ]
+    | None -> div [] []
 
   let notificationPrompt model dispatch =
-    let subscribeButton (model:Model) dispatch =
+    let subscribeButton (model: Model) dispatch =
       match model.IsSubscribing with
-      | false -> button [Button.Color IsInfo] "Enable Notifications" (fun _ -> dispatch Subscribe)
-      | true  -> button [Button.Color IsWhite; Button.IsLoading true] "" ignore
+      | false -> button [ Button.Color IsInfo ] "Enable Notifications" (fun _ -> dispatch Subscribe)
+      | true ->
+        button
+          [ Button.Color IsWhite
+            Button.IsLoading true ]
+          ""
+          ignore
+
     if model.IsSubscribable then
-      Components.cardWithFooter
-        [ Message.message [ Message.Color IsInfo ] [
-              Message.header [ ]
-                [ str "Notifications"
-                  Delete.delete [ Delete.OnClick (fun _ -> dispatch DismissSubscribePrompt) ] []
-                ]
-              Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-                [ str "Get push notifications on this device"
-                ]
-            ]
+      Components.cardWithFooter [ Message.message [ Message.Color IsInfo ] [
+                                    Message.header [] [
+                                      str "Notifications"
+                                      Delete.delete [ Delete.OnClick(fun _ -> dispatch DismissSubscribePrompt) ] []
+                                    ]
+                                    Message.body [ Modifiers [ Modifier.TextAlignment(Screen.Mobile, TextAlignment.Left) ] ] [
+                                      str "Get push notifications on this device"
+                                    ]
+                                  ] ] [
+        Card.Footer.a [] [
+          subscribeButton model dispatch
         ]
-        [ Card.Footer.a []
-            [ subscribeButton model dispatch ]
-        ]
+      ]
     else
       div [] []
 
   let homeMenu model dispatch =
-    let (PlayerId playerId) =
-      model.Player.Id
-    Components.card
-      [ Menu.menu []
-          [ Menu.list []
-              [
-                // Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] [ str "Global League" ]
-                // Menu.Item.li [ Menu.Item.OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ] [ str model.Player.Name ]
-                Menu.Item.li [ Menu.Item.OnClick (fun _ -> Logout |> dispatch) ] [ str "Log out" ]
-              ]
-          ]
+    let (PlayerId playerId) = model.Player.Id
+
+    Box.box' [] [
+
+      div [ Class "block" ] [
+
+        Button.button
+          ([ Button.IsFullWidth
+            //  Button.IsOutlined
+             Button.Color IsWarning
+             Button.IsLight
+             Button.OnClick(fun _ -> Logout |> dispatch) ])
+          [ str "Read the new rules >>" ]
       ]
 
-  let loadedView (model:Model) (points, winner) dispatch =
-    [ heroBar model points
-      notificationPrompt model dispatch
-      gwWinner dispatch winner
-      playerBar dispatch model points
-      homeMenu model dispatch
+      div [ Class "block" ] [
+
+        Button.button
+          ([ Button.IsFullWidth
+            //  Button.IsOutlined
+             Button.Color IsWarning
+             Button.IsLight
+             Button.OnClick(fun _ -> Logout |> dispatch) ])
+          [ str "preview badges >>" ]
+      ]
+
+      div [ Class "block" ] [
+
+        Button.button
+          ([ Button.IsFullWidth
+             Button.IsOutlined
+             Button.Color IsDanger
+             Button.OnClick(fun _ -> Logout |> dispatch) ])
+          [ str "log out >>" ]
+      ]
     ]
+  // Components.card [ Menu.menu [] [
+  //                     Menu.list [] [
+  //                       // Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] [ str "Global League" ]
+  //                       // Menu.Item.li [ Menu.Item.OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ] [ str model.Player.Name ]
+  //                       Menu.Item.li [ Menu.Item.OnClick(fun _ -> Logout |> dispatch) ] [
+  //                         str "Log out"
+  //                       ]
+  //                     ]
+  //                   ] ]
+
+  let loadedView (model: Model) (points, winner) dispatch =
+    [ heroBar model points
+      // notificationPrompt model dispatch
+      // gwWinner dispatch winner
+      playerBar dispatch model points
+      homeMenu model dispatch ]
 
   [<Emit("isSubscribableToPush()")>]
-  let isSubscribableToPush () : JS.Promise<bool> =
-    jsNative
+  let isSubscribableToPush () : JS.Promise<bool> = jsNative
 
   [<Emit("subscribeToPush()")>]
-  let subscribeToPush () : JS.Promise<PushSubscription> =
-    jsNative
+  let subscribeToPush () : JS.Promise<PushSubscription> = jsNative
 
   let noNetworkView model dispatch =
     div [] [
-      Components.card
-        [ Message.message [ Message.Color IsWarning ] [
-              Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
-                [ str "No network!"
-                ]
-            ]
-        ]
-      Components.card
-        [ Menu.menu []
-            [ Menu.list []
-                [
-                  // Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] [ str "Global League" ]
-                  // Menu.Item.li [ Menu.Item.OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ] [ str model.Player.Name ]
-                  Menu.Item.li [ Menu.Item.OnClick (fun _ -> Logout |> dispatch) ] [ str "Log out" ]
-                ]
-            ]
-        ]
+      Components.card [ Message.message [ Message.Color IsWarning ] [
+                          Message.body [ Modifiers [ Modifier.TextAlignment(Screen.Mobile, TextAlignment.Left) ] ] [
+                            str "No network!"
+                          ]
+                        ] ]
+      Components.card [ Menu.menu [] [
+                          Menu.list [] [
+                            // Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] [ str "Global League" ]
+                            // Menu.Item.li [ Menu.Item.OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ] [ str model.Player.Name ]
+                            Menu.Item.li [ Menu.Item.OnClick(fun _ -> Logout |> dispatch) ] [
+                              str "Log out"
+                            ]
+                          ]
+                        ] ]
     ]
 
   let view model dispatch =
     match model.TotalPoints, model.GlobalGwWinner with
-    | Success points, Success winner ->
-      div [Class "home"] (loadedView model (points, winner) dispatch)
+    | Success points, Success winner -> div [ Class "home" ] (loadedView model (points, winner) dispatch)
     | WebError _, _
-    | _, WebError _ ->
-      noNetworkView model dispatch
-    | _ ->
-      div [] []
+    | _, WebError _ -> noNetworkView model dispatch
+    | _ -> div [] []
 
   let init api player =
     { Player = player
@@ -222,69 +285,67 @@ module HomeArea =
       ShowFeedbackModal = false
       FeedbackText = ""
       IsSubscribable = false
-      IsSubscribing = false
-    }, Cmd.batch
-        [
-          Cmd.OfAsync.perform
-            (api.getPlayerPointsTotal player.Id)
-            player.Token
-            PlayerPointsTotalRecieved
-          Cmd.OfAsync.perform
-            api.getGlobalGameweekWinner
-            player.Token
-            GlobalGwWinnerReceived
-          Cmd.OfPromise.perform
-            isSubscribableToPush ()
-            InitIsSubscribableReceived
-        ]
+      IsSubscribing = false },
+    Cmd.batch [ Cmd.OfAsync.perform (api.getPlayerPointsTotal player.Id) player.Token PlayerPointsTotalRecieved
+                Cmd.OfAsync.perform api.getGlobalGameweekWinner player.Token GlobalGwWinnerReceived
+                Cmd.OfPromise.perform isSubscribableToPush () InitIsSubscribableReceived ]
 
-  let safeDateTimeToString (s:string) =
+  let safeDateTimeToString (s: string) =
     match DateTime.TryParse s with
     | true, d -> d
     | _ -> DateTime.MinValue
 
-  let isOver60Days (d:DateTime) =
-    d.Date.AddDays 60. < DateTime.Now.Date
+  let isOver60Days (d: DateTime) = d.Date.AddDays 60. < DateTime.Now.Date
 
-  let dismissSubscriptionStorageKey =
-    "dismiss-subscription"
+  let dismissSubscriptionStorageKey = "dismiss-subscription"
 
-  let update (api:IProtocol) player msg model : Model * Cmd<Msg> =
+  let update (api: IProtocol) player msg model : Model * Cmd<Msg> =
     match msg with
     | Init _ -> model, []
-    | PlayerPointsTotalRecieved r -> { model with TotalPoints = resultToWebData r }, []
+    | PlayerPointsTotalRecieved r ->
+      { model with
+          TotalPoints = resultToWebData r },
+      []
     // | LeagueTableReceived r -> { model with LeagueTable = resultToWebData r }, []
-    | GlobalGwWinnerReceived r -> { model with GlobalGwWinner = resultToWebData r }, []
+    | GlobalGwWinnerReceived r ->
+      { model with
+          GlobalGwWinner = resultToWebData r },
+      []
     | ShowFeedbackModal -> { model with ShowFeedbackModal = true }, []
     | HideFeedbackModal -> { model with ShowFeedbackModal = false }, []
     | EditFeedback s -> { model with FeedbackText = s }, []
     | SubmitFeedback ->
-      { model with ShowFeedbackModal = false; FeedbackText = "" },
-        Cmd.OfAsync.perform
-          (api.submitFeedback model.FeedbackText)
-          player.Token
-          (fun _ -> AlertInfo "Thanks for your feedback!")
+      { model with
+          ShowFeedbackModal = false
+          FeedbackText = "" },
+      Cmd.OfAsync.perform
+        (api.submitFeedback model.FeedbackText)
+        player.Token
+        (fun _ -> AlertInfo "Thanks for your feedback!")
     | NavTo r -> model, navTo r
     | AlertInfo s ->
-      model, (Toast.message >> Toast.position Toast.TopCenter >> Toast.info) s
+      model,
+      (Toast.message
+       >> Toast.position Toast.TopCenter
+       >> Toast.info)
+        s
     | Logout _ -> model, []
     | InitIsSubscribableReceived isSubscribable ->
       localStorage.getItem dismissSubscriptionStorageKey
       |> safeDateTimeToString
       |> isOver60Days
       |> fun isDismissExpired ->
-      { model with IsSubscribable = isSubscribable && isDismissExpired }, []
+           { model with
+               IsSubscribable = isSubscribable && isDismissExpired },
+           []
     | DismissSubscribePrompt ->
-      localStorage.setItem(dismissSubscriptionStorageKey, DateTime.Now.Date.ToString("yyyy-MM-dd"))
+      localStorage.setItem (dismissSubscriptionStorageKey, DateTime.Now.Date.ToString("yyyy-MM-dd"))
       { model with IsSubscribable = false }, []
-    | Subscribe ->
-      { model with IsSubscribing = true },
-        Cmd.OfPromise.perform
-          subscribeToPush ()
-          Subscribed
+    | Subscribe -> { model with IsSubscribing = true }, Cmd.OfPromise.perform subscribeToPush () Subscribed
     | Subscribed sub ->
       localStorage.removeItem dismissSubscriptionStorageKey
-      { model with IsSubscribing = false; IsSubscribable = false },
-        Cmd.OfAsync.perform
-          (api.subscribeToPush player.Token) sub
-          (fun _ -> AlertInfo "Notifications enabled")
+
+      { model with
+          IsSubscribing = false
+          IsSubscribable = false },
+      Cmd.OfAsync.perform (api.subscribeToPush player.Token) sub (fun _ -> AlertInfo "Notifications enabled")

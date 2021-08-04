@@ -142,7 +142,7 @@ module LeagueHistory =
     | Success leagueName, Success fs, Success months -> leagueView dispatch model leagueName fs months
     | WebError _, _, _
     | _, WebError _, _
-    | _, _, WebError _ -> div [] [ str "Could not find league history" ]
+    | _, _, WebError _ -> p [] [ str "League history not available yet" ]
     | _ -> div [] [ ]
 
   let update api player msg model : Model * Cmd<Msg> =

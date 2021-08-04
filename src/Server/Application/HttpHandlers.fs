@@ -42,12 +42,13 @@ module HttpHandlers =
       |> List.map (fun f ->
           FixtureSetId (Guid.NewGuid())
           |> fun fsId ->
+          let ko = Ko.create f.KickOff
           { FixtureRecord.Id = FixtureId (Guid.NewGuid())
             FixtureSetId = fsId
             GameweekNo = GameweekNo fs.GameweekNo
-            KickOff = KickOff.create f.KickOff
+            KickOff = ko
             TeamLine = TeamLine (Team f.Home, Team f.Away)
-            State = FixtureState.Open
+            State = FixtureState.Open ko
             SortOrder = 0 })
       |> fun fixtures -> GameweekNo fs.GameweekNo, fixtures
       |> CreateFixtureSet
@@ -71,7 +72,7 @@ module HttpHandlers =
       | Ok () -> Successful.OK "Ok" next ctx
       | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
     let editFixtureKoCmd (e:EditFixtureKoHttp) =
-      (FixtureId e.FixtureId, KickOff.create e.KickOff)
+      (FixtureId e.FixtureId, Ko.create e.KickOff)
       |> EditFixtureKickOff
       |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd)
     ctx
@@ -96,12 +97,13 @@ module HttpHandlers =
     |> (fun ctx -> ctx.BindModelAsync<AppendFixtureHttp>()
     >> Task.toAsync
     >> Async.map (fun e ->
+      let ko = Ko.create e.KickOff
       { Id = FixtureId (Guid.NewGuid())
         FixtureSetId = FixtureSetId e.FixtureSetId
         GameweekNo = GameweekNo 0
-        KickOff = KickOff.create e.KickOff
+        KickOff = ko
         TeamLine = TeamLine (Team e.Home, Team e.Away)
-        State = FixtureState.Open
+        State = FixtureState.Open ko
         SortOrder = 0 }
       |> AppendFixture
       |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd))

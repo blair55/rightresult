@@ -33,13 +33,26 @@ type FixtureSetId = FixtureSetId of Guid
 type FixtureId = FixtureId of Guid
 type Team = Team of string
 type TeamLine = TeamLine of home:Team * away:Team
-type KickOff =
-  private | KickOff of DateTime
-  member this.Raw =
-      let (KickOff ko) = this
-      ko
 
-type KickOffString = KickOffString of string
+type KickOffGroup = KickOffGroup of string
+
+module Ko =
+  type KickOff =
+    private | KickOff of DateTime
+    member this.Raw =
+        let (KickOff ko) = this
+        ko
+
+  let create d = DateTimeOffset(d).DateTime |> KickOff
+
+  let groupFormat (KickOff ko) =
+    KickOffGroup (ko.ToString("ddd d MMM yyyy"))
+
+  let isLessThan (KickOff ko) now =
+    ko < now
+
+type KickOff = Ko.KickOff
+
 type PredictionEditDate = PredictionEditDate of DateTime
 type Score =
   | Score of int
@@ -74,13 +87,13 @@ type FixtureRecord =
   { Id : FixtureId
     FixtureSetId : FixtureSetId
     GameweekNo : GameweekNo
-    KickOff : KickOff
+    KickOff : Ko.KickOff
     TeamLine : TeamLine
     State: FixtureState
     SortOrder : int
   }
 and [<RequireQualifiedAccess>] FixtureState =
-  | Open
+  | Open of Ko.KickOff
   | InPlay of (ScoreLine * MinutesPlayed)
   | Classified of ScoreLine
 
@@ -217,13 +230,13 @@ module FixtureState =
   let [<Literal>] ClassifiedStr = "classified"
 
   let toString = function
-    | FixtureState.Open -> OpenStr
+    | FixtureState.Open _ -> OpenStr
     | FixtureState.InPlay _ -> InPlayStr
     | FixtureState.Classified _ -> ClassifiedStr
 
   let fromNode (f:FixtureNode) =
     match f.State, f.MinutesPlayed, f.HomeScore, f.AwayScore with
-    | OpenStr, _, _, _ -> FixtureState.Open
+    | OpenStr, _, _, _ -> FixtureState.Open (Ko.create f.KickOff)
     | InPlayStr, mins, home, away -> FixtureState.InPlay (ScoreLine (Score home, Score away), MinutesPlayed mins)
     | ClassifiedStr, _, home, away -> FixtureState.Classified (ScoreLine (Score home, Score away))
     | s, _, _, _ -> failwith <| sprintf "could not parse fixture state %s" s
@@ -240,14 +253,14 @@ module FixtureNode =
            created
            sortOrder
            { FixtureRecord.Id = FixtureId fId
-             KickOff = KickOff ko
+             KickOff = ko
              TeamLine = TeamLine (Team home, Team away) }  =
     { FixtureNode.Id = string<Guid> fId
       FixtureSetId = string<Guid> fsId
       Created = created
       GameweekNo = gwno
       SortOrder = sortOrder
-      KickOff = ko
+      KickOff = ko.Raw
       State = FixtureState.OpenStr
       MinutesPlayed = 0
       HomeTeam = home
@@ -261,7 +274,7 @@ type FixturePredictionViewModel =
     GameweekNo : GameweekNo
     SortOrder : int
     KickOff : KickOff
-    KickOffString : KickOffString
+    KickOffGroup : KickOffGroup
     TeamLine : TeamLine
     IsDoubleDown : bool
     State : FixtureState
@@ -277,7 +290,7 @@ type FixturePredictionViewModel =
 
 and NewFixtureSetViewModel =
   { GameweekNo : GameweekNo
-    Fixtures : (KickOff * KickOffString * TeamLine) list }
+    Fixtures : (KickOff * KickOffGroup * TeamLine) list }
 and PlayerLeagueViewModel =
   { Position : int
     Movement : int
@@ -384,7 +397,7 @@ and PlayerFixtureSetKickedOffViewModelRow =
   { FixtureId : FixtureId
     TeamLine : TeamLine
     KickOff : KickOff
-    KickOffString : KickOffString
+    KickOffGroup : KickOffGroup
     SortOrder : int
     Points : PredictionPointsMonoid
     ResultAndPoints : (ScoreLine * PointsCategory) option
@@ -580,16 +593,6 @@ module Global =
   let leagueName = LeagueName "Global League"
   let identifier = "global"
 
-module KickOff =
-
-  let create d = DateTimeOffset(d).DateTime |> KickOff
-
-  let groupFormat (KickOff ko) =
-    KickOffString (ko.ToString("ddd d MMM yyyy"))
-
-  let isLessThan (KickOff ko) now =
-    ko < now
-
 /// TODO:
 
 /// - add team to form guide
@@ -618,6 +621,13 @@ module KickOff =
 /// - server side tidy
 /// + fix serviceworker error
 /// - page per fixture & swipe
+
+/// FIXTURE - PRED
+/// open    - none
+/// open    - some
+/// inplay  - some
+/// inplay  - none
+
 
 /// + add fixture score to matrix
 /// + real & predicted prem tables

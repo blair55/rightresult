@@ -22,7 +22,7 @@ module FixtureSourcing =
     let gwno = getNewGameweekNo deps
 
     ngw gwno
-    |> List.map (fun (tl, ko) -> ko, KickOff.groupFormat ko, tl)
+    |> List.map (fun (tl, ko) -> ko, Ko.groupFormat ko, tl)
     |> fun items ->
          { NewFixtureSetViewModel.GameweekNo = gwno
            Fixtures = items }
@@ -40,7 +40,7 @@ module FixtureSourcing =
              GameweekNo = gwno
              KickOff = ko
              TeamLine = tl
-             State = FixtureState.Open
+             State = FixtureState.Open ko
              SortOrder = i })
     |> fun fixtures -> FixtureSetCommand(fsId, CreateFixtureSet(gwno, fixtures))
 

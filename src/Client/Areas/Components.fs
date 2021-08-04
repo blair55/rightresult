@@ -40,7 +40,7 @@ module Components =
             str (
               string (
                 total.CorrectResults
-                // + total.DoubleDownCorrectResults
+              // + total.DoubleDownCorrectResults
               )
             )
           ]
@@ -53,7 +53,7 @@ module Components =
             str (
               string (
                 total.CorrectScores
-                // + total.DoubleDownCorrectScores
+              // + total.DoubleDownCorrectScores
               )
             )
           ]
@@ -77,9 +77,12 @@ module Components =
     ]
 
   let subHeading s =
-    Heading.h5 [ Heading.IsSubtitle
-                 Heading.Props [ Style [ MarginLeft "1em" ] ] ] [
-      str s
+    // Heading.h5 [ Heading.IsSubtitle
+    //              Heading.Props [ Style [ MarginLeft "1em" ] ] ] [
+    //   str s
+    // ]
+    Heading.h2 [ Heading.Props [ Class "page-sub-title" ] ] [
+      span [] [ str s ]
     ]
 
   let teamName (Team team) =
@@ -245,26 +248,22 @@ module Components =
     Text.span [ Modifiers []; Props [ Class clas' ] ] []
 
   let shortTeamName team =
-    Text.span [ Modifiers []
-                Props [ Class "short-team-name" ] ] [
-      str (badgeAbbrv team)
+    div [ Class "" ] [
+      span [ Class "short-team-name" ] [
+        str (badgeAbbrv team)
+      ]
     ]
 
-  let kickOffTime (ko:KickOff) =
+  let kickOffTime (ko: KickOff) =
     Text.span [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is2) ]
                 Props [ Class "kick-off-time" ] ] [
       str (ko.Raw.ToString("HH:mm"))
     ]
 
-  let gameweekDate (KickOffString s) =
-    // Heading.h6 [ Heading.IsSubtitle ]
-    // div [ Class(TextAlignment.Centered.ToString()) ] [
-    div [] [
-      Text.span [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is6)
-                              Modifier.TextAlignment(Screen.All, TextAlignment.Centered) ]
-                  Props [ Class "gw-date" ] ] [
-        str s
-      ]
+  let gameweekDate (KickOffGroup s) =
+    Text.span [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is6) ]
+                Props [ Class "gw-date" ] ] [
+      str s
     ]
 
   module ScoreBox =

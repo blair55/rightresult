@@ -1,3 +1,11 @@
+
+.badge-20,
+.badge-25,
+.badge-50,
+.badge-100 {
+  filter: grayscale(0.6)
+}
+
 .badge-20 {
   background-image: url("/images/badge-sprites/badges-20-sprite.png");
   background-repeat: no-repeat;
@@ -2194,7 +2202,10 @@
   background-position: -300px -500px;
 }
 .badge-100.BRE {
-  background-position: -400px -500px;
+  /* background-position: -400px -500px; */
+  background-image: url("/images/bre100.png");
+  background-position: 0px 0px;
+  background-size: 100px 100px;
 }
 .badge-100.BRG {
   background-position: -500px -500px;
