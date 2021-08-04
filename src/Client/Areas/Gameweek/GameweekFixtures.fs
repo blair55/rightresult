@@ -119,17 +119,16 @@ module GameweekFixtures =
       match pred with
       | (Some (ScoreLine (Score h, Score a)), true) ->
         div [ Class "gw-fixture-pred-box" ] [
+          div [ Class "pred-dd" ] [
+            Fa.i [ Fa.Solid.AngleDoubleDown
+                   Fa.Size Fa.FaSmall ] []
+          ]
           div [ Class "pred-score" ] [
             str (string<int> h)
           ]
           div [ Class "pred-score" ] [
             str (string<int> a)
           ]
-          div [ Class "pred-dd" ] [
-            Fa.i [ Fa.Solid.AngleDoubleDown
-                   Fa.Size Fa.FaSmall ] []
-          ]
-
         ]
       | (Some (ScoreLine (Score h, Score a)), _) ->
         div [ Class "gw-fixture-pred-box" ] [
@@ -173,7 +172,7 @@ module GameweekFixtures =
       rowOf3
         $"gw-fixture-result-row {resultClass}"
         [ fixtureBadge home ]
-        [ fixtureScoreBox fp.State ]
+        [ div [] [ fixtureScoreBox fp.State ] ]
         [ fixtureBadge away ]
       rowOf3
         $"gw-fixture-pred-row {predClass}"
@@ -355,7 +354,8 @@ module GameweekFixtures =
         Modal.content [] [
           div [ Class "gw-fixture-modal-container" ] [
             div [ Style [ MarginBottom "2em" ] ] [
-              Components.pageTitle (sprintf "Gameweek %i" gwno)
+              // Components.pageTitle (sprintf "Gameweek %i" gwno)
+              Components.gameweekDate fp.KickOffGroup
             ]
 
             div [ Class "gw-fixture-modal-content" ] [

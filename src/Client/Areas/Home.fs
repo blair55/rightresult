@@ -103,35 +103,51 @@ module HomeArea =
 
   let lightInfoBox e = Box.box' [] [ e ]
 
-  let playerBar dispatch { Model.Player = { Id = PlayerId playerId; Name = name } } (points: PredictionPointsMonoid) =
-
+  let titleBar =
     div [] [
-
-      ``dah dit`` [ div [] [
-                      Components.pageTitle "Welcome"
-                    ]
-                    div [ Class "tile-box" ] [
-                      lightInfoBox (str (string name))
-                    ] ] [
-        div [] [ Components.pageTitle "Points" ]
-        div [ Class "tile-box" ] [
-          lightInfoBox (str (string points.Points))
-        ]
-      ]
-      ``dit dah`` [ div [] [
-                      Components.pageTitle "Fixtures"
-                    ]
-                    div [ Class "tile-box" ] [
-                      lightInfoBox (str ("10"))
-                    ] ] [
-        div [] [
-          Components.pageTitle "GW 1 Leader"
-        ]
-        div [ Class "tile-box" ] [
-          lightInfoBox (str ("No one yet"))
-        ]
-      ]
+      Components.pageTitle "Get your predictions in"
     ]
+  //   Components.pageTitle "Points"
+  //   div [ Class "tile-box" ] [ lightInfoBox (str (string points.Points)) ]
+
+
+  let playerBar dispatch { Model.Player = { Id = PlayerId playerId; Name = name } } (points: PredictionPointsMonoid) =
+    div [] []
+  // div [] [
+  //   Components.pageTitle "Welcome"
+  //   div [ Class "tile-box" ] [ lightInfoBox (str (string name)) ]
+  //   Components.pageTitle "Points"
+  //   div [ Class "tile-box" ] [ lightInfoBox (str (string points.Points)) ]
+
+  //   ``dah dit`` [ div [] [
+  //                   Components.pageTitle "Welcome"
+  //                 ]
+  //                 div [ Class "tile-box" ] [
+  //                   lightInfoBox (str (string name))
+  //                 ] ] [
+  //     div [] [ Components.pageTitle "Points" ]
+  //     div [ Class "tile-box" ] [
+  //       lightInfoBox (str (string points.Points))
+  //     ]
+  //   ]
+
+  //   div [ Class "fixture-reel" ]
+  //     []
+
+  //   ``dit dah`` [ div [] [
+  //                   Components.pageTitle "Fixtures"
+  //                 ]
+  //                 div [ Class "tile-box" ] [
+  //                   lightInfoBox (str ("10"))
+  //                 ] ] [
+  //     div [] [
+  //       Components.pageTitle "GW 1 Leader"
+  //     ]
+  //     div [ Class "tile-box" ] [
+  //       lightInfoBox (str ("No one yet"))
+  //     ]
+  //   ]
+  // ]
 
   let gwWinner dispatch =
     function
@@ -201,22 +217,11 @@ module HomeArea =
 
         Button.button
           ([ Button.IsFullWidth
-            //  Button.IsOutlined
-             Button.Color IsWarning
+             Button.Color IsInfo
+             Button.IsOutlined
              Button.IsLight
              Button.OnClick(fun _ -> Logout |> dispatch) ])
-          [ str "Read the new rules >>" ]
-      ]
-
-      div [ Class "block" ] [
-
-        Button.button
-          ([ Button.IsFullWidth
-            //  Button.IsOutlined
-             Button.Color IsWarning
-             Button.IsLight
-             Button.OnClick(fun _ -> Logout |> dispatch) ])
-          [ str "preview badges >>" ]
+          [ str "How it works >>" ]
       ]
 
       div [ Class "block" ] [
@@ -224,26 +229,85 @@ module HomeArea =
         Button.button
           ([ Button.IsFullWidth
              Button.IsOutlined
+             Button.Color IsWarning
+             Button.IsLight
+             Button.OnClick(fun _ -> NavTo (LeaguesRoute (CreateLeagueRoute)) |> dispatch) ])
+          [ str "Create a league >>" ]
+      ]
+
+      div [ Class "block" ] [
+
+        Button.button
+          ([ Button.IsFullWidth
              Button.Color IsDanger
-             Button.OnClick(fun _ -> Logout |> dispatch) ])
-          [ str "log out >>" ]
+             Button.IsOutlined
+             Button.IsLight
+             Button.OnClick(fun _ -> NavTo (GameweekRoute (GameweekInitRoute)) |> dispatch) ])
+          [ str "Predict >>" ]
+      ]
+
+      // div [ Class "block" ] [
+
+      //   Button.button
+      //     ([ Button.IsFullWidth
+      //        Button.Color IsWarning
+      //        Button.IsLight
+      //        Button.OnClick(fun _ -> Logout |> dispatch) ])
+      //     [ str "preview badges >>" ]
+      // ]
+
+      // div [ Class "block" ] [
+
+      //   Button.button
+      //     ([ Button.IsFullWidth
+      //        Button.IsOutlined
+      //        Button.Color IsDanger
+      //        Button.OnClick(fun _ -> Logout |> dispatch) ])
+      //     [ str "log out >>" ]
+      // ]
+
+    ]
+
+  let fixtureReelItem (TeamLine (h, a)) =
+    div [ Class "fixture-reel-item" ] [
+      div [] [
+        Components.badge Components.BadgeSize.L h
+      ]
+      div [] [
+        Components.badge Components.BadgeSize.L a
       ]
     ]
-  // Components.card [ Menu.menu [] [
-  //                     Menu.list [] [
-  //                       // Menu.Item.li [ Menu.Item.OnClick (fun _ -> LeaguesRoute GlobalLeagueRoute |> NavTo |> dispatch) ] [ str "Global League" ]
-  //                       // Menu.Item.li [ Menu.Item.OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ] [ str model.Player.Name ]
-  //                       Menu.Item.li [ Menu.Item.OnClick(fun _ -> Logout |> dispatch) ] [
-  //                         str "Log out"
-  //                       ]
-  //                     ]
-  //                   ] ]
+
+  let halveList l = List.splitAt (List.length l / 2) l
+  let rand = new Random()
+
+  let fixtureReel (fixtures: NewFixtureSetViewModel) =
+    div [ Class "fixture-reel-container" ] [
+      div
+        [ Class "fixture-reel" ]
+        (Teams.all
+         |> List.sortBy (fun _ -> rand.Next())
+         |> halveList
+         ||> List.zip
+         |> List.map TeamLine
+         |> List.map fixtureReelItem)
+    ]
+
+  let vm =
+    { GameweekNo = GameweekNo 1
+      Fixtures =
+        [ (Ko.create DateTime.Now, KickOffGroup "", TeamLine(Team Teams.Arsenal, Team Teams.AstonVilla))
+          (Ko.create DateTime.Now, KickOffGroup "", TeamLine(Team Teams.Brentford, Team Teams.Brighton))
+          (Ko.create DateTime.Now, KickOffGroup "", TeamLine(Team Teams.Burnley, Team Teams.Chelsea))
+          (Ko.create DateTime.Now, KickOffGroup "", TeamLine(Team Teams.CrystalPalace, Team Teams.Everton)) ] }
 
   let loadedView (model: Model) (points, winner) dispatch =
     [ heroBar model points
       // notificationPrompt model dispatch
       // gwWinner dispatch winner
-      playerBar dispatch model points
+      // playerBar dispatch model points
+      titleBar
+      fixtureReel vm
       homeMenu model dispatch ]
 
   [<Emit("isSubscribableToPush()")>]

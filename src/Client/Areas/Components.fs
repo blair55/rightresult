@@ -261,10 +261,7 @@ module Components =
     ]
 
   let gameweekDate (KickOffGroup s) =
-    Text.span [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is6) ]
-                Props [ Class "gw-date" ] ] [
-      str s
-    ]
+    subHeading s
 
   module ScoreBox =
 

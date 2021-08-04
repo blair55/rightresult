@@ -17,16 +17,11 @@ module LoginArea =
   let view _ =
     div []
       [ Components.pageTitle "Login"
-        // Card.card []
-        //   [ Card.content []
-        //       [ p [] [ str "You are logged out" ]
-        //       ]
-        //   ]
 
         Box.box' []
           [
             div [Class "block"]
-                [ p [] [ str "You are logged out" ]
+                [ p [] [ str "Login to continue." ]
                 ]
             div [Class "block"]
                   [ form [ HTMLAttr.Method "POST"; Action Routes.redirectToFacebookPath ]

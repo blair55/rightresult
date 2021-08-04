@@ -21,14 +21,14 @@ $link: #5AB1BB
 $info: #5AB1BB
 $success: #DCF763
 $warning: #FFAD05
-$warning-light:#FFEBC2
+// $warning-light:#FFEBC2
 $danger: #F05D5E // #F0803C
-$danger-light: #FCD9D9
+// $danger-light: #FCD9D9
 // $dark: $primary
 $dark: $grey-darker
 $text: $grey-dark
 $background: #F1F8F9
-$background-alt: #D4EAED
+$background-alt: $white
 $body-background-color: $background
 $white-ter: $background
 
@@ -48,34 +48,41 @@ $body-line-height: 1
 // $navbar-item-color: $primary
 // $navbar-height:4em
 
+$tabs-toggle-link-active-background-color: $primary
+$tabs-toggle-link-border-width: 2px
+$tabs-toggle-link-border-color: $dark
+$tabs-toggle-link-hover-border-color: $dark
+$tabs-toggle-link-active-border-color: $dark
+.navbar .tabs a span
+  text-transform: uppercase
+  font-weight: bold
+  font-size: 0.75em
+
 // Bulma
 @import "~bulma/bulma"
 @import "~bulma-quickview/dist/css/bulma-quickview.sass"
 @import "~bulma/sass/utilities/derived-variables"
 
-.home
-  .tile-box
-    .box
-      border-radius: 0
-      background-color: $background-alt
-      display: flex
-      font-weight: bold
+.navbar
+  min-height: 0px
 
+.box
+  border-radius: 0
+  .block:last-child
+      margin-bottom: 0
+
+.home
   .block
     margin-bottom: 1em
+
 .button
-  border: solid 2px $dark !important
+  border: solid 2px $dark
   text-transform: uppercase
   font-weight: bold
 
-// .navbar
-//   min-height: 0px
+.button.is-outlined
+  border-color: unset
 
-// .navbar .tabs.is-toggle ul li a
-//   border-radius: 0
-
-// .navbar.is-fixed-bottom.has-shadow
-//   box-shadow: 0 1px 4px 0 rgba(10, 10, 10, 0.3)
 
 .table tr.is-selected
   background-color: $light
@@ -118,12 +125,26 @@ table.table th.text-left
     white-space: nowrap
     line-height: 2em
 
-.title em, .title span, .subtitle em, .subtitle span, h3
+.title em, .title span, .subtitle em, .subtitle span
   font-weight: bold !important
 
 .home
   .hero-body
-    padding: 2rem 1rem
+    padding: 2rem 1.5rem
+
+  .fixture-reel-container
+    overflow-x: scroll
+    margin-bottom: 2em
+      // display: flex
+      // flex-direction: row
+    .fixture-reel
+      display: flex
+      // flex-direction: row
+    .fixture-reel-item
+      display: flex
+      margin-right: 1em
+    .fixture-reel-item:last
+      margin-right: 0em
 
 .movement-up
   color: $success
@@ -299,14 +320,6 @@ table.table th.text-left
     background-color: $warning
     color: unset
 
-.gw-date
-  background-color: $warning
-  padding: 0.3em 0.5em
-  font-weight: bold
-  text-transform: uppercase
-  display: inline-flex
-  white-space: nowrap
-
 .gw-fixture-item
   background-color: $background-alt
   margin-bottom: 2em
@@ -322,11 +335,11 @@ table.table th.text-left
     margin-bottom: -0.6em
 
   .gw-fixture-result-container
-    padding: 0.3em 0.1em 0.1em
+    padding: 2px
   .gw-fixture-result-desc
     font-size: $size-small
     display: flex
-    margin-bottom: 0.2em
+    margin-bottom: 2px
     span
       flex-grow: 1
       text-align: center
@@ -338,9 +351,11 @@ table.table th.text-left
     div
       text-align: center
       font-weight: bold
-      margin: 0.1em
-      padding: 0.4em 0em
-      width: 2em
+      margin-right: 2px
+      padding: 6px 0
+      width: 30px
+    div:last-child
+      margin-right: 0
 
 
   .gw-fixture-result-row.gw-fixture-open
@@ -367,7 +382,7 @@ table.table th.text-left
         background-color: $warning-light
 
   .gw-fixture-pred-container
-    padding: 0.1em
+    padding: 2px
     position: relative
     top: -0.2em
     .gw-fixture-pred-box
@@ -375,17 +390,19 @@ table.table th.text-left
       .pred-score
         text-align: center
         font-weight: bold
-        margin: 0.1em
-        padding: 0.4em 0em
-        width: 2em
+        margin-right: 2px
+        padding: 6px 0
+        width: 30px
+      .pred-score:last-child
+        margin-right: 0
       .pred-dd
         background-color: $warning
         position: absolute
-        width: 1.2em
+        width: 19px
         bottom: 0
         text-align: center
-        height: 1.2em
-        left: 27px
+        padding: 2px 0px
+        left: 24px
 
   .gw-fixture-pred-row.gw-fixture-nopred
     .gw-fixture-pred-container
@@ -416,10 +433,6 @@ table.table th.text-left
 .gw-fixture-modal-content
   .gw-fixture-item-arrow
     display: none
-
-.grayscale
-  filter: grayscale(1)
-  opacity: 0.4
 
 .kick-off-time
   background-color: $info

@@ -43,19 +43,23 @@ module CreateLeague =
   let view { LeagueName = LeagueName leagueName; IsLoading = isLoading } dispatch =
     div []
       [ Components.pageTitle "Create League"
-        Card.card []
-          [ Card.content []
+        Box.box' []
+          [
+            div [Class "block"]
+                [ p [Style[LineHeight "1.5em"]] [ str "Invite your mates to compete in a private league." ]
+                ]
+            div [Class "block"]
               [ Input.text
                   [ Input.Value leagueName
                     Input.Placeholder "League name"
                     Input.OnChange (fun e -> LeagueName e.Value |> EditName |> dispatch) ]
               ]
-            Card.footer []
+            div [Class "block"]
+                [ createLeagueButton (leagueName, isLoading) dispatch
+                ]
+            div [Class "block"]
               [ Card.Footer.a [ Props [ OnClick (fun _ -> LeaguesRoute PlayerLeaguesRoute |> NavTo |> dispatch) ] ]
                     [ str "Cancel" ]
-                Card.Footer.a []
-                  [ createLeagueButton (leagueName, isLoading) dispatch
-                  ]
               ]
           ]
       ]
