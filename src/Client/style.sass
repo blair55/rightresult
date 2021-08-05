@@ -34,6 +34,8 @@ $white-ter: $background
 
 // $family-primary:
 $radius: 0
+$radius-small: 0
+$radius-large: 0
 $shadow: none
 $body-line-height: 1
 // $border: solid 1px $light
@@ -57,6 +59,8 @@ $tabs-toggle-link-active-border-color: $dark
   text-transform: uppercase
   font-weight: bold
   font-size: 0.75em
+
+$modal-card-foot-border-top: 0
 
 // Bulma
 @import "~bulma/bulma"
@@ -426,13 +430,39 @@ table.table th.text-left
 
 .gw-fixture-modal-container
   background-color: $background
-  padding: 1em 0
+  padding: 1em 0 0
 .gw-fixture-modal-content
   padding: 0
 
 .gw-fixture-modal-content
   .gw-fixture-item-arrow
     display: none
+
+  .gw-fixture-item
+    margin-bottom: 0
+    padding-bottom: 0
+
+  .block
+    margin-bottom: 0
+  .gw-fixture-preset-score-row
+    display: flex
+    justify-content: center
+    margin-bottom: 2px
+    .button
+      flex-grow: 1
+      margin-right: 2px
+    .button:last-child
+      margin-right: 0
+  // .gw-fixture-preset-score-row:last-child
+  //   margin-bottom: 0
+
+.modal-card-foot .button, .modal-card-foot .button:focus
+  background-color: $secondary
+  border-color: $dark
+  color: $white-ter
+
+.modal-card-foot .button:not(:last-child)
+    margin-right: 2px
 
 .kick-off-time
   background-color: $info
