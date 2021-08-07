@@ -130,7 +130,7 @@ let footabs model dispatch : ReactElement option =
         ]
     ]
   let players =
-    [ a [ OnClick (fun _ -> NavTo (PlayersRoute AllPlayersRoute) |> dispatch) ]
+    [ a [ OnClick (fun _ -> NavTo (PlayersRoute MyProfileRoute) |> dispatch) ]
         [ Fa.i [ Fa.Regular.User ] []
           desc "Players"
         ]
@@ -145,7 +145,7 @@ let footabs model dispatch : ReactElement option =
     |> Some
 
   match model.Area with
-  | LoginArea _ -> None // div [] []
+  | LoginArea _ -> None
   | HomeArea _ ->
     tabs
       [ Tabs.tab [ Tabs.Tab.IsActive true ] home

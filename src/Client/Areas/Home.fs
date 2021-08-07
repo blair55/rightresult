@@ -221,7 +221,8 @@ module HomeArea =
              Button.Color IsInfo
              Button.IsOutlined
              Button.IsLight
-             Button.OnClick(fun _ -> Logout |> dispatch) ])
+            //  Button.OnClick(fun _ -> Logout |> dispatch)
+              ])
           [ str "How it works"
             Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
       ]
@@ -263,15 +264,6 @@ module HomeArea =
     //     [ str "preview badges >>" ]
     // ]
 
-    // div [ Class "block" ] [
-
-    //   Button.button
-    //     ([ Button.IsFullWidth
-    //        Button.IsOutlined
-    //        Button.Color IsDanger
-    //        Button.OnClick(fun _ -> Logout |> dispatch) ])
-    //     [ str "log out >>" ]
-    // ]
 
     ]
 
@@ -446,7 +438,7 @@ module HomeArea =
        >> Toast.position Toast.TopCenter
        >> Toast.info)
         s
-    | Logout _ -> model, []
+    | Logout -> model, []
     | InitIsSubscribableReceived isSubscribable ->
       localStorage.getItem dismissSubscriptionStorageKey
       |> safeDateTimeToString

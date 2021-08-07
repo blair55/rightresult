@@ -7,17 +7,21 @@ open Routes
 module PlayersArea =
 
   type Model =
+    | MyProfileModel of MyProfile.Model
     | PlayerModel of Player.Model
     | AllPlayersModel of AllPlayers.Model
     | PlayerFixtureSetModel of PlayerFixtureSet.Model
 
   type Msg =
+    | MyProfileMsg of MyProfile.Msg
     | PlayerMsg of Player.Msg
     | AllPlayersMsg of AllPlayers.Msg
     | PlayerFixtureSetMsg of PlayerFixtureSet.Msg
 
   let update api p message model =
     match message, model with
+    | MyProfileMsg msg, MyProfileModel m ->
+      MyProfile.update api p msg m |> fun (m, cmd) -> MyProfileModel  m, Cmd.map MyProfileMsg cmd
     | PlayerMsg msg, PlayerModel m ->
       Player.update api p msg m |> fun (m, cmd) -> PlayerModel m, Cmd.map PlayerMsg cmd
     | AllPlayersMsg msg, AllPlayersModel m ->
@@ -27,6 +31,8 @@ module PlayersArea =
     | _ -> model, alert (LoginProblem "player msg not matched")
 
   let urlUpdate api p = function
+    | MyProfileRoute ->
+      MyProfile.init api p |> fun (m, cmd) -> MyProfileModel m, Cmd.map MyProfileMsg cmd
     | PlayerRoute playerId ->
       PlayerId playerId |> Player.init api p |> fun (m, cmd) -> PlayerModel m, Cmd.map PlayerMsg cmd
     | AllPlayersRoute ->
@@ -38,6 +44,8 @@ module PlayersArea =
 
   let view model dispatch =
     match model with
+    | MyProfileModel m ->
+      MyProfile.view m (MyProfileMsg >> dispatch)
     | PlayerModel m ->
       Player.view m (PlayerMsg >> dispatch)
     | AllPlayersModel m ->

@@ -33,7 +33,9 @@ module Leagues =
          Button.IsLight
          Button.OnClick(fun _ -> NavTo(LeaguesRoute(CreateLeagueRoute)) |> dispatch) ])
       [ str "Create a league"
-        Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
+        span [ Style [ MarginLeft "3px" ] ] [
+          Fa.i [ Fa.Solid.AngleDoubleRight ] []
+        ] ]
 
   let globalLeague dispatch =
     div [ Class "block" ] [
@@ -98,7 +100,9 @@ module Leagues =
         ]
       ]
     else
-      leaguesList dispatch leagues
+      div [ Class "block" ] [
+        leaguesList dispatch leagues
+      ]
 
   let view (model: Model) dispatch =
     match model with
@@ -111,9 +115,6 @@ module Leagues =
         Box.box' [] [
           globalLeague dispatch
           getLeaguesView dispatch l
-        ]
-
-        Box.box' [] [
           createLeagueButton dispatch
         ]
       ]

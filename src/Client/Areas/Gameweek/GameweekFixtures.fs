@@ -295,7 +295,8 @@ module GameweekFixtures =
       div [] [
         div [ Class "block" ] [
           Message.message [ Message.Color IsInfo ] [
-            Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
+            Message.body [ Props [ Style [ LineHeight "1.5em" ] ]
+                           Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
               Content.content [] [
                 Text.p [ Modifiers [ Modifier.TextWeight TextWeight.Bold ] ] [
                   str "Big up for more points!"
@@ -665,14 +666,14 @@ module GameweekFixtures =
 
          m, infoAlert "Bigged up prediction!"
        | Error e -> model, alert e)
-    |> (fun (({ GameweekFixtures = gwfs }, _) as r) ->
-      match gwfs with
-      | WebData.Success f ->
-        Map.toList f.Fixtures
-        |> List.map snd
-        |> List.sortBy (fun f -> f.SortOrder)
-        |> List.iter (fun f -> printfn "%A %A %A" f.TeamLine f.Prediction f.BigUpState)
-        |> ignore
-      | _ -> ()
+    // |> (fun (({ GameweekFixtures = gwfs }, _) as r) ->
+    //   match gwfs with
+    //   | WebData.Success f ->
+    //     Map.toList f.Fixtures
+    //     |> List.map snd
+    //     |> List.sortBy (fun f -> f.SortOrder)
+    //     |> List.iter (fun f -> printfn "%A %A %A" f.TeamLine f.Prediction f.BigUpState)
+    //     |> ignore
+    //   | _ -> ()
 
-      r)
+    //   r)

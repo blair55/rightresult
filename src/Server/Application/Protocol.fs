@@ -375,13 +375,14 @@ module Protocol =
       validateToken
 
     let protocol =
-      { //getFixtures = fun fromSize t -> t |> (vt >> Result.map (getFixturesForPlayer fromSize) >> Async.retn)
-        getFixturesLength = vt >> Result.map (fun _ -> q.getFixturesLength()) >> Async.retn
+      { getFixturesLength = vt >> Result.map (fun _ -> q.getFixturesLength()) >> Async.retn
         getMaxGameweekNo = vt >> Result.map (fun _ -> q.getMaxGameweekNo() |> Option.defaultValue (GameweekNo 1)) >> Async.retn
         getPlayerLeagues = vt >> Result.map getLeaguesPlayerIsIn >> Async.retn
         getPrivateLeagueInfo = fun leagueId t -> t |> (vt >> Result.bind (fun _ -> getPrivateLeagueInfo leagueId) >> Async.retn)
         getLeagueTable = fun leagueId window t -> t |> (vt >> Result.bind (fun _ -> getLeagueWindow leagueId window) >> Async.retn)
         getAllPlayers = vt >> Result.map getAllPlayers >> Async.retn
+        getMyProfile = vt >> Result.bind (fun p -> getPlayerViewModel (PlayerId p.playerId)) >> Async.retn
+        getMyPointsTotal = vt >> Result.bind (fun p -> getPlayerPointsTotal (PlayerId p.playerId)) >> Async.retn
         getPlayerInfo = fun playerId t -> t |> (vt >> Result.bind (fun _ -> getPlayerViewModel playerId) >> Async.retn)
         getPlayerPointsTotal = fun playerId t -> t |> (vt >> Result.bind (fun _ -> getPlayerPointsTotal playerId) >> Async.retn)
         getPlayerFixtureSets = fun playerId t -> t |> (vt >> Result.bind (fun _ -> getPlayerFixtureSets playerId) >> Async.retn)

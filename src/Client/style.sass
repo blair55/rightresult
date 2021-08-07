@@ -520,7 +520,7 @@ table.table th.text-left
   display: flex
   justify-content: flex-start
   overflow-x: scroll
-  margin-bottom: 0em
+  margin-bottom: 1em
   .big-up-box-item
     margin-right: 1em
   .big-up-box-top
@@ -566,29 +566,52 @@ table.table th.text-left
   &::-webkit-scrollbar
     width: 0px
     background: transparent
-    // .big-up-box-pred-box
-    //   display: flex
-    //   padding: 2px
-    //   background-color: $info
-    //   margin: -3px 3px
-    //   .pred-score
-    //     background-color: $info-light
-    //     text-align: center
-    //     font-weight: bold
-    //     margin-right: 2px
-    //     padding: 6px 0
-    //     width: 30px
-    //   .pred-score:last-child
-    //     margin-right: 0
 
-    // // div
-    // //   text-align: center
-    // //   font-weight: bold
-    // //   margin-right: 2px
-    // //   padding: 6px 0
-    // //   width: 30px
-    // // div:last-child
-    // //   margin-right: 0
+.me-page
+  .page-title
+    display: inline-flex
+    margin-right: 5px
+  .me-total-points-bar
+    margin-bottom: 1em
+
+    // .me-total-points-value
+
+  .me-badges-bar
+    .message-body
+      line-height: 1.5em
+      i
+        margin: 3px
+    .me-badge-list
+      margin-bottom: 2em
+    .me-badge-list
+      .message
+        margin-bottom: 0.5em
+      .message-body
+        line-height: 1.5em
+        background-color: $white
+
+    .me-badge-item
+      // position: relative
+      // padding: 1em
+      // margin-bottom: 0.5em
+
+      .me-badge-title
+        font-weight: bold
+        text-transform: uppercase
+        color: $primary
+        margin-left: 5px
+        // margin-bottom: 5px
+      p
+        font-size: $size-small
+        line-height: 1.4em
+        color: $dark
+        // padding: 1em 0 0
+        display: block
+        margin-left: 2.3em
+      p:not(:last-child)
+        margin-bottom: 0.5em
+
+
 
 .team-title.ARS
   background-image: linear-gradient(180deg, #e10512 50%, rgb(0, 0, 0, 0) 50%)

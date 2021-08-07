@@ -605,6 +605,8 @@ type IProtocol =
     getLeagueTable : LeagueId -> LeagueWindow -> AppToken -> Ars<LeagueTableDoc>
     getPlayerPointsTotal : PlayerId -> AppToken -> Ars<PredictionPointsMonoid>
     getPlayerFixtureSets : PlayerId -> AppToken -> Ars<PlayerFixtureSetsDoc>
+    getMyProfile : AppToken -> Ars<PlayerViewModel>
+    getMyPointsTotal : AppToken -> Ars<PredictionPointsMonoid>
     getAllPlayers : AppToken -> Ars<PlayerViewModel list>
     getPlayerInfo : PlayerId -> AppToken -> Ars<PlayerViewModel>
     getPlayerFixtureSet : PlayerId -> FixtureSetId -> AppToken -> Ars<PlayerFixtureSetViewModel>

@@ -31,6 +31,7 @@ and LeaguesRoute =
   | LeagueMatrixRoute of string * int
   | LeaguePremTableRoute of string
 and PlayersRoute =
+  | MyProfileRoute
   | AllPlayersRoute
   | PlayerRoute of string
   | PlayerFixtureSetRoute of string * string
@@ -54,6 +55,7 @@ let leagueHistoryFsPath = sprintf "leagues/%s/history/gw/%i"
 let leagueHistoryMnPath = sprintf "leagues/%s/history/month/%i/%i"
 let leagueMatrixPath    = sprintf "leagues/%s/matrix/%i"
 let leaguePremTablePath = sprintf "leagues/premtable/%s"
+let playerProfilePath = "me"
 let playersPath       = "players"
 let playerPath        = sprintf "players/%s"
 let playerFixtureSetPath = sprintf "players/%s/gameweek/%s"
@@ -82,6 +84,7 @@ let route : Parser<Route -> Route, _> =
     map (curry3 (LeagueHistoryMonthRoute      >> LeaguesRoute)) (s leaguesPath </> str </> s "history" </> s "month" </> i32 </> i32)
     map (curry2 (LeagueMatrixRoute            >> LeaguesRoute)) (s leaguesPath </> str </> s "matrix"  </> i32)
     map (LeaguePremTableRoute >> LeaguesRoute) (s leaguesPath </> s "premtable" </> str)
+    map (MyProfileRoute     |> PlayersRoute) (s playerProfilePath)
     map (AllPlayersRoute    |> PlayersRoute) (s playersPath)
     map (PlayerRoute        >> PlayersRoute) (s playersPath </> str)
     map (curry2 (PlayerFixtureSetRoute >> PlayersRoute)) (s playersPath </> str </> s "gameweek" </> str)
@@ -115,6 +118,7 @@ let private routeToPath = function
     | LeaguePremTableRoute table -> leaguePremTablePath table
   | PlayersRoute r ->
     match r with
+    | MyProfileRoute           -> playerProfilePath
     | AllPlayersRoute          -> playersPath
     | PlayerRoute playerId     -> playerPath playerId
     | PlayerFixtureSetRoute (pId, fsId) -> playerFixtureSetPath pId fsId

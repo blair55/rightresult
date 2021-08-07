@@ -35,6 +35,7 @@
 
     <Compile Include="Areas\Players\AllPlayers.fs" />
     <Compile Include="Areas\Players\Player.fs" />
+    <Compile Include="Areas\Players\MyProfile.fs" />
     <Compile Include="Areas\Players\PlayerFixtureSet.fs" />
     <Compile Include="Areas\Players\PlayersArea.fs" />
 

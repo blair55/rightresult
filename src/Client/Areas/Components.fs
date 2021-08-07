@@ -196,6 +196,18 @@ module Components =
       ]
     ]
 
+  module Social =
+
+    let twitterHref content =
+      sprintf "https://twitter.com/intent/tweet?text=%s" content
+
+    let facebookHref content =
+      sprintf "https://www.facebook.com/sharer/sharer.php?u=%s" content
+
+    let whatsAppHref content =
+      sprintf "whatsapp://send?text=%s" content
+
+
   open Shared.Teams
 
   let badgeAbbrv (Team team) =
