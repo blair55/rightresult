@@ -119,15 +119,8 @@ module Protocol =
             KickOffGroup = Ko.groupFormat f.KickOff
             TeamLine = f.TeamLine
             State = fixtureStateFirstMinuteHack now f
-              // match f.ScoreLine with
-              // | Some scoreLine -> scoreLine |> getClassifiedInfo pred
-              // | _ when (now()) < ko -> FixtureState.Open
-              // | _ -> FixtureState.KickedOff
-            Prediction = Option.map (fun p -> p.ScoreLine, p.Modifier) pred
-            // IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
+            Prediction = pred |> Option.map (fun p -> p.ScoreLine, p.Modifier)
             Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points = p}, v) -> p, v
-            // IsBigUpAvailable = not hasBigUpOnAnyFixture && not (isLessThanOneHourBeforeKickOff f)
-            // IsMoreThanOneHourBeforeKickOff = isMoreThanOneHourBeforeKickOff f
             BigUpState = bigUpState f pred
             InProgress = false
             Neighbours = Neighbours.get fxNeighbours f.Id })
@@ -370,6 +363,14 @@ module Protocol =
       |> fun repo -> repo.Read (FixtureDetailsDocument fId)
       |> resultOfOption (ValidationError "Fixture details not found")
 
+    let getHomePageBigUps () =
+      q.getHomePageBigUps ()
+      |> List.map (fun (f, pred, player) ->
+        { HomePageBigUpViewModel.TeamLine = f.TeamLine
+          ScoreLine = pred.ScoreLine
+          PlayerName = player.Name
+          PlayerId = player.Id })
+
     let vt =
       validateToken
 
@@ -396,6 +397,7 @@ module Protocol =
         getFixtureDetails = fun t fId -> t |> (vt >> fun _ -> getFixtureDetails fId |> Async.retn)
         getEarliestOpenGwno = vt >> Result.map (fun _ -> q.getEarliestOpenGwno() |> Option.defaultValue (GameweekNo 1)) >> Async.retn
         getGameweekFixtures = fun t gwno -> t |> (vt >> Result.bind (getGameweekFixtures gwno) >> Async.retn)
+        getHomePageBigUps = vt >> Result.map (fun _ -> getHomePageBigUps ()) >> Async.retn
 
         submitFeedback = fun fb t -> t |> (vt >> Result.map (submitFeedback config fb) >> Async.retn)
         addNewFixtureSet = vt >> (fun _ -> FixtureSourcing.addNewFixtureSet deps) >> handleCommand

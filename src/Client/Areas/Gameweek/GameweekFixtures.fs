@@ -295,18 +295,16 @@ module GameweekFixtures =
       div [] [
         div [ Class "block" ] [
           Message.message [ Message.Color IsInfo ] [
-            Message.body [ Modifiers [ Modifier.TextSize (Screen.All, TextSize.Is7) ]] [
+            Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
               Content.content [] [
-                Text.p [Modifiers [ Modifier.TextWeight TextWeight.Bold]] [ str "Big up for more points!" ]
-                li [] [
-                    str "Big ups are visible to all players"
+                Text.p [ Modifiers [ Modifier.TextWeight TextWeight.Bold ] ] [
+                  str "Big up for more points!"
                 ]
                 li [] [
-                    str "Big ups cannot be edited"
+                  str "Big ups are visible to all players"
                 ]
-                li [] [
-                    str "One big up per gameweek"
-                ]
+                li [] [ str "Big ups cannot be edited" ]
+                li [] [ str "One big up per gameweek" ]
               ]
             ]
           ]
@@ -332,11 +330,7 @@ module GameweekFixtures =
         ]
       ]
 
-    | Some (_, PredictionModifier.BigUp), _ ->
-      button
-        [ Button.Color IsWarning ]
-        ignore
-        (icon Fa.Solid.Lock "Big Up")
+    | Some (_, PredictionModifier.BigUp), _ -> button [ Button.Color IsWarning ] ignore (icon Fa.Solid.Lock "Big Up")
 
     | _ -> button [ Button.Disabled true ] ignore (icon Fa.Solid.AngleDoubleUp "Big Up")
 
@@ -403,10 +397,10 @@ module GameweekFixtures =
         ]
       ]
       div [ Class "block" ] [
-        bigUpButton dispatch model fp
+        doubleDownButton dispatch model fp
       ]
       div [ Class "block" ] [
-        doubleDownButton dispatch model fp
+        bigUpButton dispatch model fp
       ] ]
 
   let inplayFixtureModalContent dispatch (fp: FixturePredictionViewModel) = [ str "in play" ]
@@ -448,9 +442,7 @@ module GameweekFixtures =
     match modalState with
     | ModalOpen fId ->
 
-      let ({ TeamLine = TeamLine (ht, at)
-             Neighbours = (prev, next) } as fp: FixturePredictionViewModel) =
-        model.Fixtures.Item fId
+      let ({ Neighbours = (prev, next) } as fp: FixturePredictionViewModel) = model.Fixtures.Item fId
 
       let body =
         match fp.State with

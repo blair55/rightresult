@@ -122,44 +122,17 @@ module UpdatePredictionModifier =
 
 module PredictionBigUpAppliedSubscribers =
 
-  // let private applyBigUp(deps:Dependencies) _ (PlayerId pId, _, FixtureId fId) =
-  //   deps.Graph.Cypher
-  //     .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
-  //     .Where(fun (player:PlayerNode) -> player.Id = pId)
-  //     .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
-  //     .Set("pred.Modifier = $modifier")
-  //     .WithParam("modifier", PredictionModifier.Consts.BigUp)
-  //     .ExecuteWithoutResultsAsync().Wait()
-
   let all =
     [ UpdatePredictionModifier.setModifier PredictionModifier.Consts.BigUp
     ]
 
 module PredictionDoubleDownAppliedSubscribers =
 
-  // let private applyDoubleDown (deps:Dependencies) _ (PlayerId pId, _, FixtureId fId) =
-  //   deps.Graph.Cypher
-  //     .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
-  //     .Where(fun (player:PlayerNode) -> player.Id = pId)
-  //     .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
-  //     .Set("pred.Modifier = $modifier")
-  //     .WithParam("modifier", PredictionModifier.Consts.DoubleDown)
-  //     .ExecuteWithoutResultsAsync().Wait()
-
   let all =
     [ UpdatePredictionModifier.setModifier PredictionModifier.Consts.DoubleDown
     ]
 
 module PredictionDoubleDownRemovedSubscribers =
-
-  // let private removeDoubleDown (deps:Dependencies) _ (PlayerId pId, FixtureId fId) =
-  //   deps.Graph.Cypher
-  //     .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
-  //     .Where(fun (player:PlayerNode) -> player.Id = pId)
-  //     .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
-  //     .Set("pred.Modifier = $modifier")
-  //     .WithParam("modifier", PredictionModifier.Consts.None)
-  //     .ExecuteWithoutResultsAsync().Wait()
 
   let all =
     [ UpdatePredictionModifier.setModifier PredictionModifier.Consts.None

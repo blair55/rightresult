@@ -457,6 +457,12 @@ type GameweekFixturesViewModel =
     Rank: int
   }
 
+type HomePageBigUpViewModel =
+  { TeamLine: TeamLine
+    ScoreLine: ScoreLine
+    PlayerId: PlayerId
+    PlayerName: PlayerName }
+
 [<RequireQualifiedAccess>]
 type PredictionAction =
   | SetScoreline of FixtureSetId * FixtureId * ScoreLine
@@ -608,6 +614,7 @@ type IProtocol =
     getDateFormat : DateTime -> String -> AppToken -> Ars<String>
     getLeagueMatrix : LeagueId -> GameweekNo -> AppToken -> Ars<MatrixDoc>
     getGlobalGameweekWinner : AppToken -> Ars<GlobalGameweekWinner option>
+    getHomePageBigUps : AppToken -> Ars<HomePageBigUpViewModel list>
     getRealPremTable : AppToken -> Ars<PremTable>
     getPredictedPremTable : AppToken -> Ars<PremTable>
     getFixtureDetails : AppToken -> FixtureId -> Ars<FixtureDetails>

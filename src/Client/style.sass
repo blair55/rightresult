@@ -139,7 +139,7 @@ table.table th.text-left
 
   .fixture-reel-container
     overflow-x: scroll
-    margin-bottom: 2em
+    margin-bottom: 1em
       // display: flex
       // flex-direction: row
     .fixture-reel
@@ -316,7 +316,7 @@ table.table th.text-left
     color: $white-ter
     background-color: $secondary
     display: inline-flex
-    padding: 0.3em 0.5em
+    padding: 0.3em 0.7em
     font-weight: bold
     text-transform: uppercase
 
@@ -501,11 +501,10 @@ table.table th.text-left
   background-color: $info
   padding: 0.3em 0.5em
   color: $white-ter
-  font-size: 0.7rem
+  // font-size: 0.7rem
+  font-size: $size-small
   font-weight: bold
 
-  // position: relative
-  // margin: 0 auto
 .short-team-name
   text-transform: uppercase
   font-weight: bold
@@ -515,6 +514,81 @@ table.table th.text-left
   justify-content: center
   padding: 0.3em 0.5em
   white-space: nowrap
+
+.big-up-box-container
+  background-color: $white-ter
+  display: flex
+  justify-content: flex-start
+  overflow-x: scroll
+  margin-bottom: 0em
+  .big-up-box-item
+    margin-right: 1em
+  .big-up-box-top
+    display: flex
+    .big-up-box-heading
+      background-color: $warning
+      display: inline-flex
+      padding: 0.3em 0.7em
+      font-weight: bold
+      text-transform: uppercase
+      position: relative
+      margin-bottom: 10px
+      margin-right: 5px
+      white-space: nowrap
+    .big-up-box-heading
+      i
+        margin-right: 5px
+    .big-up-box-player
+      display: inline
+      white-space: nowrap
+      margin-top: 4px
+
+  .big-up-box-bottom
+    display: flex
+    padding: 12px
+    background-color: $white
+  .big-up-box-team
+    font-weight: bold
+    text-transform: uppercase
+    color: $primary
+  .big-up-box-pred
+    font-weight: bold
+    color: $white-ter
+    background-color: $primary
+    margin: 0 6px
+    padding: 2px 4px
+    font-size: 0.7em
+    white-space: nowrap
+
+.hide-scrollbars
+  scrollbar-width: none
+  -ms-overflow-style: none
+  &::-webkit-scrollbar
+    width: 0px
+    background: transparent
+    // .big-up-box-pred-box
+    //   display: flex
+    //   padding: 2px
+    //   background-color: $info
+    //   margin: -3px 3px
+    //   .pred-score
+    //     background-color: $info-light
+    //     text-align: center
+    //     font-weight: bold
+    //     margin-right: 2px
+    //     padding: 6px 0
+    //     width: 30px
+    //   .pred-score:last-child
+    //     margin-right: 0
+
+    // // div
+    // //   text-align: center
+    // //   font-weight: bold
+    // //   margin-right: 2px
+    // //   padding: 6px 0
+    // //   width: 30px
+    // // div:last-child
+    // //   margin-right: 0
 
 .team-title.ARS
   background-image: linear-gradient(180deg, #e10512 50%, rgb(0, 0, 0, 0) 50%)

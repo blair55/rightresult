@@ -21,6 +21,7 @@ module HomeArea =
     { Player: ClientSafePlayer
       TotalPoints: PredictionPointsMonoid WebData
       GlobalGwWinner: WebData<GlobalGameweekWinner option>
+      BigUps: WebData<HomePageBigUpViewModel list>
       ShowFeedbackModal: bool
       FeedbackText: string
       IsSubscribable: bool
@@ -31,6 +32,7 @@ module HomeArea =
     | AlertInfo of string
     | PlayerPointsTotalRecieved of Rresult<PredictionPointsMonoid>
     | GlobalGwWinnerReceived of Rresult<GlobalGameweekWinner option>
+    | BigUpsReceived of Rresult<HomePageBigUpViewModel list>
     | NavTo of Route
     | Logout
     | ShowFeedbackModal
@@ -208,8 +210,7 @@ module HomeArea =
     else
       div [] []
 
-  let homeMenu model dispatch =
-    let (PlayerId playerId) = model.Player.Id
+  let homeMenu dispatch =
 
     Box.box' [] [
 
@@ -287,8 +288,8 @@ module HomeArea =
   let halveList l = List.splitAt (List.length l / 2) l
   let rand = new Random()
 
-  let fixtureReel (fixtures: NewFixtureSetViewModel) =
-    div [ Class "fixture-reel-container" ] [
+  let fixtureReel () =
+    div [ Class "fixture-reel-container hide-scrollbars" ] [
       div
         [ Class "fixture-reel" ]
         (Teams.all
@@ -299,22 +300,61 @@ module HomeArea =
          |> List.map fixtureReelItem)
     ]
 
-  let vm =
-    { GameweekNo = GameweekNo 1
-      Fixtures =
-        [ (Ko.create DateTime.Now, KickOffGroup "", TeamLine(Team Teams.Arsenal, Team Teams.AstonVilla))
-          (Ko.create DateTime.Now, KickOffGroup "", TeamLine(Team Teams.Brentford, Team Teams.Brighton))
-          (Ko.create DateTime.Now, KickOffGroup "", TeamLine(Team Teams.Burnley, Team Teams.Chelsea))
-          (Ko.create DateTime.Now, KickOffGroup "", TeamLine(Team Teams.CrystalPalace, Team Teams.Everton)) ] }
+  let bigUpBox
+    dispatch
+    { PlayerName = PlayerName player
+      PlayerId = PlayerId playerId
+      ScoreLine = ScoreLine (Score homeScore, Score awayScore)
+      TeamLine = TeamLine (Team homeTeam, Team awayTeam) }
+    =
+    div [ Class "big-up-box-item" ] [
+      div [ Class "big-up-box-top" ] [
+        span [ Class "big-up-box-heading" ] [
+          Fa.i [ Fa.Solid.AngleDoubleUp ] []
+          str "Big up"
+        ]
+        a [ Class "big-up-box-player"
+            OnClick
+              (fun _ ->
+                PlayersRoute(PlayerRoute playerId)
+                |> NavTo
+                |> dispatch) ] [
+          str ("@" + player)
+        ]
+      ]
+      div [ Class "big-up-box-bottom" ] [
+        // div [ Class "big-up-box-pred" ] [
+        span [ Class "big-up-box-team" ] [
+          str homeTeam
+        ]
+        div [ Class "big-up-box-pred" ] [
+          span [] [
+            str (
+              string<int> homeScore
+              + "-"
+              + string<int> awayScore
+            )
+          ]
+        ]
+        span [ Class "big-up-box-team" ] [
+          str awayTeam
+        ]
+      // ]
+      ]
+    ]
 
-  let loadedView (model: Model) (points, winner) dispatch =
+  let bigUpsBar dispatch bigups =
+    div [ Class "big-up-box-container hide-scrollbars" ] (List.map (bigUpBox dispatch) bigups)
+
+  let loadedView dispatch (model: Model) (points, winner, bigups) =
     [ heroBar model points
       // notificationPrompt model dispatch
       // gwWinner dispatch winner
       // playerBar dispatch model points
       titleBar
-      fixtureReel vm
-      homeMenu model dispatch ]
+      fixtureReel ()
+      bigUpsBar dispatch bigups
+      homeMenu dispatch ]
 
   [<Emit("isSubscribableToPush()")>]
   let isSubscribableToPush () : JS.Promise<bool> = jsNative
@@ -322,7 +362,7 @@ module HomeArea =
   [<Emit("subscribeToPush()")>]
   let subscribeToPush () : JS.Promise<PushSubscription> = jsNative
 
-  let noNetworkView model dispatch =
+  let noNetworkView dispatch model =
     div [] [
       Components.card [ Message.message [ Message.Color IsWarning ] [
                           Message.body [ Modifiers [ Modifier.TextAlignment(Screen.Mobile, TextAlignment.Left) ] ] [
@@ -341,10 +381,11 @@ module HomeArea =
     ]
 
   let view model dispatch =
-    match model.TotalPoints, model.GlobalGwWinner with
-    | Success points, Success winner -> div [ Class "home" ] (loadedView model (points, winner) dispatch)
-    | WebError _, _
-    | _, WebError _ -> noNetworkView model dispatch
+    match model.TotalPoints, model.GlobalGwWinner, model.BigUps with
+    | Success points, Success winner, Success bigups ->
+      div [ Class "home" ] (loadedView dispatch model (points, winner, bigups))
+    | WebError _, _, _
+    | _, WebError _, _ -> noNetworkView dispatch model
     | _ -> div [] []
 
   let init api player =
@@ -352,13 +393,15 @@ module HomeArea =
       TotalPoints = Fetching
       // LeagueTable = Fetching
       GlobalGwWinner = Fetching
+      BigUps = Fetching
       ShowFeedbackModal = false
       FeedbackText = ""
       IsSubscribable = false
       IsSubscribing = false },
     Cmd.batch [ Cmd.OfAsync.perform (api.getPlayerPointsTotal player.Id) player.Token PlayerPointsTotalRecieved
                 Cmd.OfAsync.perform api.getGlobalGameweekWinner player.Token GlobalGwWinnerReceived
-                Cmd.OfPromise.perform isSubscribableToPush () InitIsSubscribableReceived ]
+                Cmd.OfPromise.perform isSubscribableToPush () InitIsSubscribableReceived
+                Cmd.OfAsync.perform api.getHomePageBigUps player.Token BigUpsReceived ]
 
   let safeDateTimeToString (s: string) =
     match DateTime.TryParse s with
@@ -380,6 +423,10 @@ module HomeArea =
     | GlobalGwWinnerReceived r ->
       { model with
           GlobalGwWinner = resultToWebData r },
+      []
+    | BigUpsReceived r ->
+      { model with
+          BigUps = resultToWebData r },
       []
     | ShowFeedbackModal -> { model with ShowFeedbackModal = true }, []
     | HideFeedbackModal -> { model with ShowFeedbackModal = false }, []

@@ -352,6 +352,20 @@ let queries (gc:GraphClient) : Queries =
         .Return<FixtureNode>("f")
         .ResultsAsync.Result
       |> Seq.map buildFixtureRecord
+
+    getHomePageBigUps = fun () ->
+      gc.Cypher
+        .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
+        .Where(fun (pred:PredictionNode) -> pred.Modifier = PredictionModifier.Consts.BigUp)
+        .Return(fun player pred fixture -> fixture.As<FixtureNode>(), pred.As<PredictionNode>(), player.As<PlayerNode>())
+        .OrderByDescending("pred.Created")
+        .Limit(Nullable<int>(30))
+        .ResultsAsync.Result
+      |> Seq.map (fun (fixture, pred, player) ->
+        buildFixtureRecord fixture,
+        buildPredictionRecord pred,
+        buildPlayerRecord player)
+      |> List.ofSeq
   }
 
 let nonQueries (gc:GraphClient) : NonQueries =

@@ -37,6 +37,7 @@ module Queries =
       getEarliestOpenGwno : unit -> GameweekNo option
       getPredictionsAggregate : FixtureId -> PredictionsAggregate
       getFixturesForTeam : Team -> FixtureRecord seq
+      getHomePageBigUps : unit -> (FixtureRecord * PredictionRecord * PlayerRecord) list
     }
 
   type NonQueries =
