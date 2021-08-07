@@ -104,13 +104,17 @@ module EventHandling =
       PredictionDecAwayScoreSubscribers.all
       |> List.iter (fun f -> f deps created (playerId, fsId, fId))
 
-    | PredictionDoubleDownApplied (playerId, fsId, fId) ->
-      PredictionDoubleDownAppliedSubscribers.all
-      |> List.iter (fun f -> f deps created (playerId, fsId, fId))
+    | PredictionBigUpApplied (playerId, _, fId) ->
+      PredictionBigUpAppliedSubscribers.all
+      |> List.iter (fun f -> f deps (playerId, fId))
 
-    | PredictionSetDoubleDownRemoved (playerId, fsId) ->
-      PredictionSetDoubleDownRemovedSubscribers.all
-      |> List.iter (fun f -> f deps created (playerId, fsId))
+    | PredictionDoubleDownApplied (playerId, _, fId) ->
+      PredictionDoubleDownAppliedSubscribers.all
+      |> List.iter (fun f -> f deps (playerId, fId))
+
+    | PredictionDoubleDownRemoved (playerId, _, fId) ->
+      PredictionDoubleDownRemovedSubscribers.all
+      |> List.iter (fun f -> f deps (playerId, fId))
 
     | PredictionHomeScoreSet (playerId, fsId, fId, score) ->
       PredictionSetHomeScoreSubscribers.all
@@ -119,3 +123,7 @@ module EventHandling =
     | PredictionAwayScoreSet (playerId, fsId, fId, score) ->
       PredictionSetAwayScoreSubscribers.all
       |> List.iter (fun f -> f deps playerId fId score)
+
+    | PredictionScoreLineSet (playerId, fsId, fId, scoreline) ->
+      PredictionSetScoreSubscribers.all
+      |> List.iter (fun f -> f deps playerId fId scoreline)

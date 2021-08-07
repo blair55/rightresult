@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "reload": "docker-compose down -v && docker-compose up -d deps && wait-on tcp:7474 -t 10000",
+    "reload": "docker-compose down -v && docker-compose up -d deps && wait-on tcp:7474 -t 10000 && npm run start",
     "start": "env-cmd dotnet run",
     "run:server": "env-cmd dotnet run -p src/Server",
     "run:bgmin": "env-cmd dotnet run -p src/Server bgminute",

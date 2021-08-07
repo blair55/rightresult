@@ -37,7 +37,7 @@ let private buildFixtureRecord (f:FixtureNode) =
 let private buildPredictionRecord (p:PredictionNode) =
   { PlayerId = PlayerId p.PlayerId
     FixtureId = FixtureId (Guid.Parse p.FixtureId)
-    IsDoubleDown = p.IsDoubleDown
+    Modifier = PredictionModifier.fromString p.Modifier
     ScoreLine = ScoreLine (Score p.HomeScore, Score p.AwayScore)
     Created = p.Created
   }
@@ -413,14 +413,14 @@ let nonQueries (gc:GraphClient) : NonQueries =
       fun
         { PlayerId = PlayerId playerId
           FixtureId = FixtureId fId
-          IsDoubleDown = isDdd
+          Modifier = modifier
           ScoreLine = ScoreLine (Score home, Score away)
           Created = created
         } ->
         { PlayerId = playerId
           FixtureId = string fId
           Created = created
-          IsDoubleDown = isDdd
+          Modifier = PredictionModifier.toString modifier
           HomeScore = home
           AwayScore = away
         } |> fun p ->

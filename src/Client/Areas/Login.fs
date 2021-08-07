@@ -21,7 +21,7 @@ module LoginArea =
         Box.box' []
           [
             div [Class "block"]
-                [ p [] [ str "Login to continue." ]
+                [ p [] [ str "Login to continue" ]
                 ]
             div [Class "block"]
                   [ form [ HTMLAttr.Method "POST"; Action Routes.redirectToFacebookPath ]
@@ -29,6 +29,8 @@ module LoginArea =
                         input [ Type "hidden"; Name redirectPathKey; Value (getQs redirectPathKey)]
                         Button.button
                           [ Button.IsFullWidth
+                            Button.Color Color.IsInfo
+                            // Button.IsOutlined
                             Button.Props [ Type "submit" ]
                             Button.IsLink ]
                           // [ Icon.faIcon [ Icon.CustomClass "fab" ] [ Fable.Helpers.React.i [] [] ] //[ Fa.icon Fa.I.FacebookSquare; Fa.faLg ]
@@ -45,6 +47,7 @@ module LoginArea =
                         input [ Type "hidden"; Name redirectPathKey; Value (getQs redirectPathKey)]
                         Button.button
                           [ Button.IsFullWidth
+                            Button.Color IsInfo
                             Button.Props [ Type "submit" ]
                             Button.IsLink ]
                           // [ Icon.faIcon [] [ Fa.icon Fa.I.TwitterSquare; Fa.faLg ]

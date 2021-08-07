@@ -36,9 +36,9 @@ module CreateLeague =
 
   let createLeagueButton args dispatch =
     match args with
-    | "", false         -> button [Button.Disabled true]  "Create League" ignore
-    | leagueName, false -> button []                      "Create League" (fun _ -> LeagueName leagueName |> Create |> dispatch)
-    | _, true           -> button [Button.IsLoading true] ""              ignore
+    | "", false         -> button []  "Create League" ignore
+    | leagueName, false -> button []  "Create League" (fun _ -> LeagueName leagueName |> Create |> dispatch)
+    | _, true           -> button [Button.IsLoading true] "" ignore
 
   let view { LeagueName = LeagueName leagueName; IsLoading = isLoading } dispatch =
     div []
@@ -46,12 +46,13 @@ module CreateLeague =
         Box.box' []
           [
             div [Class "block"]
-                [ p [Style[LineHeight "1.5em"]] [ str "Invite your mates to compete in a private league." ]
+                [ p [Style[LineHeight "1.5em"]] [ str "Invite your mates to compete in a private league. See the winners by game week and month." ]
                 ]
             div [Class "block"]
               [ Input.text
                   [ Input.Value leagueName
-                    Input.Placeholder "League name"
+                    Input.Props [ AutoFocus true ]
+                    Input.Placeholder "Name e.g. Game of Throw Ins"
                     Input.OnChange (fun e -> LeagueName e.Value |> EditName |> dispatch) ]
               ]
             div [Class "block"]

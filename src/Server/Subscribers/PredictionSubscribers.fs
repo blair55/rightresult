@@ -9,7 +9,7 @@ module PredictionCreatedSubscribers =
   let private createPrediction (deps:Dependencies) created (playerId, _, fId, scoreline) =
     { PlayerId = playerId
       FixtureId = fId
-      IsDoubleDown = false
+      Modifier = PredictionModifier.None
       ScoreLine = scoreline
       Created = created
     }
@@ -95,32 +95,74 @@ module PredictionSetAwayScoreSubscribers =
     [ setAwayScore
     ]
 
-module PredictionDoubleDownAppliedSubscribers =
+module PredictionSetScoreSubscribers =
 
-  let private applyDoubleDown (deps:Dependencies) _ (PlayerId pId, _, FixtureId fId) =
+  let private setScore (deps:Dependencies) pId fId (ScoreLine (Score home, Score away)) =
+    (PredictionEditCypher.edit deps pId fId)
+      .Set("p.HomeScore = $HomeScore")
+      .Set("p.AwayScore = $AwayScore")
+      .WithParam("HomeScore", home)
+      .WithParam("AwayScore", away)
+      .ExecuteWithoutResultsAsync().Wait()
+
+  let all =
+    [ setScore
+    ]
+
+module UpdatePredictionModifier =
+
+  let setModifier modifier (deps:Dependencies) (PlayerId pId, FixtureId fId) =
     deps.Graph.Cypher
       .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
       .Where(fun (player:PlayerNode) -> player.Id = pId)
       .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
-      .Set("pred.IsDoubleDown = true")
+      .Set("pred.Modifier = $modifier")
+      .WithParam("modifier", modifier)
       .ExecuteWithoutResultsAsync().Wait()
 
+module PredictionBigUpAppliedSubscribers =
+
+  // let private applyBigUp(deps:Dependencies) _ (PlayerId pId, _, FixtureId fId) =
+  //   deps.Graph.Cypher
+  //     .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
+  //     .Where(fun (player:PlayerNode) -> player.Id = pId)
+  //     .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
+  //     .Set("pred.Modifier = $modifier")
+  //     .WithParam("modifier", PredictionModifier.Consts.BigUp)
+  //     .ExecuteWithoutResultsAsync().Wait()
+
   let all =
-    [ applyDoubleDown
+    [ UpdatePredictionModifier.setModifier PredictionModifier.Consts.BigUp
     ]
 
-module PredictionSetDoubleDownRemovedSubscribers =
+module PredictionDoubleDownAppliedSubscribers =
 
-  let private removeDoubleDown (deps:Dependencies) _ (PlayerId pId, FixtureSetId fsId) =
-    deps.Graph.Cypher
-      .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet)")
-      .Where(fun (player:PlayerNode) -> player.Id = pId)
-      .AndWhere(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
-      .Set("pred.IsDoubleDown = false")
-      .ExecuteWithoutResultsAsync().Wait()
+  // let private applyDoubleDown (deps:Dependencies) _ (PlayerId pId, _, FixtureId fId) =
+  //   deps.Graph.Cypher
+  //     .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
+  //     .Where(fun (player:PlayerNode) -> player.Id = pId)
+  //     .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
+  //     .Set("pred.Modifier = $modifier")
+  //     .WithParam("modifier", PredictionModifier.Consts.DoubleDown)
+  //     .ExecuteWithoutResultsAsync().Wait()
 
   let all =
-    [ removeDoubleDown
+    [ UpdatePredictionModifier.setModifier PredictionModifier.Consts.DoubleDown
+    ]
+
+module PredictionDoubleDownRemovedSubscribers =
+
+  // let private removeDoubleDown (deps:Dependencies) _ (PlayerId pId, FixtureId fId) =
+  //   deps.Graph.Cypher
+  //     .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
+  //     .Where(fun (player:PlayerNode) -> player.Id = pId)
+  //     .AndWhere(fun (fixture:FixtureNode) -> fixture.Id = string fId)
+  //     .Set("pred.Modifier = $modifier")
+  //     .WithParam("modifier", PredictionModifier.Consts.None)
+  //     .ExecuteWithoutResultsAsync().Wait()
+
+  let all =
+    [ UpdatePredictionModifier.setModifier PredictionModifier.Consts.None
     ]
 
 module PredictionSetOverwrittenSubscribers =

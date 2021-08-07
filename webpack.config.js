@@ -23,6 +23,8 @@ var CONFIG = {
   outputDir: "./deploy/public",
   assetsDir: "./src/Client/public",
   logoPath: "./src/Client/public/logo.png",
+  favicon: "./public/favicon.png",
+  appTitle: "RIGHT RESULT 2021/22",
   devServerPort: 8080,
   // When using webpack-dev-server, you may need to redirect some calls
   // to a external API server. See https://webpack.js.org/configuration/dev-server/#devserver-proxy
@@ -52,15 +54,23 @@ var commonPlugins = [
   new webpack.ProgressPlugin(),
   new HtmlWebpackPlugin({
     filename: "index.html",
+    title: CONFIG.appTitle,
+    favicon: CONFIG.favicon,
     template: resolve(CONFIG.indexHtmlTemplate),
   }),
   new WebpackPwaManifest({
-    name: "Right Result",
+    name: CONFIG.appTitle,
     background_color: "#114B5F",
     theme_color: "#114B5F",
     orientation: "omit",
     ios: true,
     icons: [
+      /// run once to generate favicon, grab from output
+      // {
+      //   src: resolve(CONFIG.logoPath),
+      //   size: 32,
+      //   destination: path.join("icons", "favicon"),
+      // },
       {
         src: resolve(CONFIG.logoPath),
         sizes: [96, 128, 192, 256, 384, 512],

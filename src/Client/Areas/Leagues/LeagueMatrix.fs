@@ -79,16 +79,16 @@ module LeagueMatrix =
       |> List.map (fun (fId, { State = state }) ->
         match state, predictions.TryFind fId with
         | Open, _ -> td [] []
-        | KickedOff, Some { Prediction = scoreLine; IsDoubleDown = dd } ->
-          td [] [ ScoreBox.kickedOffScoreBox scoreLine dd ]
+        | KickedOff, Some { Prediction = scoreLine; Modifier = modifier } ->
+          td [] [ ScoreBox.kickedOffScoreBox scoreLine modifier ]
         | KickedOff, None ->
           td [] [ ScoreBox.emptyScoreBox() ]
-        | Classified _, Some { Prediction = scoreLine; IsDoubleDown = dd; Points = p } ->
+        | Classified _, Some { Prediction = scoreLine; Modifier = modifier; Points = p } ->
           match p with
           | Some (_, category) ->
-            td [] [ ScoreBox.classifiedScoreBox scoreLine dd category ]
+            td [] [ ScoreBox.classifiedScoreBox scoreLine modifier category ]
           | _ ->
-            td [] [ ScoreBox.kickedOffScoreBox scoreLine dd ]
+            td [] [ ScoreBox.kickedOffScoreBox scoreLine modifier ]
         | Classified _, None ->
           td [] [ ScoreBox.emptyScoreBox() ]
         )

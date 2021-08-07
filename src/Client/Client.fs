@@ -111,12 +111,12 @@ let footabs model dispatch : ReactElement option =
           desc "Home"
         ]
     ]
-  let fixtures =
-    [ a [ OnClick (fun _ -> NavTo (FixtureRoute OmniFixturesRoute) |> dispatch) ]
-        [ Fa.i [ Fa.Solid.CalendarAlt ] []
-          desc "Fixtures"
-        ]
-    ]
+  // let fixtures =
+  //   [ a [ OnClick (fun _ -> NavTo (FixtureRoute OmniFixturesRoute) |> dispatch) ]
+  //       [ Fa.i [ Fa.Solid.CalendarAlt ] []
+  //         desc "Fixtures"
+  //       ]
+  //   ]
   let gameweek =
     [ a [ OnClick (fun _ -> NavTo (GameweekRoute GameweekInitRoute) |> dispatch) ]
         [ Fa.i [ Fa.Regular.Futbol ] []

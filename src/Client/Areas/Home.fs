@@ -221,7 +221,8 @@ module HomeArea =
              Button.IsOutlined
              Button.IsLight
              Button.OnClick(fun _ -> Logout |> dispatch) ])
-          [ str "How it works >>" ]
+          [ str "How it works"
+            Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
       ]
 
       div [ Class "block" ] [
@@ -231,8 +232,9 @@ module HomeArea =
              Button.IsOutlined
              Button.Color IsWarning
              Button.IsLight
-             Button.OnClick(fun _ -> NavTo (LeaguesRoute (CreateLeagueRoute)) |> dispatch) ])
-          [ str "Create a league >>" ]
+             Button.OnClick(fun _ -> NavTo(LeaguesRoute(CreateLeagueRoute)) |> dispatch) ])
+          [ str "Create a league"
+            Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
       ]
 
       div [ Class "block" ] [
@@ -242,29 +244,33 @@ module HomeArea =
              Button.Color IsDanger
              Button.IsOutlined
              Button.IsLight
-             Button.OnClick(fun _ -> NavTo (GameweekRoute (GameweekInitRoute)) |> dispatch) ])
-          [ str "Predict >>" ]
+             Button.OnClick
+               (fun _ ->
+                 NavTo(GameweekRoute(GameweekInitRoute))
+                 |> dispatch) ])
+          [ str "Predict"
+            Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
       ]
 
-      // div [ Class "block" ] [
+    // div [ Class "block" ] [
 
-      //   Button.button
-      //     ([ Button.IsFullWidth
-      //        Button.Color IsWarning
-      //        Button.IsLight
-      //        Button.OnClick(fun _ -> Logout |> dispatch) ])
-      //     [ str "preview badges >>" ]
-      // ]
+    //   Button.button
+    //     ([ Button.IsFullWidth
+    //        Button.Color IsWarning
+    //        Button.IsLight
+    //        Button.OnClick(fun _ -> Logout |> dispatch) ])
+    //     [ str "preview badges >>" ]
+    // ]
 
-      // div [ Class "block" ] [
+    // div [ Class "block" ] [
 
-      //   Button.button
-      //     ([ Button.IsFullWidth
-      //        Button.IsOutlined
-      //        Button.Color IsDanger
-      //        Button.OnClick(fun _ -> Logout |> dispatch) ])
-      //     [ str "log out >>" ]
-      // ]
+    //   Button.button
+    //     ([ Button.IsFullWidth
+    //        Button.IsOutlined
+    //        Button.Color IsDanger
+    //        Button.OnClick(fun _ -> Logout |> dispatch) ])
+    //     [ str "log out >>" ]
+    // ]
 
     ]
 

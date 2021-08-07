@@ -44,8 +44,8 @@ module Protocol =
 
     let getPoints { FixtureRecord.State = state } pred =
       match state, pred with
-      | FixtureState.Classified result, Some { PredictionRecord.IsDoubleDown = isDoubleDown; ScoreLine = pred } ->
-        let vectors = Points.getPointVectors result pred isDoubleDown
+      | FixtureState.Classified result, Some { PredictionRecord.Modifier = modifier; ScoreLine = pred } ->
+        let vectors = Points.getPointVectors result pred modifier
         let (ppm, cat) = Points.getPointsForPrediction result pred vectors
         cat, ppm, vectors
       | _ -> Incorrect, PredictionPointsMonoid.Init, []
@@ -53,7 +53,7 @@ module Protocol =
     let isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno =
       List.exists (fun ({ FixtureRecord.GameweekNo = fgwno; KickOff = ko }, pred:PredictionRecord option) ->
         match pred with
-        | Some p when p.IsDoubleDown && fgwno = gwno && (now()) > ko.Raw -> true
+        | Some p when PredictionModifier.isDoubleDown p.Modifier && fgwno = gwno && (now()) > ko.Raw -> true
         | _ -> false)
 
     let fixtureStateFirstMinuteHack now (f:FixtureRecord) =
@@ -61,32 +61,32 @@ module Protocol =
       | FixtureState.Open ko when (now()) > ko.Raw -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed 0)
       | s -> s
 
-    let getFixturesForPlayer (from, size) (jwtPlayer:Jwt.JwtPlayer) : Map<FixtureId, FixturePredictionViewModel> =
+    // let getFixturesForPlayer (from, size) (jwtPlayer:Jwt.JwtPlayer) : Map<FixtureId, FixturePredictionViewModel> =
 
-      let fixturesAndPredictions =
-        q.getPlayerPredictionsByFixture (PlayerId jwtPlayer.playerId)
-        |> List.ofSeq
-        |> List.sortByDescending (fun (f, _) -> f.KickOff)
-        |> List.skip from
-        |> List.truncate size
+    //   let fixturesAndPredictions =
+    //     q.getPlayerPredictionsByFixture (PlayerId jwtPlayer.playerId)
+    //     |> List.ofSeq
+    //     |> List.sortByDescending (fun (f, _) -> f.KickOff)
+    //     |> List.skip from
+    //     |> List.truncate size
 
-      fixturesAndPredictions
-      |> List.map (fun (f, pred) ->
-        f.Id,
-        { FixturePredictionViewModel.Id = f.Id
-          FixtureSetId = f.FixtureSetId
-          GameweekNo = f.GameweekNo
-          SortOrder = f.SortOrder
-          KickOff = f.KickOff
-          KickOffGroup = Ko.groupFormat f.KickOff
-          TeamLine = f.TeamLine
-          State = fixtureStateFirstMinuteHack now f
-          Prediction = pred |> Option.map (fun p -> p.ScoreLine)
-          Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points=p}, v) -> p, v
-          IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
-          InProgress = false
-          Neighbours = None, None })
-      |> Map.ofSeq
+    //   fixturesAndPredictions
+    //   |> List.map (fun (f, pred) ->
+    //     f.Id,
+    //     { FixturePredictionViewModel.Id = f.Id
+    //       FixtureSetId = f.FixtureSetId
+    //       GameweekNo = f.GameweekNo
+    //       SortOrder = f.SortOrder
+    //       KickOff = f.KickOff
+    //       KickOffGroup = Ko.groupFormat f.KickOff
+    //       TeamLine = f.TeamLine
+    //       State = fixtureStateFirstMinuteHack now f
+    //       Prediction = pred |> Option.map (fun p -> p.ScoreLine)
+    //       Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points=p}, v) -> p, v
+    //       IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
+    //       InProgress = false
+    //       Neighbours = None, None })
+    //   |> Map.ofSeq
 
     let getGameweekFixtures gwno (jwtPlayer:Jwt.JwtPlayer) : Rresult<GameweekFixturesViewModel> =
       match q.getGameweekNoFixtureSet gwno with
@@ -98,6 +98,16 @@ module Protocol =
           |> List.sortBy (fun (f, _) -> f.SortOrder)
         let gwNeighbours = Neighbours.build (q.getGameweekNos() |> List.sort)
         let fxNeighbours = Neighbours.build (fixturesAndPredictions |> List.map (fun (f, _) -> f.Id))
+        let bigUpState { FixtureRecord.KickOff = ko }  (pred:PredictionRecord option) =
+          let hasBigUpOnAnyFixture =
+            fixturesAndPredictions
+            |> List.exists (function _, Some { Modifier = PredictionModifier.BigUp } -> true | _ -> false)
+          let isLessThanOneHourBeforeKickOff = Ko.isLessThanOneHourBeforeKickOff (now()) ko
+          match hasBigUpOnAnyFixture, isLessThanOneHourBeforeKickOff, pred with
+          | _, _, Some { Modifier = PredictionModifier.BigUp } -> BigUpState.Set
+          | true, _, _
+          | _, true, _ -> BigUpState.Unavailable
+          | _ -> BigUpState.Available
         fixturesAndPredictions
         |> List.map (fun (f, pred) ->
           f.Id,
@@ -113,9 +123,12 @@ module Protocol =
               // | Some scoreLine -> scoreLine |> getClassifiedInfo pred
               // | _ when (now()) < ko -> FixtureState.Open
               // | _ -> FixtureState.KickedOff
-            Prediction = pred |> Option.map (fun p -> p.ScoreLine)
-            IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
-            Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points=p}, v) -> p, v
+            Prediction = Option.map (fun p -> p.ScoreLine, p.Modifier) pred
+            // IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
+            Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points = p}, v) -> p, v
+            // IsBigUpAvailable = not hasBigUpOnAnyFixture && not (isLessThanOneHourBeforeKickOff f)
+            // IsMoreThanOneHourBeforeKickOff = isMoreThanOneHourBeforeKickOff f
+            BigUpState = bigUpState f pred
             InProgress = false
             Neighbours = Neighbours.get fxNeighbours f.Id })
         |> Map.ofList
@@ -173,14 +186,15 @@ module Protocol =
         >> AsyncResult.map leaveLeagueCommand
         >> AsyncResult.bind handleCommand)
 
-    let makePrediction (appToken:AppToken) (PredictionAction (fsId, fId, team, vec)) =
+    let makePrediction (appToken:AppToken) pred = // (PredictionAction (fsId, fId, team)) =
       let buildCmd (jwtPlayer:Jwt.JwtPlayer) =
-        match team, vec with
-        | Home, Inc -> SimplePredictionCommand IncHomeScore
-        | Home, Dec -> SimplePredictionCommand DecHomeScore
-        | Away, Inc -> SimplePredictionCommand IncAwayScore
-        | Away, Dec -> SimplePredictionCommand DecAwayScore
-        |> fun c ->
+        match pred with
+        | PredictionAction.SetScoreline (fsId, fId, sl) -> fsId, fId, SetScoreLine sl
+        | PredictionAction.IncrementScore (fsId, fId, Home) -> fsId, fId, SimplePredictionCommand IncHomeScore
+        | PredictionAction.DecrementScore (fsId, fId, Home) -> fsId, fId, SimplePredictionCommand DecHomeScore
+        | PredictionAction.IncrementScore (fsId, fId, Away) -> fsId, fId, SimplePredictionCommand IncAwayScore
+        | PredictionAction.DecrementScore (fsId, fId, Away) -> fsId, fId, SimplePredictionCommand DecAwayScore
+        |> fun (fsId, fId, c) ->
           DatedPredictionCommand (c, fId, PredictionEditDate (now()))
           |> fun cmd -> PredictionSetCommand (PlayerId jwtPlayer.playerId, fsId, cmd)
       appToken |> (
@@ -188,11 +202,22 @@ module Protocol =
         >> Async.retn
         >> AsyncResult.map buildCmd
         >> AsyncResult.bind handleCommand
-        >> AsyncResult.bind (fun () -> AsyncResult.retn (PredictionAction (fsId, fId, team, vec))))
+        >> AsyncResult.bind (fun () -> AsyncResult.retn pred))
 
     let doDoubleDown (appToken:AppToken) (fsId, fId) =
       let buildCmd (jwtPlayer:Jwt.JwtPlayer) =
         DatedPredictionCommand (DoubleDown, fId, PredictionEditDate (now()))
+        |> fun cmd -> PredictionSetCommand (PlayerId jwtPlayer.playerId, fsId, cmd)
+      appToken |> (
+        validateToken
+        >> Async.retn
+        >> AsyncResult.map buildCmd
+        >> AsyncResult.bind handleCommand
+        >> AsyncResult.bind (fun _ -> AsyncResult.retn (fsId, fId)))
+
+    let doBigUp (appToken:AppToken) (fsId, fId) =
+      let buildCmd (jwtPlayer:Jwt.JwtPlayer) =
+        DatedPredictionCommand (BigUp, fId, PredictionEditDate (now()))
         |> fun cmd -> PredictionSetCommand (PlayerId jwtPlayer.playerId, fsId, cmd)
       appToken |> (
         validateToken
@@ -265,16 +290,15 @@ module Protocol =
             TotalPoints = PredictionPointsMonoid.Init
             Rows =
               fixturesAndPredictionsInFixtureSet
-              |> List.filter (fun (f, _) -> Ko.isLessThan f.KickOff (now()))
+              |> List.filter (fun (f, _) -> Ko.hasKickedOff (now()) f.KickOff)
               |> List.map (fun (f, pred) ->
-                let predictionDd = Option.map (fun (p:PredictionRecord) -> p.ScoreLine, p.IsDoubleDown) pred
                 let (cat, ppm, _) = getPoints f pred
                 { PlayerFixtureSetKickedOffViewModelRow.FixtureId = f.Id
                   TeamLine = f.TeamLine
                   KickOff = f.KickOff
                   KickOffGroup = Ko.groupFormat f.KickOff
                   SortOrder = f.SortOrder
-                  Prediction = predictionDd
+                  Prediction = Option.map (fun (p:PredictionRecord) -> p.ScoreLine, p.Modifier) pred
                   Points = ppm
                   ResultAndPoints =
                     FixtureState.classifiedScoreLine f.State
@@ -350,7 +374,7 @@ module Protocol =
       validateToken
 
     let protocol =
-      { getFixtures = fun fromSize t -> t |> (vt >> Result.map (getFixturesForPlayer fromSize) >> Async.retn)
+      { //getFixtures = fun fromSize t -> t |> (vt >> Result.map (getFixturesForPlayer fromSize) >> Async.retn)
         getFixturesLength = vt >> Result.map (fun _ -> q.getFixturesLength()) >> Async.retn
         getMaxGameweekNo = vt >> Result.map (fun _ -> q.getMaxGameweekNo() |> Option.defaultValue (GameweekNo 1)) >> Async.retn
         getPlayerLeagues = vt >> Result.map getLeaguesPlayerIsIn >> Async.retn
@@ -377,6 +401,7 @@ module Protocol =
         addNewFixtureSet = vt >> (fun _ -> FixtureSourcing.addNewFixtureSet deps) >> handleCommand
         prediction = makePrediction
         doubleDown = doDoubleDown
+        bigUp = doBigUp
         removeDoubleDown = removeDownDown
         createLeague = createLeague
         joinLeague = joinLeague

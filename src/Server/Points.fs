@@ -19,15 +19,22 @@ module Points =
     | PointVector.HomeScore
     | PointVector.AwayScore
     | PointVector.GoalDifference -> (+) 1
+    | PointVector.BigUp p -> (+) p
     | PointVector.DoubleDown -> (*) 2
 
-  let getPointVectors ((ScoreLine (hr, ar)) as result) ((ScoreLine (hp, ap)) as pred) dd =
+  let getPointVectors ((ScoreLine (hr, ar)) as result) ((ScoreLine (hp, ap)) as pred) modifier =
     seq {
-      if getScoreResult result = getScoreResult pred then yield PointVector.Result
+      let fixtureResult = getScoreResult result
+      let predictionResult = getScoreResult pred
+      if fixtureResult = predictionResult then yield PointVector.Result
       if hr = hp then yield PointVector.HomeScore
       if ar = ap then yield PointVector.AwayScore
       if result.Difference = pred.Difference then yield PointVector.GoalDifference
-      if dd then yield PointVector.DoubleDown
+      match modifier with
+      | PredictionModifier.BigUp when result = pred -> yield PointVector.BigUp 2
+      | PredictionModifier.BigUp when fixtureResult = predictionResult -> yield PointVector.BigUp 1
+      | PredictionModifier.DoubleDown -> yield PointVector.DoubleDown
+      | _ -> yield! []
     } |> List.ofSeq
 
   let sumVectorPoints =

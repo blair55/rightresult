@@ -75,10 +75,10 @@ module PlayerFixtureSet =
         ScoreBox.emptyScoreBox()
     let predictionScoreBox =
       match row.ResultAndPoints, row.Prediction with
-      | Some (_, cat), Some (sl, dd) ->
-        ScoreBox.classifiedScoreBox sl dd cat
-      | None, Some (sl, dd) ->
-        ScoreBox.kickedOffScoreBox sl dd
+      | Some (_, cat), Some (sl, modifier) ->
+        ScoreBox.classifiedScoreBox sl modifier cat
+      | None, Some (sl, modifier) ->
+        ScoreBox.kickedOffScoreBox sl modifier
       | _ ->
         ScoreBox.emptyScoreBox()
     let homeTeam =

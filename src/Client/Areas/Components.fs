@@ -265,7 +265,7 @@ module Components =
 
   module ScoreBox =
 
-    let private boxes clas' h a dd =
+    let private boxes clas' h a modifier =
       [ div [ Class <| sprintf "scorebox scorebox-left %s" clas' ] [
           str h
         ]
@@ -275,34 +275,35 @@ module Components =
         ] ]
 
       |> fun homeAndAway ->
-           (if dd then
-              // let f : Fable.FontAwesome.Fa.IconOption = Fa.Solid.AngleDoubleDown
-              // [ div [ Class "scorebox-dd" ] [ icon Fa.I.AngleDoubleDown ] ]
-              // [ div [ Class "scorebox-dd" ] [ icon Fable.FontAwesome.Free.Fa.Solid.AngleDoubleDown ] ]
-              [ div [ Class "scorebox-dd" ] [
+            match modifier with
+            | PredictionModifier.None -> []
+            | PredictionModifier.BigUp ->
+                [ div [ Class "scorebox-bigup" ] [
+                  Fa.i [ Fa.Solid.AngleDoubleUp ] []
+                ] ]
+            | PredictionModifier.DoubleDown ->
+                [ div [ Class "scorebox-dd" ] [
                   Fa.i [ Fa.Solid.AngleDoubleDown ] []
                 ] ]
-            else
-              [])
            |> fun dd -> div [ Class "scorebox-container" ] (homeAndAway @ dd)
 
-    let emptyScoreBox () = boxes "no-points" "_" "_" false
+    let emptyScoreBox () = boxes "no-points" "_" "_" PredictionModifier.None
 
     let openScoreBox (ScoreLine (Score h, Score a)) =
-      boxes "open" (string h) (string a) false
+      boxes "open" (string h) (string a) PredictionModifier.None
 
-    let kickedOffScoreBox (ScoreLine (Score h, Score a)) dd =
-      boxes "kicked-off" (string h) (string a) dd
+    let kickedOffScoreBox (ScoreLine (Score h, Score a)) modifier =
+      boxes "kicked-off" (string h) (string a) modifier
 
-    let classifiedScoreBox (ScoreLine (Score h, Score a)) dd category =
+    let classifiedScoreBox (ScoreLine (Score h, Score a)) modifier category =
       match category with
       | CorrectResult -> "correct-result"
       | CorrectScore -> "correct-score"
       | Incorrect -> "no-points"
-      |> fun clas' -> boxes clas' (string h) (string a) dd
+      |> fun clas' -> boxes clas' (string h) (string a) modifier
 
     let resultScoreBox (ScoreLine (Score h, Score a)) =
-      boxes "result" (string h) (string a) false
+      boxes "result" (string h) (string a) PredictionModifier.None
 
   open Routes
 

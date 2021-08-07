@@ -28,8 +28,8 @@ module Events =
     | FixtureRemoved of FixtureId
     // prediction set
     | PredictionSetOverwritten of source:PlayerId * destination:PlayerId * FixtureSetId
-    | PredictionSetDoubleDownRemoved of PlayerId * FixtureSetId
     | PredictionCreated of PlayerId * FixtureSetId * FixtureId * ScoreLine
+    | PredictionScoreLineSet of PlayerId * FixtureSetId * FixtureId * ScoreLine
     | PredictionHomeScoreSet of PlayerId * FixtureSetId * FixtureId * Score
     | PredictionAwayScoreSet of PlayerId * FixtureSetId * FixtureId * Score
     | PredictionHomeIncd of PlayerId * FixtureSetId * FixtureId
@@ -37,6 +37,8 @@ module Events =
     | PredictionHomeDecd of PlayerId * FixtureSetId * FixtureId
     | PredictionAwayDecd of PlayerId * FixtureSetId * FixtureId
     | PredictionDoubleDownApplied of PlayerId * FixtureSetId * FixtureId
+    | PredictionDoubleDownRemoved of PlayerId * FixtureSetId * FixtureId
+    | PredictionBigUpApplied of PlayerId * FixtureSetId * FixtureId
 
   type StreamId =
     StreamId of String

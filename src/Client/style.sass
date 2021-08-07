@@ -17,7 +17,7 @@ $fa_font_path: "~@fortawesome/fontawesome-free/webfonts"
 
 $primary: #114B5F
 $secondary: #AA4465
-$link: #5AB1BB
+$link: $primary
 $info: #5AB1BB
 $success: #DCF763
 $warning: #FFAD05
@@ -52,7 +52,7 @@ $body-line-height: 1
 
 $tabs-toggle-link-active-background-color: $primary
 $tabs-toggle-link-border-width: 2px
-$tabs-toggle-link-border-color: $dark
+$tabs-toggle-link-border-color: $primary
 $tabs-toggle-link-hover-border-color: $dark
 $tabs-toggle-link-active-border-color: $dark
 .navbar .tabs a span
@@ -73,11 +73,13 @@ $modal-card-foot-border-top: 0
 .box
   border-radius: 0
   .block:last-child
-      margin-bottom: 0
+    margin-bottom: 0
 
 .home
   .block
     margin-bottom: 1em
+  .button i
+    margin-left: 3px
 
 .button
   border: solid 2px $dark
@@ -86,7 +88,6 @@ $modal-card-foot-border-top: 0
 
 .button.is-outlined
   border-color: unset
-
 
 .table tr.is-selected
   background-color: $light
@@ -327,16 +328,17 @@ table.table th.text-left
 .gw-fixture-item
   background-color: $background-alt
   margin-bottom: 2em
-  padding-bottom: 1em
+  // padding-bottom: 1em
 
-.gw-fixture-item.gw-fixture-item-isdd
+.gw-fixture-item.gw-fixture-item-ismodified
   background-color: $warning-light
+  border: solid 2px $warning
 .gw-fixture-item
   position: relative
   .gw-fixture-result-row
     position: relative
-    top: -1em
-    margin-bottom: -0.6em
+    top: -16px
+    // margin-bottom: -0.6em
 
   .gw-fixture-result-container
     padding: 2px
@@ -361,7 +363,6 @@ table.table th.text-left
     div:last-child
       margin-right: 0
 
-
   .gw-fixture-result-row.gw-fixture-open
     .gw-fixture-result-desc
       color: $white-ter
@@ -385,10 +386,14 @@ table.table th.text-left
       div
         background-color: $warning-light
 
+  .gw-fixture-pred-row
+    position: relative
+    top: -10px
+
   .gw-fixture-pred-container
     padding: 2px
     position: relative
-    top: -0.2em
+    top: -6px
     .gw-fixture-pred-box
       display: flex
       .pred-score
@@ -396,17 +401,18 @@ table.table th.text-left
         font-weight: bold
         margin-right: 2px
         padding: 6px 0
-        width: 30px
+        width: 35px
+        font-size: 1.2em
       .pred-score:last-child
         margin-right: 0
-      .pred-dd
+      .pred-dd, .pred-bigup
         background-color: $warning
         position: absolute
         width: 19px
         bottom: 0
         text-align: center
         padding: 2px 0px
-        left: 24px
+        left: 29px
 
   .gw-fixture-pred-row.gw-fixture-nopred
     .gw-fixture-pred-container
@@ -438,12 +444,16 @@ table.table th.text-left
   .gw-fixture-item-arrow
     display: none
 
+  .gw-fixture-item.gw-fixture-item-ismodified
+    background-color: $white
+    border: none
+
   .gw-fixture-item
     margin-bottom: 0
     padding-bottom: 0
 
   .block
-    margin-bottom: 0
+    margin-bottom: 1em
   .gw-fixture-preset-score-row
     display: flex
     justify-content: center
@@ -456,13 +466,36 @@ table.table th.text-left
   // .gw-fixture-preset-score-row:last-child
   //   margin-bottom: 0
 
-.modal-card-foot .button, .modal-card-foot .button:focus
-  background-color: $secondary
-  border-color: $dark
-  color: $white-ter
+.gw-fixture
+  .modal-card
+    max-height: unset
+    height: calc(100vh - 120px)
+    // background-color: $background
+    // position: relative
+  .modal-card-body
+    padding: 0
+  .modal-card-foot
+    justify-content: center
+  .modal-card-foot .button, .modal-card-foot .button:focus
+    background-color: $secondary
+    border: none
+    color: $white-ter
+    flex-grow: 1
 
-.modal-card-foot .button:not(:last-child)
+  .modal-card-foot .button:not(:last-child)
     margin-right: 2px
+
+  .gw-fixture-page-row
+    .box
+      display: flex
+      justify-content: center
+      .button
+        background-color: $secondary
+        border: none
+        color: $white-ter
+        flex-grow: 1
+      .button:not(:last-child)
+        margin-right: 2px
 
 .kick-off-time
   background-color: $info

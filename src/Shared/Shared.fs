@@ -48,8 +48,11 @@ module Ko =
   let groupFormat (KickOff ko) =
     KickOffGroup (ko.ToString("ddd d MMM yyyy"))
 
-  let isLessThan (KickOff ko) now =
-    ko < now
+  let hasKickedOff now (KickOff ko) =
+    now > ko
+
+  let isLessThanOneHourBeforeKickOff now (KickOff ko) =
+    now > ko.AddHours -1.
 
 type KickOff = Ko.KickOff
 
@@ -76,6 +79,7 @@ type PointVector =
   | HomeScore
   | AwayScore
   | GoalDifference
+  | BigUp of int
   | DoubleDown
 
 type PointsCategory =
@@ -101,10 +105,14 @@ and MinutesPlayed = MinutesPlayed of int
 and PredictionRecord =
   { PlayerId : PlayerId
     FixtureId : FixtureId
-    IsDoubleDown : bool
+    Modifier : PredictionModifier
     ScoreLine : ScoreLine
     Created : DateTime
   }
+and [<RequireQualifiedAccess>] PredictionModifier =
+  | None
+  | BigUp
+  | DoubleDown
 and LeagueRecord =
   { LeagueName : LeagueName
     PrivateLeagueId : PrivateLeagueId
@@ -206,7 +214,7 @@ and [<CLIMutable>] PredictionNode =
   { PlayerId : string
     FixtureId : string
     Created : DateTime
-    IsDoubleDown : bool
+    Modifier: string
     HomeScore : int
     AwayScore : int }
 and [<CLIMutable>] FixtureNode =
@@ -247,6 +255,37 @@ module FixtureState =
 
   let isClassified = classifiedScoreLine >> Option.isSome
 
+module PredictionModifier =
+
+  module Consts =
+    let [<Literal>] None = "none"
+    let [<Literal>] BigUp = "bigup"
+    let [<Literal>] DoubleDown = "doubledown"
+
+  let toString = function
+    | PredictionModifier.None -> Consts.None
+    | PredictionModifier.BigUp -> Consts.BigUp
+    | PredictionModifier.DoubleDown -> Consts.DoubleDown
+
+  let fromString = function
+    | Consts.None -> PredictionModifier.None
+    | Consts.BigUp -> PredictionModifier.BigUp
+    | Consts.DoubleDown -> PredictionModifier.DoubleDown
+    | s -> failwith <| sprintf "could not parse prediction modifier %s" s
+
+  let isDoubleDown = function
+    | PredictionModifier.DoubleDown -> true
+    | _ -> false
+
+  let isBigUp = function
+    | PredictionModifier.BigUp -> true
+    | _ -> false
+
+  let isModified = function
+    | PredictionModifier.BigUp
+    | PredictionModifier.DoubleDown -> true
+    | _ -> false
+
 module FixtureNode =
   let init (FixtureSetId fsId)
            (GameweekNo gwno)
@@ -275,18 +314,21 @@ type FixturePredictionViewModel =
     SortOrder : int
     KickOff : KickOff
     KickOffGroup : KickOffGroup
+    // IsMoreThanOneHourBeforeKickOff : bool
     TeamLine : TeamLine
-    IsDoubleDown : bool
     State : FixtureState
-    Prediction : ScoreLine option
+    Prediction : (ScoreLine * PredictionModifier) option
+    BigUpState : BigUpState
+    // IsBigUpAvailable
+    // IsBigUpExpanded : bool
     Points : int * PointVector list
     InProgress : bool
     Neighbours: FixtureId option * FixtureId option }
-// and Points = Points of int
-// and FixtureState =
-//   | Open
-//   | KickedOff
-//   | Classified of result:ScoreLine * points:int * PointsCategory
+and [<RequireQualifiedAccess>] BigUpState =
+  | Unavailable
+  | Available
+  | Expanded
+  | Set
 
 and NewFixtureSetViewModel =
   { GameweekNo : GameweekNo
@@ -337,7 +379,7 @@ and MatrixPlayer =
   }
 and MatrixPrediction =
   { Prediction : ScoreLine
-    IsDoubleDown : bool
+    Modifier : PredictionModifier
     Points : (int * PointsCategory) option
   }
 
@@ -401,7 +443,7 @@ and PlayerFixtureSetKickedOffViewModelRow =
     SortOrder : int
     Points : PredictionPointsMonoid
     ResultAndPoints : (ScoreLine * PointsCategory) option
-    Prediction : (ScoreLine * bool) option
+    Prediction : (ScoreLine * PredictionModifier) option
   }
 
 type GameweekFixturesViewModel =
@@ -415,10 +457,13 @@ type GameweekFixturesViewModel =
     Rank: int
   }
 
+[<RequireQualifiedAccess>]
 type PredictionAction =
-  PredictionAction of FixtureSetId * FixtureId * PredictTeam * PredictVector
+  | SetScoreline of FixtureSetId * FixtureId * ScoreLine
+  | IncrementScore of FixtureSetId * FixtureId * PredictTeam //* PredictVector
+  | DecrementScore of FixtureSetId * FixtureId * PredictTeam //* PredictVector
 and PredictTeam = Home | Away
-and PredictVector = Inc | Dec
+// and PredictVector = Inc | Dec
 
 type LeagueWindow =
   | Full
@@ -546,7 +591,7 @@ type Document =
   | FixtureDetailsDocument of FixtureId
 
 type IProtocol =
-  { getFixtures : int * int -> AppToken -> Ars<Map<FixtureId, FixturePredictionViewModel>>
+  { // getFixtures : int * int -> AppToken -> Ars<Map<FixtureId, FixturePredictionViewModel>>
     getFixturesLength : AppToken -> Ars<int>
     getMaxGameweekNo : AppToken -> Ars<GameweekNo>
     getPlayerLeagues : AppToken -> Ars<Map<PrivateLeagueId, PlayerLeagueViewModel>>
@@ -572,6 +617,7 @@ type IProtocol =
     addNewFixtureSet : AppToken -> Ars<Unit>
     prediction : AppToken -> PredictionAction -> Ars<PredictionAction>
     doubleDown : AppToken -> (FixtureSetId * FixtureId) -> Ars<FixtureSetId * FixtureId>
+    bigUp : AppToken -> (FixtureSetId * FixtureId) -> Ars<FixtureSetId * FixtureId>
     removeDoubleDown : AppToken -> FixtureSetId -> Ars<FixtureSetId>
     createLeague : AppToken -> LeagueName -> Ars<PrivateLeagueId>
     joinLeague : AppToken -> PrivateLeagueId -> Ars<PrivateLeagueId>

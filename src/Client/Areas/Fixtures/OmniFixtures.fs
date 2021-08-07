@@ -181,18 +181,18 @@ module OmniFixtures =
     let disabledIcon i =
       Fa.i [ i; Fa.Props [ Style [ Color "#b5b5b5" ] ] ] []
 
-    let scoreIncButton dispatch (fsId, fId, team) =
-      button [ Button.Color IsLight ]
-        (if f.InProgress then ignore else fun _ -> PredictionAction (fsId, fId, team, Inc) |> Prediction |> dispatch)
-        [ Fa.i [ Fa.Solid.AngleUp ] [] ]
+    // let scoreIncButton dispatch (fsId, fId, team) =
+    //   button [ Button.Color IsLight ]
+    //     (if f.InProgress then ignore else fun _ -> PredictionAction (fsId, fId, team, Inc) |> Prediction |> dispatch)
+    //     [ Fa.i [ Fa.Solid.AngleUp ] [] ]
 
-    let scoreDecButton dispatch (fsId, fId, team, score:int option) =
-      match score with
-      | Some s when s > 0 ->
-        button [ Button.Color IsLight ]
-          (if f.InProgress then ignore else fun _ -> PredictionAction (fsId, fId, team, Dec) |> Prediction |> dispatch)
-          [ Fa.i [ Fa.Solid.AngleDown ] [] ]
-      | _ -> disabledIcon Fa.Solid.AngleDown
+    // let scoreDecButton dispatch (fsId, fId, team, score:int option) =
+    //   match score with
+    //   | Some s when s > 0 ->
+    //     button [ Button.Color IsLight ]
+    //       (if f.InProgress then ignore else fun _ -> PredictionAction (fsId, fId, team, Dec) |> Prediction |> dispatch)
+    //       [ Fa.i [ Fa.Solid.AngleDown ] [] ]
+    //   | _ -> disabledIcon Fa.Solid.AngleDown
 
     let doubleDownButton dispatch (f:FixturePredictionViewModel) =
       let icon i =
@@ -217,18 +217,18 @@ module OmniFixtures =
         [ badgeAndScoreRow dispatch f predictionBox
         ]
 
-      Card.footer []
-        [ footItem
-            [ scoreDecButton dispatch (f.FixtureSetId, f.Id, PredictTeam.Home, homeScore) ]
-          footItem
-            [ scoreIncButton dispatch (f.FixtureSetId, f.Id, PredictTeam.Home) ]
-          footItem
-            [ doubleDownButton dispatch f ]
-          footItem
-            [ scoreIncButton dispatch (f.FixtureSetId, f.Id, PredictTeam.Away) ]
-          footItem
-            [ scoreDecButton dispatch (f.FixtureSetId, f.Id, PredictTeam.Away, awayScore) ]
-        ]
+      // Card.footer []
+      //   [ footItem
+      //       [ scoreDecButton dispatch (f.FixtureSetId, f.Id, PredictTeam.Home, homeScore) ]
+      //     footItem
+      //       [ scoreIncButton dispatch (f.FixtureSetId, f.Id, PredictTeam.Home) ]
+      //     footItem
+      //       [ doubleDownButton dispatch f ]
+      //     footItem
+      //       [ scoreIncButton dispatch (f.FixtureSetId, f.Id, PredictTeam.Away) ]
+      //     footItem
+      //       [ scoreDecButton dispatch (f.FixtureSetId, f.Id, PredictTeam.Away, awayScore) ]
+      //   ]
     ]
 
   let kickedOffFixtureView dispatch (f:FixturePredictionViewModel) =
@@ -387,27 +387,29 @@ module OmniFixtures =
       | Ok length -> { model with Length = length }, []
       | Error e -> model, alert e
     | Prediction action ->
-      let (PredictionAction (_, fId, _, _)) = action
-      { model with Fixtures = model.Fixtures.Add(fId, { model.Fixtures.Item fId with InProgress = true }) },
-      Cmd.OfAsync.perform
-        (api.prediction player.Token)
-        action
-        PredictionAccepted
+      // let (PredictionAction (_, fId, _, _)) = action
+      // { model with Fixtures = model.Fixtures.Add(fId, { model.Fixtures.Item fId with InProgress = true }) },
+      // Cmd.OfAsync.perform
+      //   (api.prediction player.Token)
+      //   action
+      //   PredictionAccepted
+        model, []
     | PredictionAccepted result ->
-      match result with
-      | Ok (PredictionAction (_, fId, team, vec)) ->
-        match team, vec with
-        | Home, Inc -> fun (ScoreLine (Score h, a)) -> ScoreLine (h+1 |> Score, a)
-        | Home, Dec -> fun (ScoreLine (Score h, a)) -> ScoreLine (h-1 |> Score, a)
-        | Away, Inc -> fun (ScoreLine (h, Score a)) -> ScoreLine (h, a+1 |> Score)
-        | Away, Dec -> fun (ScoreLine (h, Score a)) -> ScoreLine (h, a-1 |> Score)
-        |> fun f ->
-          model.Fixtures.Item fId
-          |> fun { Prediction = sl } -> sl
-          |> function
-          | Some pred -> pred
-          | None -> ScoreLine.Init
-          |> f |> fun p -> { model with Fixtures = model.Fixtures.Add(fId, { model.Fixtures.Item fId with Prediction = Some p; InProgress = false }) }, []
+        model, []
+      // match result with
+      // | Ok (PredictionAction (_, fId, team, vec)) ->
+      //   match team, vec with
+      //   | Home, Inc -> fun (ScoreLine (Score h, a)) -> ScoreLine (h+1 |> Score, a)
+      //   | Home, Dec -> fun (ScoreLine (Score h, a)) -> ScoreLine (h-1 |> Score, a)
+      //   | Away, Inc -> fun (ScoreLine (h, Score a)) -> ScoreLine (h, a+1 |> Score)
+      //   | Away, Dec -> fun (ScoreLine (h, Score a)) -> ScoreLine (h, a-1 |> Score)
+      //   |> fun f ->
+      //     model.Fixtures.Item fId
+      //     |> fun { Prediction = sl } -> sl
+      //     |> function
+      //     | Some pred -> pred
+      //     | None -> ScoreLine.Init
+      //     |> f |> fun p -> { model with Fixtures = model.Fixtures.Add(fId, { model.Fixtures.Item fId with Prediction = Some p; InProgress = false }) }, []
       | Error e ->
         { model with Fixtures = Map.map (fun k v -> { v with InProgress = false }) model.Fixtures }, alert e
     | SetDoubleDown (fsId, fId) ->

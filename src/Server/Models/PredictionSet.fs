@@ -11,55 +11,64 @@ module PredictionSet =
     Map<FixtureId, FixtureRecord>
 
   type PredictionSetState =
-    Map<FixtureId, ScoreLine> * FixtureId option
+    { Predictions : Map<FixtureId, ScoreLine>
+      DoubleDown : FixtureId option
+      BigUp : FixtureId option }
 
-  let private fold ((predictions, dd):PredictionSetState) event =
-    match dd, event with
-    | _, PredictionDoubleDownApplied (_, _, fId) ->
-      (predictions, Some fId) |> Ok
-    | _, PredictionSetDoubleDownRemoved _ ->
-      (predictions, None) |> Ok
-    | dd, PredictionCreated (_, _, fId, sl) ->
-      (predictions.Add (fId, sl), dd) |> Ok
-    | dd, PredictionHomeScoreSet (_, _, fId, s) ->
-      predictions.[fId]
-      |> fun (ScoreLine (_, a)) -> ScoreLine (s, a)
-      |> fun sl -> (predictions.Add (fId, sl), dd) |> Ok
-    | dd, PredictionAwayScoreSet (_, _, fId, s) ->
-      predictions.[fId]
-      |> fun (ScoreLine (h, _)) -> ScoreLine (h, s)
-      |> fun sl -> (predictions.Add (fId, sl), dd) |> Ok
-    | dd, PredictionHomeIncd (_, _, fId) ->
-      predictions.[fId]
-      |> fun (ScoreLine (Score h, a)) -> ScoreLine (Score (h+1), a)
-      |> fun sl -> (predictions.Add (fId, sl), dd) |> Ok
-    | dd, PredictionAwayIncd (_, _, fId) ->
-      predictions.[fId]
-      |> fun (ScoreLine (h, Score a)) -> ScoreLine (h, Score (a+1))
-      |> fun sl -> (predictions.Add (fId, sl), dd) |> Ok
-    | dd, PredictionHomeDecd (_, _, fId) ->
-      predictions.[fId]
-      |> fun (ScoreLine (Score h, a)) -> ScoreLine (Score (h-1), a)
-      |> fun sl -> (predictions.Add (fId, sl), dd) |> Ok
-    | dd, PredictionAwayDecd (_, _, fId) ->
-      predictions.[fId]
-      |> fun (ScoreLine (h, Score a)) -> ScoreLine (h, Score (a-1))
-      |> fun sl -> (predictions.Add (fId, sl), dd) |> Ok
-    | _ -> HandlerHelper.eventErr event predictions
+
+  let private fold ({ PredictionSetState.Predictions = predictions } as state) = function
+    | PredictionDoubleDownApplied (_, _, fId) ->
+      Ok { state with DoubleDown = Some fId }
+    | PredictionDoubleDownRemoved _ ->
+      Ok { state with DoubleDown = None }
+    | PredictionBigUpApplied (_, _, fId) ->
+      Ok { state with BigUp = Some fId }
+    | PredictionCreated (_, _, fId, sl)
+    | PredictionScoreLineSet (_, _, fId, sl) ->
+      Ok { state with Predictions = predictions.Add (fId, sl) }
+    | PredictionHomeScoreSet (_, _, fId, s) ->
+      let sl = predictions.[fId] |> fun (ScoreLine (_, a)) -> ScoreLine (s, a)
+      Ok { state with Predictions = predictions.Add (fId, sl) }
+    | PredictionAwayScoreSet (_, _, fId, s) ->
+      let sl = predictions.[fId] |> fun (ScoreLine (h, _)) -> ScoreLine (h, s)
+      Ok { state with Predictions = predictions.Add (fId, sl) }
+    | PredictionHomeIncd (_, _, fId) ->
+      let sl = predictions.[fId] |> fun (ScoreLine (Score h, a)) -> ScoreLine (Score (h+1), a)
+      Ok { state with Predictions = predictions.Add (fId, sl) }
+    | PredictionAwayIncd (_, _, fId) ->
+      let sl = predictions.[fId] |> fun (ScoreLine (h, Score a)) -> ScoreLine (h, Score (a+1))
+      Ok { state with Predictions = predictions.Add (fId, sl) }
+    | PredictionHomeDecd (_, _, fId) ->
+      let sl = predictions.[fId] |> fun (ScoreLine (Score h, a)) -> ScoreLine (Score (h-1), a)
+      Ok { state with Predictions = predictions.Add (fId, sl) }
+    | PredictionAwayDecd (_, _, fId) ->
+      let sl = predictions.[fId] |> fun (ScoreLine (h, Score a)) -> ScoreLine (h, Score (a-1))
+      Ok { state with Predictions = predictions.Add (fId, sl) }
+    | event -> HandlerHelper.eventErr event predictions
 
   let folder =
-    fold, (Map.empty, None)
+    fold, { Predictions = Map.empty
+            DoubleDown = None
+            BigUp = None }
 
-  let apply (playerId, fsId, cmd, (fixtures:FixtureSetState)) ((predictions, dd):PredictionSetState) : Rresult<Event list> =
+  let apply (playerId, fsId, cmd, (fixtures:FixtureSetState)) (state:PredictionSetState) : Rresult<Event list> =
 
     let makeSureFixtureIsEditable (PredictionEditDate date) errMsg { FixtureRecord.KickOff = ko } =
-      if date < ko.Raw then Ok ()
-      else ValidationError errMsg |> Error
+      if Ko.hasKickedOff date ko
+      then ValidationError errMsg |> Error
+      else Ok ()
+
+    let makeSureFixtureIsBigUpable (PredictionEditDate date) { FixtureRecord.KickOff = ko } =
+      if Ko.isLessThanOneHourBeforeKickOff date ko
+      then ValidationError "It's too late to Big Up this fixture" |> Error
+      else Ok ()
 
     let datedPredictionCommandHandler fId = function
+      | SetScoreLine sl -> [ PredictionScoreLineSet (playerId, fsId, fId, sl) ]
       | SetHomeScore s -> [ PredictionHomeScoreSet (playerId, fsId, fId, s) ]
       | SetAwayScore s -> [ PredictionAwayScoreSet (playerId, fsId, fId, s) ]
       | DoubleDown     -> [ PredictionDoubleDownApplied (playerId, fsId, fId) ]
+      | BigUp          -> [ PredictionBigUpApplied (playerId, fsId, fId) ]
       | SimplePredictionCommand spcmd ->
         match spcmd with
         | IncHomeScore -> [ PredictionHomeIncd (playerId, fsId, fId) ]
@@ -68,30 +77,52 @@ module PredictionSet =
         | DecAwayScore -> [ PredictionAwayDecd (playerId, fsId, fId) ]
 
     let fixtureCreatedEvent fId =
-      if predictions.ContainsKey fId then []
+      if state.Predictions.ContainsKey fId then []
       else [ PredictionCreated (playerId, fsId, fId, ScoreLine.Init) ]
 
-    match dd, cmd with
-    | Some ddfId, RemoveDoubleDown date ->
-      fixtures.[ddfId]
-      |> (makeSureFixtureIsEditable date "Fixture already kicked off"
-      >> Result.map (fun () -> [ PredictionSetDoubleDownRemoved (playerId, fsId) ]))
+    match state.DoubleDown, state.BigUp, cmd with
 
-    | Some ddfId, DatedPredictionCommand (DoubleDown, fId, date) ->
+    | Some ddfId, _, RemoveDoubleDown date ->
+      fixtures.[ddfId]
+      |> (makeSureFixtureIsEditable date "Double down fixture already kicked off"
+      >> Result.map (fun () -> [ PredictionDoubleDownRemoved (playerId, fsId, ddfId) ]))
+
+    | _, Some bufId, DatedPredictionCommand (DoubleDown, fId, _) when fId = bufId ->
+      ValidationError "Cannot double down on big up prediction" |> Error
+
+    | Some ddfId, _, DatedPredictionCommand (DoubleDown, fId, date) ->
       fixtures.[ddfId]
       |> (makeSureFixtureIsEditable date "Double down fixture already kicked off"
       >> Result.bind (fun () -> fixtures.[fId] |> makeSureFixtureIsEditable date "Fixture already kicked off")
       >> Result.map (fun () ->
         fixtureCreatedEvent fId @
-        [ PredictionSetDoubleDownRemoved (playerId, fsId)
+        [ PredictionDoubleDownRemoved (playerId, fsId, ddfId)
           PredictionDoubleDownApplied (playerId, fsId, fId) ]))
 
-    | _, DatedPredictionCommand (pcmd, fId, date) ->
+    | Some ddfId, _, DatedPredictionCommand (BigUp, fId, _) when fId = ddfId ->
+      ValidationError "Cannot big up on double down prediction" |> Error
+
+    | _, Some _, DatedPredictionCommand (BigUp, _, _) ->
+      ValidationError "Cannot big up another prediction" |> Error
+
+    | _, None, DatedPredictionCommand (BigUp, fId, date) ->
+      // fixtures.[ddfId]
+      // |> (makeSureFixtureIsBigUpable date
+      // >> Result.bind (fun () -> fixtures.[fId] |> makeSureFixtureIsEditable date "Fixture already kicked off")
+      fixtures.[fId] |> makeSureFixtureIsBigUpable date
+      |> Result.map (fun () ->
+        fixtureCreatedEvent fId @
+        [ PredictionBigUpApplied (playerId, fsId, fId) ])
+
+    | _, Some bufId, DatedPredictionCommand (_, fId, _) when fId = bufId ->
+      ValidationError "Cannot edit big up prediction" |> Error
+
+    | _, _, DatedPredictionCommand (pcmd, fId, date) ->
       fixtures.[fId]
       |> (makeSureFixtureIsEditable date "Fixture already kicked off"
       >> Result.map (fun () -> fixtureCreatedEvent fId @ datedPredictionCommandHandler fId pcmd))
 
-    | _, OverwritePredictionSet sourcePlayerId ->
+    | _, _, OverwritePredictionSet sourcePlayerId ->
       Ok [ PredictionSetOverwritten (sourcePlayerId, playerId, fsId) ]
 
-    | _ -> HandlerHelper.cmdErr cmd predictions
+    | _ -> HandlerHelper.cmdErr cmd state.Predictions

@@ -198,7 +198,7 @@ module FixtureKickedOffSubscribers =
                 q.getPlayerPredictionForFixture pId fId
                 |> Option.map (fun p ->
                   { MatrixPrediction.Prediction = p.ScoreLine
-                    IsDoubleDown = p.IsDoubleDown
+                    Modifier = p.Modifier
                     Points = None })
                 |> fun mPrediction ->
                 m.Rows.TryFind pId
@@ -246,10 +246,10 @@ module FixtureClassifiedSubscribers =
   open Points
   open FixtureSubscribersAssistance
 
-  let fixturePredictionToPoints ({ FixtureRecord.State = state }, { PredictionRecord.IsDoubleDown = isDoubleDown; ScoreLine = pred }) =
+  let fixturePredictionToPoints ({ FixtureRecord.State = state }, { PredictionRecord.Modifier = modifier; ScoreLine = pred }) =
     FixtureState.classifiedScoreLine state
     |> Option.map (fun result ->
-      let vectors = Points.getPointVectors result pred isDoubleDown
+      let vectors = Points.getPointVectors result pred modifier
       Points.getPointsForPrediction result pred vectors |> fst)
     |> Option.defaultValue PredictionPointsMonoid.Init
 
@@ -460,7 +460,7 @@ module FixtureClassifiedSubscribers =
                 | Some mPlayer ->
                   match mPlayer.Predictions.TryFind fId with
                   | Some mPrediction ->
-                    let vectors = Points.getPointVectors resultScoreLine mPrediction.Prediction mPrediction.IsDoubleDown
+                    let vectors = Points.getPointVectors resultScoreLine mPrediction.Prediction mPrediction.Modifier
                     Points.getPointsForPrediction resultScoreLine mPrediction.Prediction vectors
                     |> fun (m, cat) ->
                       mPlayer.Predictions.Add(fId, { mPrediction with Points = Some (m.Points, cat) })

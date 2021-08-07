@@ -33,6 +33,8 @@ module Commands =
     | OverwritePredictionSet of sourcePlayer:PlayerId
   and PredictionCommand =
     | DoubleDown
+    | BigUp
+    | SetScoreLine of ScoreLine
     | SetHomeScore of Score
     | SetAwayScore of Score
     | SimplePredictionCommand of SimplePredictionCommand

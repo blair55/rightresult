@@ -27,30 +27,22 @@ module GameweekFixtures =
     | ShowModal of FixtureId
     | HideModal
     | NavTo of Route
-    | Prediction of PredictionAction
+    | Prediction of FixtureId * PredictionAction
     | PredictionAccepted of Rresult<PredictionAction>
     | SetDoubleDown of FixtureSetId * FixtureId
     | SetDoubleDownResponse of Rresult<FixtureSetId * FixtureId>
     | RemoveDoubleDown of FixtureSetId
     | RemoveDoubleDownResponse of Rresult<FixtureSetId>
+    | ExpandBigUp of FixtureId
+    | CollapseBigUp of FixtureId
+    | SetBigUp of FixtureSetId * FixtureId
+    | SetBigUpResponse of Rresult<FixtureSetId * FixtureId>
 
   let init api p gwno =
     { GameweekFixtures = Fetching
       ModalState = ModalClosed },
     Cmd.OfAsync.either (api.getGameweekFixtures p.Token) gwno GameweekFixturesReceived (Error >> Init)
 
-  let pageFixtureButton dispatch text fixtures =
-    Option.bind (fun fId -> Map.tryFind fId fixtures)
-    >> function
-      | Some (fp: FixturePredictionViewModel) ->
-        Button.button [ Button.Color IsLight
-                        Button.Props [ OnClick(fun _ -> dispatch (ShowModal fp.Id)) ] ] [
-          str text
-        ]
-      | None ->
-        Button.button [ Button.Disabled true ] [
-          str text
-        ]
 
   let rowOf3 class' left center right =
     div [ Class class' ] [
@@ -117,7 +109,7 @@ module GameweekFixtures =
   let predictionScoreBox pred =
     div [ Class "gw-fixture-pred-container" ] [
       match pred with
-      | (Some (ScoreLine (Score h, Score a)), true) ->
+      | Some (ScoreLine (Score h, Score a), PredictionModifier.DoubleDown) ->
         div [ Class "gw-fixture-pred-box" ] [
           div [ Class "pred-dd" ] [
             Fa.i [ Fa.Solid.AngleDoubleDown
@@ -130,7 +122,20 @@ module GameweekFixtures =
             str (string<int> a)
           ]
         ]
-      | (Some (ScoreLine (Score h, Score a)), _) ->
+      | Some (ScoreLine (Score h, Score a), PredictionModifier.BigUp) ->
+        div [ Class "gw-fixture-pred-box" ] [
+          div [ Class "pred-bigup" ] [
+            Fa.i [ Fa.Solid.AngleDoubleUp
+                   Fa.Size Fa.FaSmall ] []
+          ]
+          div [ Class "pred-score" ] [
+            str (string<int> h)
+          ]
+          div [ Class "pred-score" ] [
+            str (string<int> a)
+          ]
+        ]
+      | Some (ScoreLine (Score h, Score a), _) ->
         div [ Class "gw-fixture-pred-box" ] [
           div [ Class "pred-score" ] [
             str (string<int> h)
@@ -139,7 +144,7 @@ module GameweekFixtures =
             str (string<int> a)
           ]
         ]
-      | None, _ ->
+      | None ->
         div [ Class "gw-fixture-pred-box" ] [
           div [ Class "pred-score" ] [ str ("_") ]
           div [ Class "pred-score" ] [ str ("_") ]
@@ -149,7 +154,6 @@ module GameweekFixtures =
   let fixtureItemSwitch
     dispatch
     ({ TeamLine = TeamLine (home, away)
-       IsDoubleDown = dd
        Prediction = pred } as fp: FixturePredictionViewModel)
     =
 
@@ -165,13 +169,14 @@ module GameweekFixtures =
       else
         "gw-fixture-nopred"
 
-    let ddClass =
-      if dd then
-        "gw-fixture-item-isdd"
-      else
-        ""
+    let modifierClass =
+      Option.map (fun (_, modifier) -> PredictionModifier.isModified modifier) pred
+      |> Option.defaultValue false
+      |> function
+        | true -> "gw-fixture-item-ismodified"
+        | _ -> ""
 
-    Text.div [ Props [ Class $"gw-fixture-item {ddClass}"
+    Text.div [ Props [ Class $"gw-fixture-item {modifierClass}"
                        OnClick(fun _ -> dispatch (ShowModal fp.Id)) ] ] [
       rowOf3
         $"gw-fixture-result-row {resultClass}"
@@ -181,7 +186,7 @@ module GameweekFixtures =
       rowOf3
         $"gw-fixture-pred-row {predClass}"
         [ Components.shortTeamName home ]
-        [ predictionScoreBox (pred, dd) ]
+        [ predictionScoreBox pred ]
         [ Components.shortTeamName away ]
 
       div [ Class "gw-fixture-item-arrow" ] [
@@ -197,18 +202,6 @@ module GameweekFixtures =
       div [ Class "gw-fixture-list" ] (fixtures |> List.map (fixtureItemSwitch dispatch))
     ]
 
-  let pageGwButton dispatch text =
-    function
-    | Some (GameweekNo gwno) ->
-      Button.button [ Button.Color IsLight
-                      Button.Props [ OnClick(fun _ -> dispatch (NavTo(GameweekRoute(GameweekFixturesRoute gwno)))) ] ] [
-        str text
-      ]
-    | None ->
-      Button.button [ Button.Disabled true ] [
-        str text
-      ]
-
   let button atts onClick content =
     Button.button
       ([ Button.IsFullWidth
@@ -216,18 +209,20 @@ module GameweekFixtures =
        @ atts)
       content
 
-  // let disabledIcon i =
-  //   Fa.i [ i
-  //          Fa.Props [ Style [ Color "#b5b5b5" ] ] ] []
+  let isBigUp (f: FixturePredictionViewModel) =
+    Option.map (snd >> PredictionModifier.isBigUp) f.Prediction
+    |> Option.defaultValue false
 
   let scoreIncButton dispatch (f: FixturePredictionViewModel, team) =
     button
-      [ Button.Color IsPrimary; Button.IsOutlined ]
+      [ Button.Color IsPrimary
+        Button.IsOutlined
+        Button.Disabled(isBigUp f) ]
       (if f.InProgress then
          ignore
        else
          fun _ ->
-           PredictionAction(f.FixtureSetId, f.Id, team, Inc)
+           (f.Id, PredictionAction.IncrementScore(f.FixtureSetId, f.Id, team))
            |> Prediction
            |> dispatch)
       [ Fa.i [ Fa.Solid.PlusSquare ] [] ]
@@ -236,95 +231,182 @@ module GameweekFixtures =
     match score with
     | Some s when s > 0 ->
       button
-        [ Button.Color IsPrimary; Button.IsOutlined ]
+        [ Button.Color IsPrimary
+          Button.IsOutlined
+          Button.Disabled(isBigUp f) ]
         (if f.InProgress then
            ignore
          else
            fun _ ->
-             PredictionAction(f.FixtureSetId, f.Id, team, Dec)
+             (f.Id, PredictionAction.DecrementScore(f.FixtureSetId, f.Id, team))
              |> Prediction
              |> dispatch)
         [ Fa.i [ Fa.Solid.MinusSquare ] [] ]
     | _ -> button [ Button.Disabled true ] ignore [ Fa.i [ Fa.Solid.MinusSquare ] [] ]
 
-  let doubleDownButton dispatch isDoubleDownAvailable (f: FixturePredictionViewModel) =
-    // let icon = [ Fa.i [ Fa.Solid.AngleDoubleDown ] [] ]
-    let icon =    [ Fa.i [ Fa.Solid.AngleDoubleDown ] []; span [ Style [MarginLeft "2px"]] [ str " Double Down" ] ]
+  let doubleDownButton dispatch (model: GameweekFixturesViewModel) (f: FixturePredictionViewModel) =
+    let icon i =
+      [ Fa.i [ i ] []
+        span [ Style [ MarginLeft "5px" ] ] [
+          str "Double Down"
+        ] ]
 
-    match isDoubleDownAvailable, f.Prediction, f.IsDoubleDown with
-    | true, Some _, false ->
+    match model.IsDoubleDownAvailable, f.Prediction, f.BigUpState with
+    | _, _, BigUpState.Expanded -> div [] []
+
+    | true, Some (_, PredictionModifier.DoubleDown), _ ->
       button
-        [ Button.Color IsWarning; Button.IsOutlined; Button.IsFocused false ]
-        (if f.InProgress then
-           ignore
-         else
-           fun _ -> SetDoubleDown(f.FixtureSetId, f.Id) |> dispatch)
-        icon
-    | true, Some _, true ->
-      button
-        [ Button.Color IsWarning ; Button.IsFocused false]
+        [ Button.Color IsWarning ]
         (if f.InProgress then
            ignore
          else
            fun _ -> RemoveDoubleDown f.FixtureSetId |> dispatch)
-        icon
-    | _ ->
+        (icon Fa.Solid.CheckDouble)
+
+    | true, Some (_, PredictionModifier.None), _ ->
       button
-        [ Button.Disabled true ]
-        ignore icon
-        // [ Fa.i [ Fa.Solid.AngleDoubleDown ] []
-        //   span [] [ str "double down" ] ]
+        [ Button.Color IsWarning
+          Button.IsLight
+          Button.IsOutlined ]
+        (if f.InProgress then
+           ignore
+         else
+           fun _ -> SetDoubleDown(f.FixtureSetId, f.Id) |> dispatch)
+        (icon Fa.Solid.AngleDoubleDown)
 
-  let openFixtureModalContent dispatch isDoubleDownAvailable (fp: FixturePredictionViewModel) =
-    let homeScore =
-      Option.map (fun (ScoreLine (Score h, _)) -> h) fp.Prediction
+    | _ -> button [ Button.Disabled true ] ignore (icon Fa.Solid.AngleDoubleDown)
 
-    let awayScore =
-      Option.map (fun (ScoreLine (_, Score a)) -> a) fp.Prediction
+  let bigUpButton dispatch (model: GameweekFixturesViewModel) (f: FixturePredictionViewModel) =
+    let icon i txt =
+      [ Fa.i [ i ] []
+        span [ Style [ MarginLeft "5px" ] ] [
+          str txt
+        ] ]
 
-    let presetScoreButton s =
-      Button.button [ Button.Size IsSmall
-                      Button.Color IsPrimary
-                      Button.IsOutlined
-                      Button.IsFullWidth
-                      Button.Props [ Props.Style [ Width "4em" ] ] ] [
-        str s
+    match f.Prediction, f.BigUpState with
+    | Some (_, PredictionModifier.None), BigUpState.Available ->
+      button
+        [ Button.Color IsWarning
+          Button.IsLight
+          Button.IsOutlined ]
+        (fun _ -> dispatch (ExpandBigUp f.Id))
+        (icon Fa.Solid.AngleDoubleUp "Big Up")
+    | Some (_, PredictionModifier.None), BigUpState.Expanded ->
+      div [] [
+        div [ Class "block" ] [
+          Message.message [ Message.Color IsInfo ] [
+            Message.body [ Modifiers [ Modifier.TextSize (Screen.All, TextSize.Is7) ]] [
+              Content.content [] [
+                Text.p [Modifiers [ Modifier.TextWeight TextWeight.Bold]] [ str "Big up for more points!" ]
+                li [] [
+                    str "Big ups are visible to all players"
+                ]
+                li [] [
+                    str "Big ups cannot be edited"
+                ]
+                li [] [
+                    str "One big up per gameweek"
+                ]
+              ]
+            ]
+          ]
+        ]
+        div [ Class "block" ] [
+          button
+            [ Button.Color IsInfo
+              Button.IsLight
+              Button.IsOutlined ]
+            (fun _ -> dispatch (CollapseBigUp f.Id))
+            (icon Fa.Solid.Times "Cancel")
+        ]
+        div [ Class "block" ] [
+          button
+            [ Button.Color IsWarning
+              Button.IsLight
+              Button.IsOutlined ]
+            (if f.InProgress then
+               ignore
+             else
+               fun _ -> SetBigUp(f.FixtureSetId, f.Id) |> dispatch)
+            (icon Fa.Solid.AngleDoubleUp "Confirm Big Up")
+        ]
       ]
 
-    [ div [ Class "block" ] [
+    | Some (_, PredictionModifier.BigUp), _ ->
+      button
+        [ Button.Color IsWarning ]
+        ignore
+        (icon Fa.Solid.Lock "Big Up")
+
+    | _ -> button [ Button.Disabled true ] ignore (icon Fa.Solid.AngleDoubleUp "Big Up")
+
+  let openFixtureModalContent dispatch (model: GameweekFixturesViewModel) (fp: FixturePredictionViewModel) =
+    let homeScore =
+      Option.map (fun (ScoreLine (Score h, _), _) -> h) fp.Prediction
+
+    let awayScore =
+      Option.map (fun (ScoreLine (_, Score a), _) -> a) fp.Prediction
+
+    let presetScoreButton homeScore awayScore =
+      let sl =
+        ScoreLine(Score homeScore, Score awayScore)
+
+      let highlightAttribute =
+        match fp.Prediction with
+        | Some (p, _) when p = sl -> []
+        | _ -> [ Button.IsOutlined ]
+
+      Button.button
+        (highlightAttribute
+         @ [ Button.Size IsSmall
+             Button.Color IsPrimary
+             Button.IsFullWidth
+             Button.Disabled(isBigUp fp)
+             Button.Props [ Props.Style [ Width "4em" ]
+                            OnClick
+                              (fun _ ->
+                                dispatch (Prediction(fp.Id, PredictionAction.SetScoreline(fp.FixtureSetId, fp.Id, sl)))) ] ])
+        [
+
+          str (string homeScore + "-" + string awayScore) ]
+
+    [ div [ Class "" ] [
         div [ Class "gw-fixture-preset-score-row" ] [
-          presetScoreButton "2-0"
-          presetScoreButton "1-0"
-          presetScoreButton "0-0"
-          presetScoreButton "0-1"
-          presetScoreButton "0-2"
+          presetScoreButton 2 0
+          presetScoreButton 1 0
+          presetScoreButton 0 0
+          presetScoreButton 0 1
+          presetScoreButton 0 2
         ]
 
         div [ Class "gw-fixture-preset-score-row" ] [
-          presetScoreButton "3-1"
-          presetScoreButton "2-1"
-          presetScoreButton "1-1"
-          presetScoreButton "1-2"
-          presetScoreButton "1-3"
+          presetScoreButton 3 1
+          presetScoreButton 2 1
+          presetScoreButton 1 1
+          presetScoreButton 1 2
+          presetScoreButton 1 3
         ]
         div [ Class "gw-fixture-preset-score-row" ] [
-          presetScoreButton "4-2"
-          presetScoreButton "3-2"
-          presetScoreButton "2-2"
-          presetScoreButton "2-3"
-          presetScoreButton "2-4"
+          presetScoreButton 4 2
+          presetScoreButton 3 2
+          presetScoreButton 2 2
+          presetScoreButton 2 3
+          presetScoreButton 2 4
         ]
       ]
       div [ Class "block" ] [
         div [ Class "gw-fixture-preset-score-row gw-fixture-incdec-dscore-row" ] [
-          scoreDecButton dispatch (fp, PredictTeam.Home, homeScore)
           scoreIncButton dispatch (fp, PredictTeam.Home)
-          scoreIncButton dispatch (fp, PredictTeam.Away)
+          scoreDecButton dispatch (fp, PredictTeam.Home, homeScore)
           scoreDecButton dispatch (fp, PredictTeam.Away, awayScore)
+          scoreIncButton dispatch (fp, PredictTeam.Away)
         ]
       ]
       div [ Class "block" ] [
-        doubleDownButton dispatch isDoubleDownAvailable fp
+        bigUpButton dispatch model fp
+      ]
+      div [ Class "block" ] [
+        doubleDownButton dispatch model fp
       ] ]
 
   let inplayFixtureModalContent dispatch (fp: FixturePredictionViewModel) = [ str "in play" ]
@@ -336,50 +418,70 @@ module GameweekFixtures =
       // str (sprintf "%A" rc)
       ]
 
+  let pageGwButton dispatch icon =
+    function
+    | Some (GameweekNo gwno) ->
+      Button.button [ Button.Color IsLight
+                      Button.Props [ OnClick(fun _ -> dispatch (NavTo(GameweekRoute(GameweekFixturesRoute gwno)))) ] ] [
+        Fa.i [ icon ] []
+      ]
+    | None ->
+      Button.button [ Button.Disabled true ] [
+        Fa.i [ icon ] []
+      ]
 
-  let fixtureModal
-    dispatch
-    (GameweekNo gwno)
-    isDoubleDownAvailable
-    (fixtures: Map<FixtureId, FixturePredictionViewModel>)
-    (modalState)
-    =
+  let pageFixtureButton dispatch icon fixtures =
+    Option.bind (fun fId -> Map.tryFind fId fixtures)
+    >> function
+      | Some (fp: FixturePredictionViewModel) ->
+        Button.button [ Button.Color IsLight
+                        Button.Props [ OnClick(fun _ -> dispatch (ShowModal fp.Id)) ] ] [
+          Fa.i [ icon ] []
+        ]
+      | None ->
+        Button.button [ Button.Disabled true ] [
+          Fa.i [ icon ] []
+        ]
+
+  let fixtureModal dispatch (model: GameweekFixturesViewModel) modalState =
 
     match modalState with
     | ModalOpen fId ->
 
       let ({ TeamLine = TeamLine (ht, at)
              Neighbours = (prev, next) } as fp: FixturePredictionViewModel) =
-        fixtures.Item fId
+        model.Fixtures.Item fId
 
       let body =
         match fp.State with
-        | FixtureState.Open _ -> openFixtureModalContent dispatch isDoubleDownAvailable fp
-        | FixtureState.InPlay (sl, mp) -> inplayFixtureModalContent dispatch fp
-        | FixtureState.Classified (sl) -> classifiedFixtureModalContent dispatch fp sl
+        | FixtureState.Open _ -> openFixtureModalContent dispatch model fp
+        | FixtureState.InPlay _ -> inplayFixtureModalContent dispatch fp
+        | FixtureState.Classified sl -> classifiedFixtureModalContent dispatch fp sl
         |> Text.div [ Props [ Class "" ] ]
 
       Modal.modal [ Modal.IsActive true ] [
         Modal.background [ Props [ OnClick(fun _ -> dispatch HideModal) ] ] []
         Modal.close [ Modal.Close.Size IsLarge
                       Modal.Close.OnClick(fun _ -> dispatch HideModal) ] []
-        Modal.content [] [
-          div [ Class "gw-fixture-modal-container" ] [
-            div [ Style [ MarginBottom "2em" ] ] [
-              Components.gameweekDate fp.KickOffGroup
-            ]
+        Modal.Card.card [] [
+          Modal.Card.body [] [
+            div [ Class "gw-fixture-modal-container" ] [
+              div [ Style [ MarginBottom "2em" ] ] [
+                Components.gameweekDate fp.KickOffGroup
+              ]
 
-            div [ Class "gw-fixture-modal-content" ] [
-              fixtureItemSwitch dispatch fp
-              Box.box' [] [ body ]
+              div [ Class "gw-fixture-modal-content" ] [
+                fixtureItemSwitch dispatch fp
+                Box.box' [ Props [ Style [ PaddingTop "0" ] ] ] [
+                  body
+                ]
+              ]
             ]
           ]
-        ]
-        Modal.Card.foot [] [
-              div [] [
-                pageFixtureButton dispatch "<<" fixtures prev
-                pageFixtureButton dispatch ">>" fixtures next
-              ]
+          Modal.Card.foot [] [
+            pageFixtureButton dispatch Fa.Solid.AngleDoubleLeft model.Fixtures prev
+            pageFixtureButton dispatch Fa.Solid.AngleDoubleRight model.Fixtures next
+          ]
         ]
       ]
 
@@ -397,12 +499,8 @@ module GameweekFixtures =
     //   | ModalState.ModalOpen _ -> "is-clipped"
     //   | _ -> ""
 
-    div [] [
+    div [ Class "gw-fixture" ] [
       Components.pageTitle (sprintf "Gameweek %i" gwno)
-      div [ Style [ MarginBottom "1em" ] ] [
-        pageGwButton dispatch "<<" prev
-        pageGwButton dispatch ">>" next
-      ]
       div
         []
         (Map.toList gwfs.Fixtures
@@ -410,7 +508,14 @@ module GameweekFixtures =
          |> List.sortBy (fun f -> f.SortOrder)
          |> List.groupBy (fun f -> f.KickOffGroup)
          |> List.map (fixtureGroup dispatch))
-      fixtureModal dispatch gwfs.GameweekNo gwfs.IsDoubleDownAvailable gwfs.Fixtures modalState
+
+      div [ Class "gw-fixture-page-row" ] [
+        Box.box' [] [
+          pageGwButton dispatch Fa.Solid.AngleDoubleLeft prev
+          pageGwButton dispatch Fa.Solid.AngleDoubleRight next
+        ]
+      ]
+      fixtureModal dispatch gwfs modalState
     ]
 
   let view (model: Model) dispatch =
@@ -437,61 +542,145 @@ module GameweekFixtures =
                  { gwf with
                      Fixtures = Map.map (fun _ v -> f v) gwf.Fixtures }) }
 
+  let removeDoubleDownFromAllPredictions model =
+    updateAllModelGwf
+      model
+      (fun f ->
+        { f with
+            Prediction =
+              f.Prediction
+              |> Option.map
+                   (fun (sl, modifier) ->
+                     if PredictionModifier.isDoubleDown modifier then
+                       sl, PredictionModifier.None
+                     else
+                       sl, modifier)
+            InProgress = false })
+
+  let updatePredictionInModel model fId slfunc =
+    updateSingleModelGwf
+      model
+      fId
+      (fun f ->
+        { f with
+            Prediction =
+              f.Prediction
+              |> Option.defaultValue (ScoreLine.Init, PredictionModifier.None)
+              // |> fun (sl, modifier) -> slfunc sl, modifier
+              |> slfunc
+              |> Some
+            InProgress = false })
+
   let update api player msg model : Model * Cmd<Msg> =
-    match msg with
-    | Init _ -> model, []
-    | GameweekFixturesReceived r ->
-      { model with
-          GameweekFixtures = resultToWebData r },
-      []
-    | ShowModal fId ->
-      { model with
-          ModalState = ModalOpen fId },
-      []
-    | HideModal -> { model with ModalState = ModalClosed }, []
-    | NavTo r -> model, (Routes.navTo r)
+    (match msg with
+     | Init _ -> model, []
+     | GameweekFixturesReceived r ->
+       { model with
+           GameweekFixtures = resultToWebData r },
+       []
+     | ShowModal fId ->
+       let m =
+         updateSingleModelGwf
+           model
+           fId
+           (fun fixture ->
+             { fixture with
+                 BigUpState =
+                   if fixture.BigUpState = BigUpState.Expanded then
+                     BigUpState.Available
+                   else
+                     fixture.BigUpState })
 
-    | Prediction (PredictionAction (_, fId, _, _) as action) ->
-      updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
-      Cmd.OfAsync.perform (api.prediction player.Token) action PredictionAccepted
-    | PredictionAccepted result ->
-      match result with
-      | Ok (PredictionAction (_, fId, team, vec)) ->
+       { m with ModalState = ModalOpen fId }, []
+     | HideModal -> { model with ModalState = ModalClosed }, []
+     | NavTo r -> model, (Routes.navTo r)
 
-        let slfunc =
-          match team, vec with
-          | Home, Inc -> fun (ScoreLine (Score h, a)) -> ScoreLine(h + 1 |> Score, a)
-          | Home, Dec -> fun (ScoreLine (Score h, a)) -> ScoreLine(h - 1 |> Score, a)
-          | Away, Inc -> fun (ScoreLine (h, Score a)) -> ScoreLine(h, a + 1 |> Score)
-          | Away, Dec -> fun (ScoreLine (h, Score a)) -> ScoreLine(h, a - 1 |> Score)
+     | Prediction (fId, action) ->
+       updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
+       Cmd.OfAsync.perform (api.prediction player.Token) action PredictionAccepted
 
-        let m =
-          updateSingleModelGwf
-            model
-            fId
-            (fun f ->
-              { f with
-                  Prediction =
-                    Option.defaultValue ScoreLine.Init f.Prediction
-                    |> slfunc
-                    |> Some
-                  InProgress = false })
+     | PredictionAccepted result ->
+       match result with
+       | Ok (PredictionAction.SetScoreline (_, fId, sl)) -> updatePredictionInModel model fId (fun (_, m) -> sl, m), []
+       | Ok (PredictionAction.IncrementScore (_, fId, Home)) ->
+         updatePredictionInModel model fId (fun (ScoreLine (Score h, a), m) -> ScoreLine(h + 1 |> Score, a), m), []
+       | Ok (PredictionAction.DecrementScore (_, fId, Home)) ->
+         updatePredictionInModel model fId (fun (ScoreLine (Score h, a), m) -> ScoreLine(h - 1 |> Score, a), m), []
+       | Ok (PredictionAction.IncrementScore (_, fId, Away)) ->
+         updatePredictionInModel model fId (fun (ScoreLine (h, Score a), m) -> ScoreLine(h, a + 1 |> Score), m), []
+       | Ok (PredictionAction.DecrementScore (_, fId, Away)) ->
+         updatePredictionInModel model fId (fun (ScoreLine (h, Score a), m) -> ScoreLine(h, a - 1 |> Score), m), []
+       | Error e -> updateAllModelGwf model (fun f -> { f with InProgress = false }), alert e
 
-        m, []
-      | Error e -> updateAllModelGwf model (fun f -> { f with InProgress = false }), alert e
-    | SetDoubleDown (fsId, fId) ->
-      model, Cmd.OfAsync.perform (api.doubleDown player.Token) (fsId, fId) SetDoubleDownResponse
-    | SetDoubleDownResponse r ->
-      match r with
-      | Ok (_, fId) ->
-        let m =
-          updateAllModelGwf model (fun f -> { f with IsDoubleDown = false })
 
-        updateSingleModelGwf m fId (fun f -> { f with IsDoubleDown = true }), infoAlert "Double Down set"
-      | Error e -> model, alert e
-    | RemoveDoubleDown fsId ->
-      model, Cmd.OfAsync.perform (api.removeDoubleDown player.Token) fsId RemoveDoubleDownResponse
-    | RemoveDoubleDownResponse r ->
-      match r with
-      | Ok _ -> updateAllModelGwf model (fun f -> { f with IsDoubleDown = false }), infoAlert "Double Down removed"
-      | Error e -> model, alert e
+     | SetDoubleDown (fsId, fId) ->
+       updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
+       Cmd.OfAsync.perform (api.doubleDown player.Token) (fsId, fId) SetDoubleDownResponse
+     | SetDoubleDownResponse r ->
+       match r with
+       | Ok (_, fId) ->
+         let m = removeDoubleDownFromAllPredictions model
+         updatePredictionInModel m fId (fun (sl, _) -> sl, PredictionModifier.DoubleDown), infoAlert "Double Down set"
+       | Error e -> model, alert e
+     | RemoveDoubleDown fsId ->
+       updateAllModelGwf model (fun fixture -> { fixture with InProgress = true }),
+       Cmd.OfAsync.perform (api.removeDoubleDown player.Token) fsId RemoveDoubleDownResponse
+     | RemoveDoubleDownResponse r ->
+       match r with
+       | Ok _ -> removeDoubleDownFromAllPredictions model, infoAlert "Double Down removed"
+       | Error e -> model, alert e
+
+     | ExpandBigUp fId ->
+       updateSingleModelGwf
+         model
+         fId
+         (fun fixture ->
+           { fixture with
+               BigUpState = BigUpState.Expanded }),
+       []
+     | CollapseBigUp fId ->
+       updateSingleModelGwf
+         model
+         fId
+         (fun fixture ->
+           { fixture with
+               BigUpState = BigUpState.Available }),
+       []
+     | SetBigUp (fsId, fId) ->
+       updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
+       Cmd.OfAsync.perform (api.bigUp player.Token) (fsId, fId) SetBigUpResponse
+     | SetBigUpResponse r ->
+       match r with
+       | Ok (_, fId) ->
+         let m =
+           updateAllModelGwf
+             model
+             (fun f ->
+               { f with
+                   BigUpState = BigUpState.Unavailable
+                   InProgress = false })
+
+         let m =
+           updateSingleModelGwf
+             m
+             fId
+             (fun fixture ->
+               { fixture with
+                   BigUpState = BigUpState.Set
+                   Prediction =
+                     fixture.Prediction
+                     |> Option.map (fun (sl, _) -> sl, PredictionModifier.BigUp) })
+
+         m, infoAlert "Bigged up prediction!"
+       | Error e -> model, alert e)
+    |> (fun (({ GameweekFixtures = gwfs }, _) as r) ->
+      match gwfs with
+      | WebData.Success f ->
+        Map.toList f.Fixtures
+        |> List.map snd
+        |> List.sortBy (fun f -> f.SortOrder)
+        |> List.iter (fun f -> printfn "%A %A %A" f.TeamLine f.Prediction f.BigUpState)
+        |> ignore
+      | _ -> ()
+
+      r)
