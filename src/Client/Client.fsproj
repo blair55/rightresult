@@ -16,10 +16,11 @@
 
     <Compile Include="Areas\Fixtures\FixtureDetails.fs" />
     <!-- <Compile Include="Areas\Fixtures\OmniFixtures.fs" /> -->
-    <Compile Include="Areas\Fixtures\AddFixtureSet.fs" />
-    <Compile Include="Areas\Fixtures\FixturesArea.fs" />
+    <!-- <Compile Include="Areas\Fixtures\AddFixtureSet.fs" /> -->
+    <!-- <Compile Include="Areas\Fixtures\FixturesArea.fs" /> -->
 
     <Compile Include="Areas\Gameweek\GameweekFixtures.fs" />
+    <Compile Include="Areas\Gameweek\AddGameweek.fs" />
     <Compile Include="Areas\Gameweek\GameweekArea.fs" />
 
     <Compile Include="Areas\Leagues\CreateLeague.fs" />

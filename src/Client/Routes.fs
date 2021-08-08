@@ -8,17 +8,18 @@ type Route =
   | HomeRoute
   | HowItWorksRoute
   | ContactRoute
-  | FixtureRoute of FixtureRoute
+  // | FixtureRoute of FixtureRoute
   | GameweekRoute of GameweekRoute
   | LeaguesRoute of LeaguesRoute
   | LoggedInRoute
   | PlayersRoute of PlayersRoute
-and FixtureRoute =
+// and FixtureRoute =
   // | OmniFixturesRoute
-  | AddFixtureSetRoute
+  // | AddFixtureSetRoute
 and GameweekRoute =
   | GameweekInitRoute
   | GameweekFixturesRoute of int
+  | AddGameweekRoute
 and LeaguesRoute =
   | PlayerLeaguesRoute
   | GlobalLeagueRoute
@@ -43,10 +44,11 @@ let loginPath         = "login"
 let loggedInPath      = "logged-in"
 let howItWorksPath    = "how-it-works"
 let contactPath       = "get-in-touch"
-let fixturesPath      = "fixtures"
-let addFixtureSetPath = "fixtures/add"
+// let fixturesPath      = "fixtures"
+// let addFixtureSetPath = "fixtures/add"
 let gwPath            = "gameweek"
 let gwFixturesPath    = sprintf "gameweek/%i"
+let addGameweekPath   = "gameweek/add"
 let leaguesPath       = "leagues"
 let globalleaguePath  = "leagues/global"
 let createLeaguePath  = "leagues/create"
@@ -75,8 +77,9 @@ let route : Parser<Route -> Route, _> =
     map HowItWorksRoute    (s howItWorksPath)
     map ContactRoute       (s contactPath)
     // map (OmniFixturesRoute  |> FixtureRoute) (s fixturesPath)
-    map (AddFixtureSetRoute |> FixtureRoute) (s fixturesPath </> s "add")
+    // map (AddFixtureSetRoute |> FixtureRoute) (s fixturesPath </> s "add")
     map (GameweekInitRoute  |> GameweekRoute) (s gwPath)
+    map (AddGameweekRoute   |> GameweekRoute) (s gwPath </> s "add")
     map (GameweekFixturesRoute >> GameweekRoute) (s gwPath </> i32)
     map (PlayerLeaguesRoute |> LeaguesRoute) (s leaguesPath)
     map (GlobalLeagueRoute  |> LeaguesRoute) (s leaguesPath </> s "global")
@@ -102,14 +105,15 @@ let private routeToPath = function
   | LoggedInRoute      -> loggedInPath
   | HowItWorksRoute    -> howItWorksPath
   | ContactRoute       -> contactPath
-  | FixtureRoute r ->
-    match r with
+  // | FixtureRoute r ->
+    // match r with
     // | OmniFixturesRoute      -> fixturesPath
-    | AddFixtureSetRoute     -> addFixtureSetPath
+    // | AddFixtureSetRoute     -> addFixtureSetPath
   | GameweekRoute r ->
     match r with
     | GameweekInitRoute         -> gwPath
     | GameweekFixturesRoute gw  -> gwFixturesPath gw
+    | AddGameweekRoute          -> addGameweekPath
   | LeaguesRoute r ->
     match r with
     | PlayerLeaguesRoute        -> leaguesPath

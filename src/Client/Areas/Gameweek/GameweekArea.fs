@@ -10,12 +10,13 @@ module GameweekArea =
   type Model =
     | InitModel
     | GameweekFixturesModel of GameweekFixtures.Model
+    | AddGameweekModel of AddGameweek.Model
 
   type Msg =
     | InitMsg of Result<string, exn>
     | GetEarliestOpenGwno of Rresult<GameweekNo>
     | GameweekFixturesMsg of GameweekFixtures.Msg
-    // | NavTo of Route
+    | AddGameweekMsg of AddGameweek.Msg
 
   let init api player : Model * Cmd<Msg> =
     InitModel,
@@ -37,6 +38,8 @@ module GameweekArea =
             ]
     | GameweekFixturesMsg msg, GameweekFixturesModel m ->
         GameweekFixtures.update api p msg m |> fun (m, cmd) -> GameweekFixturesModel m, Cmd.map GameweekFixturesMsg cmd
+    | AddGameweekMsg msg, AddGameweekModel m ->
+      AddGameweek.update api p msg m |> fun (m, cmd) -> AddGameweekModel m, Cmd.map AddGameweekMsg cmd
     | _ ->
         model, alert (LoginProblem "couldn't get gw")
 
@@ -44,9 +47,13 @@ module GameweekArea =
     | GameweekInitRoute -> init api p
     | GameweekFixturesRoute gwno ->
         GameweekFixtures.init api p (GameweekNo gwno) |> fun (m, cmd) -> GameweekFixturesModel m, Cmd.map GameweekFixturesMsg cmd
+    | AddGameweekRoute ->
+      AddGameweek.init api p |> fun (m, cmd) -> AddGameweekModel m, Cmd.map AddGameweekMsg cmd
 
   let view model dispatch =
     match model with
     | InitModel -> div [] []
     | GameweekFixturesModel m ->
         GameweekFixtures.view m (GameweekFixturesMsg >> dispatch)
+    | AddGameweekModel m ->
+      AddGameweek.view m (AddGameweekMsg >> dispatch)

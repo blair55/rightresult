@@ -1,4 +1,4 @@
-namespace Areas.Fixtures
+namespace Areas.Gameweek
 
 open Elmish
 
@@ -11,7 +11,7 @@ open Fulma
 open Routes
 open Areas
 
-module AddFixtureSet =
+module AddGameweek =
 
   type Model =
     { FixtureSet: NewFixtureSetViewModel WebData

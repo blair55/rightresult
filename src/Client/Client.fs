@@ -28,7 +28,7 @@ type Area =
   | HowItWorksArea
   | ContactArea
   | HomeArea of HomeArea.Model
-  | FixturesArea of FixturesArea.Model
+  // | FixturesArea of FixturesArea.Model
   | GameweekArea of GameweekArea.Model
   | LeaguesArea of LeaguesArea.Model
   | PlayersArea of PlayersArea.Model
@@ -42,7 +42,7 @@ type Msg =
   | Init of Result<string, exn>
   | NavTo of Route
   | HomeMsg of HomeArea.Msg
-  | FixturesMsg of FixturesArea.Msg
+  // | FixturesMsg of FixturesArea.Msg
   | GameweekMsg of GameweekArea.Msg
   | LeaguesMsg of LeaguesArea.Msg
   | PlayersMsg of PlayersArea.Msg
@@ -75,9 +75,9 @@ let update msg (model:Model) : Model * Cmd<Msg> =
     let m, cmd = HomeArea.update api p msg m
     { model with Area = HomeArea m }, Cmd.map HomeMsg cmd
 
-  | Some p, FixturesArea m, FixturesMsg msg ->
-    let m, cmd = FixturesArea.update api p msg m
-    { model with Area = FixturesArea m }, Cmd.map FixturesMsg cmd
+  // | Some p, FixturesArea m, FixturesMsg msg ->
+  //   let m, cmd = FixturesArea.update api p msg m
+  //   { model with Area = FixturesArea m }, Cmd.map FixturesMsg cmd
 
   | Some p, GameweekArea m, GameweekMsg msg ->
     let m, cmd = GameweekArea.update api p msg m
@@ -157,12 +157,12 @@ let footabs model dispatch : ReactElement option =
         Tabs.tab [] gameweek
         Tabs.tab [] leagues
         Tabs.tab [] players ]
-  | FixturesArea _ ->
-    tabs
-      [ Tabs.tab [] home
-        Tabs.tab [ Tabs.Tab.IsActive true ] gameweek
-        Tabs.tab [] leagues
-        Tabs.tab [] players ]
+  // | FixturesArea _ ->
+  //   tabs
+  //     [ Tabs.tab [] home
+  //       Tabs.tab [ Tabs.Tab.IsActive true ] gameweek
+  //       Tabs.tab [] leagues
+  //       Tabs.tab [] players ]
   | GameweekArea _ ->
     tabs
       [ Tabs.tab [] home
@@ -213,7 +213,7 @@ let area model dispatch =
   | HowItWorksArea -> HowItWorksArea.view dispatch
   | ContactArea    -> ContactArea.view dispatch
   | HomeArea m     -> HomeArea.view m (HomeMsg >> dispatch)
-  | FixturesArea m -> FixturesArea.view m (FixturesMsg >> dispatch)
+  // | FixturesArea m -> FixturesArea.view m (FixturesMsg >> dispatch)
   | GameweekArea m -> GameweekArea.view m (GameweekMsg >> dispatch)
   | LeaguesArea m  -> LeaguesArea.view m (LeaguesMsg >> dispatch)
   | PlayersArea m  -> PlayersArea.view m (PlayersMsg >> dispatch)
@@ -277,9 +277,9 @@ let urlUpdate route model =
     let m, cmd = HomeArea.init api p
     { model with Area = HomeArea m }, Cmd.map HomeMsg cmd
 
-  | Some p, Some (FixtureRoute r) ->
-    let m, cmd = FixturesArea.urlUpdate api p r
-    { model with Area = FixturesArea m }, Cmd.map FixturesMsg cmd
+  // | Some p, Some (FixtureRoute r) ->
+  //   let m, cmd = FixturesArea.urlUpdate api p r
+  //   { model with Area = FixturesArea m }, Cmd.map FixturesMsg cmd
 
   | Some p, Some (GameweekRoute r) ->
     let m, cmd = GameweekArea.urlUpdate api p r
