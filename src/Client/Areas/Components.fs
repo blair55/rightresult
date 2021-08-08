@@ -276,6 +276,17 @@ module Components =
 
     Text.span [ Modifiers []; Props [ Class clas' ] ] []
 
+  let rand = new System.Random()
+
+  let bigBackgroundBadge team =
+    div [Class "bg-badge-box" ][
+      badge BadgeSize.XL team
+    ]
+
+  let rdmBadgeBox () =
+    Teams.all.[rand.Next(0, 20)]
+    |> bigBackgroundBadge
+
   let shortTeamName team =
     div [ Class "" ] [
       span [ Class "short-team-name" ] [

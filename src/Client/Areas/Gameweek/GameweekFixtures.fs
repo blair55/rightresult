@@ -178,6 +178,10 @@ module GameweekFixtures =
 
     Text.div [ Props [ Class $"gw-fixture-item {modifierClass}"
                        OnClick(fun _ -> dispatch (ShowModal fp.Id)) ] ] [
+      // div [ Class "bg-badge-container" ] [
+      //     Components.bigBackgroundBadge home
+      //     Components.bigBackgroundBadge away
+      // ]
       rowOf3
         $"gw-fixture-result-row {resultClass}"
         [ fixtureBadge home ]
@@ -666,14 +670,14 @@ module GameweekFixtures =
 
          m, infoAlert "Bigged up prediction!"
        | Error e -> model, alert e)
-    // |> (fun (({ GameweekFixtures = gwfs }, _) as r) ->
-    //   match gwfs with
-    //   | WebData.Success f ->
-    //     Map.toList f.Fixtures
-    //     |> List.map snd
-    //     |> List.sortBy (fun f -> f.SortOrder)
-    //     |> List.iter (fun f -> printfn "%A %A %A" f.TeamLine f.Prediction f.BigUpState)
-    //     |> ignore
-    //   | _ -> ()
+// |> (fun (({ GameweekFixtures = gwfs }, _) as r) ->
+//   match gwfs with
+//   | WebData.Success f ->
+//     Map.toList f.Fixtures
+//     |> List.map snd
+//     |> List.sortBy (fun f -> f.SortOrder)
+//     |> List.iter (fun f -> printfn "%A %A %A" f.TeamLine f.Prediction f.BigUpState)
+//     |> ignore
+//   | _ -> ()
 
-    //   r)
+//   r)

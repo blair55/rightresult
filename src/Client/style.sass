@@ -81,6 +81,13 @@ $modal-card-foot-border-top: 0
   .button i
     margin-left: 3px
 
+.bg-badge-box
+  opacity: 0.08
+  filter: saturate(0)
+  position: absolute
+  right: 1em
+  top: 1em
+
 .how-it-works
   .box
     margin-bottom: 1em
@@ -101,11 +108,8 @@ $modal-card-foot-border-top: 0
       font-size: $size-small
 
   .bg-badge-box
-    opacity: 0.08
-    filter: saturate(0)
-    position: absolute
     right: 1em
-    bottom: 1em
+    top: 1em
 
 
 .button
@@ -372,17 +376,28 @@ table.table th.text-left
   background-color: $background-alt
   margin-bottom: 2em
   cursor: pointer
+  position: relative
+  border-left: solid 4px $info
   // padding-bottom: 1em
+
+  // .bg-badge-container
+  //   // overflow: hidden
+  //   position: relative
+  //   div:first-child
+  //     left: 1em
+  //     top: 1em
+  //   div:last-child
+  //     right: 1em
+  //     top: 1em
 
 .gw-fixture-item.gw-fixture-item-ismodified
   background-color: $warning-light
-  border: solid 2px $warning
+  outline: solid 2px $warning
+  border-left: solid 4px $warning
 .gw-fixture-item
-  position: relative
   .gw-fixture-result-row
     position: relative
     top: -16px
-    // margin-bottom: -0.6em
 
   .gw-fixture-result-container
     padding: 2px
@@ -487,6 +502,8 @@ table.table th.text-left
 .gw-fixture-modal-content
   .gw-fixture-item
     cursor: unset
+    border-left-width: 0px
+    outline: none
   .gw-fixture-item-arrow
     display: none
 

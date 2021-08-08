@@ -8,19 +8,12 @@ open Fable.FontAwesome
 
 open Shared
 open Fulma
-open System
+open Components
 
 module HowItWorksArea =
 
   let button attr txt onClick =
     Button.button ([ Button.OnClick onClick ] @ attr) [ str txt ]
-
-  let rand = new Random()
-  let rdmBadgeBox () =
-    let team = Teams.all.[rand.Next(0, 20)]
-    div [Class "bg-badge-box" ][
-      Components.badge Components.BadgeSize.XL team
-    ]
 
   let titleBar =
     div [] [
@@ -105,10 +98,10 @@ module HowItWorksArea =
             any time before your selected double down fixture kicks off."
         ]
         p [] [
-            str "The maximum return for using Double Down is "
-            b [] [ str "10 points" ]
-            str "."
-            str " The Double Down option cannot be combined with the Big Up option."
+          str "The maximum return for using Double Down is "
+          b [] [ str "10 points" ]
+          str "."
+          str " The Double Down option cannot be combined with the Big Up option."
         ]
       ]
     ]
@@ -130,12 +123,12 @@ module HowItWorksArea =
             You cannot edit the scoreline of a Big Up prediction or combine with the Double Down option."
         ]
         p [] [
-            str "A Big Up prediction with a correct score is awarded an additional "
-            b [] [ str "3 points" ]
-            str ". "
-            str "A Big Up prediction with a correct result is awarded an additional "
-            b [] [ str "1 point" ]
-            str "."
+          str "A Big Up prediction with a correct score is awarded an additional "
+          b [] [ str "3 points" ]
+          str ". "
+          str "A Big Up prediction with a correct result is awarded an additional "
+          b [] [ str "1 point" ]
+          str "."
         ]
       ]
     ]
@@ -144,11 +137,12 @@ module HowItWorksArea =
     Box.box' [] [
       div [ Class "block" ] [
         a [ Href Routes.gwPath
-            Class "button is-light is-outlined is-info is-fullwidth" ]
-          [ span [ Style [ MarginRight "3px" ] ] [
-              str "Get started"
-            ]
-            Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
+            Class "button is-light is-outlined is-info is-fullwidth" ] [
+          span [ Style [ MarginRight "3px" ] ] [
+            str "Get started"
+          ]
+          Fa.i [ Fa.Solid.AngleDoubleRight ] []
+        ]
       ]
       div [ Class "block" ] [
         a [ Href Routes.contactPath

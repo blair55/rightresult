@@ -1,33 +1,18 @@
 namespace Areas
 
-open Elmish
 open Elmish.React
-open Thoth.Elmish
-
-open Fable.Core
 open Fable.React
 open Fable.React.Props
 open Fable.FontAwesome
 
 open Shared
 open Fulma
-open Routes
-open System
-open Browser.WebStorage
+open Components
 
 module ContactArea =
 
   let button attr txt onClick =
     Button.button ([ Button.OnClick onClick ] @ attr) [ str txt ]
-
-  let rand = new Random()
-
-  let rdmBadgeBox () =
-    let team = Teams.all.[rand.Next(0, 20)]
-
-    div [ Class "bg-badge-box" ] [
-      Components.badge Components.BadgeSize.XL team
-    ]
 
   let titleBar =
     div [] [

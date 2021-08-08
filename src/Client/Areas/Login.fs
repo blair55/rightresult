@@ -21,7 +21,10 @@ module LoginArea =
 
       Box.box' [] [
         div [ Class "block" ] [
-          p [] [ str "Login to continue" ]
+          p [] [
+            str "Login to continue"
+
+            ]
         ]
         div [ Class "block" ] [
           form [ HTMLAttr.Method "POST"
@@ -62,6 +65,9 @@ module LoginArea =
               ]
             ]
           ]
+        ]
+        div [ Class "block"; Style [TextDecoration "underline"] ] [
+          a [ Routes.href HowItWorksRoute ] [str "Wait, what is this?"]
         ]
       ]
     ]
