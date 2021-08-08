@@ -7,6 +7,7 @@ type Route =
   | LoginRoute
   | HomeRoute
   | HowItWorksRoute
+  | ContactRoute
   | FixtureRoute of FixtureRoute
   | GameweekRoute of GameweekRoute
   | LeaguesRoute of LeaguesRoute
@@ -41,6 +42,7 @@ let homePath          = ""
 let loginPath         = "login"
 let loggedInPath      = "logged-in"
 let howItWorksPath    = "how-it-works"
+let contactPath       = "get-in-touch"
 let fixturesPath      = "fixtures"
 let addFixtureSetPath = "fixtures/add"
 let gwPath            = "gameweek"
@@ -71,6 +73,7 @@ let route : Parser<Route -> Route, _> =
     map LoginRoute         (s loginPath)
     map LoggedInRoute      (s loggedInPath)
     map HowItWorksRoute    (s howItWorksPath)
+    map ContactRoute       (s contactPath)
     // map (OmniFixturesRoute  |> FixtureRoute) (s fixturesPath)
     map (AddFixtureSetRoute |> FixtureRoute) (s fixturesPath </> s "add")
     map (GameweekInitRoute  |> GameweekRoute) (s gwPath)
@@ -98,6 +101,7 @@ let private routeToPath = function
   | LoginRoute               -> loginPath
   | LoggedInRoute            -> loggedInPath
   | HowItWorksRoute          -> howItWorksPath
+  | ContactRoute             -> contactPath
   | FixtureRoute r ->
     match r with
     // | OmniFixturesRoute      -> fixturesPath

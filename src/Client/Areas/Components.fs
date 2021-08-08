@@ -26,6 +26,23 @@ module Components =
     else
       string i
 
+  let heroBar =
+    Hero.hero [ Hero.Color IsPrimary
+                Hero.Props [ Style [ MarginBottom "1em" ] ] ] [
+      Hero.body [] [
+        Container.container [] [
+          Heading.h1 [ Heading.Is3
+                       Heading.Modifiers [ Modifier.TextTransform TextTransform.UpperCase ] ] [
+            span [] [ str "Right Result" ]
+          ]
+          Heading.h3 [ Heading.IsSubtitle; Heading.Is6 ] [
+            Fa.i [ Fa.Solid.AngleDoubleDown ] []
+            str " 2021/22"
+          ]
+        ]
+      ]
+    ]
+
   let pointsTotalView (total: PredictionPointsMonoid) =
     let brokenSpan one two =
       [ span [] [ str one ]

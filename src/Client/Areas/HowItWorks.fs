@@ -1,47 +1,19 @@
 namespace Areas
 
-open Elmish
 open Elmish.React
-open Thoth.Elmish
 
-open Fable.Core
 open Fable.React
 open Fable.React.Props
 open Fable.FontAwesome
 
 open Shared
 open Fulma
-open Routes
 open System
-open Browser.WebStorage
 
 module HowItWorksArea =
 
-  type Model = Unit
-
-  type Msg =
-    | Init of Result<string, exn>
-    | NavTo of Route
-
   let button attr txt onClick =
     Button.button ([ Button.OnClick onClick ] @ attr) [ str txt ]
-
-  let heroBar =
-    Hero.hero [ Hero.Color IsPrimary
-                Hero.Props [ Style [ MarginBottom "1em" ] ] ] [
-      Hero.body [] [
-        Container.container [] [
-          Heading.h1 [ Heading.Is3
-                       Heading.Modifiers [ Modifier.TextTransform TextTransform.UpperCase ] ] [
-            span [] [ str "Right Result" ]
-          ]
-          Heading.h3 [ Heading.IsSubtitle; Heading.Is6 ] [
-            Fa.i [ Fa.Solid.AngleDoubleDown ] []
-            str " 2021/22"
-          ]
-        ]
-      ]
-    ]
 
   let rand = new Random()
   let rdmBadgeBox () =
@@ -171,18 +143,27 @@ module HowItWorksArea =
   let homeMenu =
     Box.box' [] [
       div [ Class "block" ] [
-        a [ Href "/gameweek"
+        a [ Href Routes.gwPath
             Class "button is-light is-outlined is-info is-fullwidth" ]
           [ span [ Style [ MarginRight "3px" ] ] [
               str "Get started"
             ]
             Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
       ]
+      div [ Class "block" ] [
+        a [ Href Routes.contactPath
+            Class "button is-light is-outlined is-info is-fullwidth" ] [
+          span [ Style [ MarginRight "3px" ] ] [
+            str "Get in touch"
+          ]
+          Fa.i [ Fa.Solid.AngleDoubleRight ] []
+        ]
+      ]
     ]
 
   let view _ =
     div [ Class "how-it-works" ] [
-      heroBar
+      Components.heroBar
       titleBar
       winningBar
       pointsBar
@@ -190,10 +171,3 @@ module HowItWorksArea =
       bigUpBar
       homeMenu
     ]
-
-  // let init = (), Cmd.none
-
-  // let update (api: IProtocol) player msg model : Model * Cmd<Msg> =
-  //   match msg with
-  //   | Init _ -> model, []
-    // | NavTo r -> model, navTo r

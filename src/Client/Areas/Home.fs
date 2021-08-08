@@ -47,23 +47,6 @@ module HomeArea =
   let button attr txt onClick =
     Button.button ([ Button.OnClick onClick ] @ attr) [ str txt ]
 
-  let heroBar (model: Model) points =
-    Hero.hero [ Hero.Color IsPrimary
-                Hero.Props [ Style [ MarginBottom "1em" ] ] ] [
-      Hero.body [] [
-        Container.container [] [
-          Heading.h1 [ Heading.Is3
-                       Heading.Modifiers [ Modifier.TextTransform TextTransform.UpperCase ] ] [
-            span [] [ str "Right Result" ]
-          ]
-          Heading.h3 [ Heading.IsSubtitle; Heading.Is6 ] [
-            Fa.i [ Fa.Solid.AngleDoubleDown ] []
-            str " 2021/22"
-          ]
-        ]
-      ]
-    ]
-
   // let ``dah dit`` left right =
   //   Columns.columns [ Columns.IsMobile
   //                     Columns.Props [ Props.Style [ MarginBottom "1em" ] ] ] [
@@ -328,7 +311,7 @@ module HomeArea =
     div [ Class "big-up-box-container hide-scrollbars" ] (List.map (bigUpBox dispatch) bigups)
 
   let loadedView dispatch (model: Model) (points, winner, bigups) =
-    [ heroBar model points
+    [ Components.heroBar
       // notificationPrompt model dispatch
       // gwWinner dispatch winner
       // playerBar dispatch model points

@@ -26,6 +26,7 @@ open Components
 type Area =
   | LoginArea
   | HowItWorksArea
+  | ContactArea
   | HomeArea of HomeArea.Model
   | FixturesArea of FixturesArea.Model
   | GameweekArea of GameweekArea.Model
@@ -65,6 +66,7 @@ let update msg (model:Model) : Model * Cmd<Msg> =
   match model.Player, model.Area, msg with
   | _, _, NavTo r -> model, navTo r
 
+  | Some _, PlayersArea _, PlayersMsg (PlayersArea.Msg.MyProfileMsg (MyProfile.Msg.Logout))
   | Some _, HomeArea _, HomeMsg (HomeArea.Msg.Logout) ->
     Browser.WebStorage.localStorage.removeItem playerStorageKey
     { model with Player = None }, navTo LoginRoute
@@ -147,6 +149,7 @@ let footabs model dispatch : ReactElement option =
 
   match model.Area with
   | HowItWorksArea _
+  | ContactArea _
   | LoginArea _ -> None
   | HomeArea _ ->
     tabs
@@ -192,6 +195,7 @@ let logoBar =
 
 let title model =
   match model.Area with
+  | ContactArea _
   | HowItWorksArea _
   | HomeArea _ -> div [] []
   | _          -> logoBar
@@ -207,6 +211,7 @@ let area model dispatch =
   match model.Area with
   | LoginArea      -> LoginArea.view dispatch
   | HowItWorksArea -> HowItWorksArea.view dispatch
+  | ContactArea    -> ContactArea.view dispatch
   | HomeArea m     -> HomeArea.view m (HomeMsg >> dispatch)
   | FixturesArea m -> FixturesArea.view m (FixturesMsg >> dispatch)
   | GameweekArea m -> GameweekArea.view m (GameweekMsg >> dispatch)
@@ -250,6 +255,8 @@ let urlUpdate route model =
   match model.Player, route with
   | _, Some LoginRoute ->
     { model with Area = LoginArea }, Cmd.none
+  | Some _, Some ContactRoute ->
+    { model with Area = ContactArea }, Cmd.none
   | Some _, Some HowItWorksRoute ->
     { model with Area = HowItWorksArea }, Cmd.none
   | _, Some LoggedInRoute ->
@@ -269,7 +276,6 @@ let urlUpdate route model =
   | Some p, Some HomeRoute ->
     let m, cmd = HomeArea.init api p
     { model with Area = HomeArea m }, Cmd.map HomeMsg cmd
-
 
   | Some p, Some (FixtureRoute r) ->
     let m, cmd = FixturesArea.urlUpdate api p r

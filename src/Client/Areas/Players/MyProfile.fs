@@ -47,19 +47,9 @@ module MyProfile =
       Message.message [ Message.Color IsWarning ] [
         Message.body [] [
           p [] [
-            str "Badges are still under construction but please let us know your ideas for more!"
-          ]
-          p [] [
-            a [ Href(Components.Social.twitterHref "@RightResu_lt") ] [
-              Fa.i [ Fa.Brand.Twitter ] []
-              str "twitter"
-            ]
-          ]
-          p [] [
-            a [ Href("https://www.facebook.com/rightresultrightresult") ] [
-              Fa.i [ Fa.Brand.FacebookSquare ] []
-              str "facebook"
-            ]
+            str "Badges are still under construction but please "
+            a [Href Routes.contactPath] [str "get in touch"]
+            str " to share your ideas for more!"
           ]
         ]
       ]
