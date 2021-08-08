@@ -84,6 +84,8 @@ $modal-card-foot-border-top: 0
 .how-it-works
   .box
     margin-bottom: 1em
+    position: relative
+    overflow: hidden
   p
     line-height: 1.5em
   p:not(:last-child)
@@ -94,6 +96,13 @@ $modal-card-foot-border-top: 0
   .small-text
     p
       font-size: $size-small
+
+  .bg-badge-box
+    opacity: 0.08
+    filter: saturate(0)
+    position: absolute
+    right: 1em
+    bottom: 1em
 
 .button
   border: solid 2px $dark
