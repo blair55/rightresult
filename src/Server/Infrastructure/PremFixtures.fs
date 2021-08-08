@@ -23,8 +23,8 @@ module PremFixtures =
     | 6 -> Chelsea
     | 7 -> CrystalPalace
     | 8 -> Everton
-    | 9 -> Leeds
-    | 10 -> Leicester
+    | 9 -> Leicester
+    | 10 -> Leeds
     | 11 -> Liverpool
     | 12 -> ManCity
     | 13 -> ManUtd

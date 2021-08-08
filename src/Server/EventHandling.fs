@@ -7,6 +7,12 @@ open Server.Subscribers
 
 module EventHandling =
 
+  let correctGwno1Fixtures : FixtureRecord list -> FixtureRecord list =
+    List.map (function
+      | { GameweekNo = GameweekNo 1; TeamLine = TeamLine (Team Teams.Leeds, Team away) } as f -> { f with TeamLine = TeamLine(Team Teams.Leicester, Team away) }
+      | { GameweekNo = GameweekNo 1; TeamLine = TeamLine (Team home, Team Teams.Leicester) } as f -> { f with TeamLine = TeamLine(Team home, Team Teams.Leeds) }
+      | f -> f)
+
   let onEvent deps (DatedEvent (event, created)) =
     printfn "handling event: %A" event
 
@@ -45,7 +51,7 @@ module EventHandling =
     // fixtures
     | FixtureSetCreated (fsId, gwno, fixtures) ->
       FixtureSetCreatedSubscribers.all
-      |> List.iter (fun f -> f deps created (fsId, gwno, fixtures))
+      |> List.iter (fun f -> f deps created (fsId, gwno, correctGwno1Fixtures fixtures))
 
     | FixtureSetConcluded (fsId, gwno) ->
       FixtureSetConcludedSubscribers.all
@@ -58,10 +64,11 @@ module EventHandling =
     | FixtureKickedOff (fsId, fId) ->
       // deps.Queries.getFixtureRecord fId
       // |> fun fixture ->
-        // match fixture.HasKickedOff with
-        // | true -> printfn "fixture already kicked off: %A" event
-        // | _ -> FixtureKickedOffSubscribers.all |> List.iter (fun f -> f deps created (fsId, fId))
-      FixtureKickedOffSubscribers.all |> List.iter (fun f -> f deps created (fsId, fId))
+      // match fixture.HasKickedOff with
+      // | true -> printfn "fixture already kicked off: %A" event
+      // | _ -> FixtureKickedOffSubscribers.all |> List.iter (fun f -> f deps created (fsId, fId))
+      FixtureKickedOffSubscribers.all
+      |> List.iter (fun f -> f deps created (fsId, fId))
 
     | FixtureClassified (fsId, fId, scoreLine) ->
       // deps.Queries.getFixtureRecord fId
@@ -69,7 +76,8 @@ module EventHandling =
       //   match fixture.ScoreLine with
       //   | Some _ -> printfn "fixture already classified: %A" event
       //   | _ -> FixtureClassifiedSubscribers.all |> List.iter (fun f -> f deps created (fsId, fId, scoreLine))
-      FixtureClassifiedSubscribers.all |> List.iter (fun f -> f deps created (fsId, fId, scoreLine))
+      FixtureClassifiedSubscribers.all
+      |> List.iter (fun f -> f deps created (fsId, fId, scoreLine))
 
     | FixtureAppended (fsId, fixture) ->
       FixtureAppendedSubscribers.all

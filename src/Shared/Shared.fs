@@ -175,8 +175,8 @@ module Teams =
       Chelsea
       CrystalPalace
       Everton
-      Leeds
       Leicester
+      Leeds
       Liverpool
       ManCity
       ManUtd
