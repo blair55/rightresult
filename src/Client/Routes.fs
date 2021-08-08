@@ -6,6 +6,7 @@ open Elmish.Navigation
 type Route =
   | LoginRoute
   | HomeRoute
+  | HowItWorksRoute
   | FixtureRoute of FixtureRoute
   | GameweekRoute of GameweekRoute
   | LeaguesRoute of LeaguesRoute
@@ -39,6 +40,7 @@ and PlayersRoute =
 let homePath          = ""
 let loginPath         = "login"
 let loggedInPath      = "logged-in"
+let howItWorksPath    = "how-it-works"
 let fixturesPath      = "fixtures"
 let addFixtureSetPath = "fixtures/add"
 let gwPath            = "gameweek"
@@ -68,6 +70,7 @@ let route : Parser<Route -> Route, _> =
     map HomeRoute          top
     map LoginRoute         (s loginPath)
     map LoggedInRoute      (s loggedInPath)
+    map HowItWorksRoute    (s howItWorksPath)
     // map (OmniFixturesRoute  |> FixtureRoute) (s fixturesPath)
     map (AddFixtureSetRoute |> FixtureRoute) (s fixturesPath </> s "add")
     map (GameweekInitRoute  |> GameweekRoute) (s gwPath)
@@ -94,6 +97,7 @@ let private routeToPath = function
   | HomeRoute                -> homePath
   | LoginRoute               -> loginPath
   | LoggedInRoute            -> loggedInPath
+  | HowItWorksRoute          -> howItWorksPath
   | FixtureRoute r ->
     match r with
     // | OmniFixturesRoute      -> fixturesPath

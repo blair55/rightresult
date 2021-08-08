@@ -31,7 +31,7 @@ module Points =
       if ar = ap then yield PointVector.AwayScore
       if result.Difference = pred.Difference then yield PointVector.GoalDifference
       match modifier with
-      | PredictionModifier.BigUp when result = pred -> yield PointVector.BigUp 2
+      | PredictionModifier.BigUp when result = pred -> yield PointVector.BigUp 3
       | PredictionModifier.BigUp when fixtureResult = predictionResult -> yield PointVector.BigUp 1
       | PredictionModifier.DoubleDown -> yield PointVector.DoubleDown
       | _ -> yield! []

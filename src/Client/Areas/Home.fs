@@ -64,44 +64,44 @@ module HomeArea =
       ]
     ]
 
-  let ``dah dit`` left right =
-    Columns.columns [ Columns.IsMobile
-                      Columns.Props [ Props.Style [ MarginBottom "1em" ] ] ] [
-      Column.column [ Column.Modifiers []
-                      Column.Width(Screen.All, Column.IsTwoThirds) ] [
-        Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column
-                               Modifier.FlexJustifyContent FlexJustifyContent.FlexStart ] ] [
-          div [] left
-        ]
-      ]
-      Column.column [ Column.Modifiers []
-                      Column.Width(Screen.All, Column.IsOneThird) ] [
-        Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column ]
-                   Props [ Style [ Direction DirectionOptions.Rtl ] ] ] [
-          div [] right
-        ]
-      ]
-    ]
+  // let ``dah dit`` left right =
+  //   Columns.columns [ Columns.IsMobile
+  //                     Columns.Props [ Props.Style [ MarginBottom "1em" ] ] ] [
+  //     Column.column [ Column.Modifiers []
+  //                     Column.Width(Screen.All, Column.IsTwoThirds) ] [
+  //       Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column
+  //                              Modifier.FlexJustifyContent FlexJustifyContent.FlexStart ] ] [
+  //         div [] left
+  //       ]
+  //     ]
+  //     Column.column [ Column.Modifiers []
+  //                     Column.Width(Screen.All, Column.IsOneThird) ] [
+  //       Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column ]
+  //                  Props [ Style [ Direction DirectionOptions.Rtl ] ] ] [
+  //         div [] right
+  //       ]
+  //     ]
+  //   ]
 
-  let ``dit dah`` left right =
-    Columns.columns [ Columns.IsMobile
-                      Columns.Props [ Props.Style [ MarginBottom "1em" ] ] ] [
-      Column.column [ Column.Modifiers []
-                      Column.Width(Screen.All, Column.IsOneThird) ] [
-        Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column
-                               Modifier.FlexJustifyContent FlexJustifyContent.FlexStart ] ] [
-          div [] left
-        ]
-      ]
-      Column.column [ Column.Modifiers []
-                    // Column.Width(Screen.All, Column.IsOneThird)
-                     ] [
-        Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column ]
-                   Props [ Style [ Direction DirectionOptions.Rtl ] ] ] [
-          div [] right
-        ]
-      ]
-    ]
+  // let ``dit dah`` left right =
+  //   Columns.columns [ Columns.IsMobile
+  //                     Columns.Props [ Props.Style [ MarginBottom "1em" ] ] ] [
+  //     Column.column [ Column.Modifiers []
+  //                     Column.Width(Screen.All, Column.IsOneThird) ] [
+  //       Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column
+  //                              Modifier.FlexJustifyContent FlexJustifyContent.FlexStart ] ] [
+  //         div [] left
+  //       ]
+  //     ]
+  //     Column.column [ Column.Modifiers []
+  //                   // Column.Width(Screen.All, Column.IsOneThird)
+  //                    ] [
+  //       Text.div [ Modifiers [ Modifier.FlexDirection FlexDirection.Column ]
+  //                  Props [ Style [ Direction DirectionOptions.Rtl ] ] ] [
+  //         div [] right
+  //       ]
+  //     ]
+  //   ]
 
   let lightInfoBox e = Box.box' [] [ e ]
 
@@ -221,7 +221,7 @@ module HomeArea =
              Button.Color IsInfo
              Button.IsOutlined
              Button.IsLight
-            //  Button.OnClick(fun _ -> Logout |> dispatch)
+             Button.OnClick(fun _ -> NavTo HowItWorksRoute |> dispatch)
               ])
           [ str "How it works"
             Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
@@ -253,17 +253,6 @@ module HomeArea =
           [ str "Predict"
             Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
       ]
-
-    // div [ Class "block" ] [
-
-    //   Button.button
-    //     ([ Button.IsFullWidth
-    //        Button.Color IsWarning
-    //        Button.IsLight
-    //        Button.OnClick(fun _ -> Logout |> dispatch) ])
-    //     [ str "preview badges >>" ]
-    // ]
-
 
     ]
 

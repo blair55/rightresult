@@ -25,6 +25,7 @@ open Components
 
 type Area =
   | LoginArea
+  | HowItWorksArea
   | HomeArea of HomeArea.Model
   | FixturesArea of FixturesArea.Model
   | GameweekArea of GameweekArea.Model
@@ -145,6 +146,7 @@ let footabs model dispatch : ReactElement option =
     |> Some
 
   match model.Area with
+  | HowItWorksArea _
   | LoginArea _ -> None
   | HomeArea _ ->
     tabs
@@ -190,6 +192,7 @@ let logoBar =
 
 let title model =
   match model.Area with
+  | HowItWorksArea _
   | HomeArea _ -> div [] []
   | _          -> logoBar
 
@@ -203,6 +206,7 @@ let navBar model dispatch =
 let area model dispatch =
   match model.Area with
   | LoginArea      -> LoginArea.view dispatch
+  | HowItWorksArea -> HowItWorksArea.view dispatch
   | HomeArea m     -> HomeArea.view m (HomeMsg >> dispatch)
   | FixturesArea m -> FixturesArea.view m (FixturesMsg >> dispatch)
   | GameweekArea m -> GameweekArea.view m (GameweekMsg >> dispatch)
@@ -246,6 +250,8 @@ let urlUpdate route model =
   match model.Player, route with
   | _, Some LoginRoute ->
     { model with Area = LoginArea }, Cmd.none
+  | Some _, Some HowItWorksRoute ->
+    { model with Area = HowItWorksArea }, Cmd.none
   | _, Some LoggedInRoute ->
       let loginInAndRedirect playerString nav =
         playerString
@@ -263,6 +269,7 @@ let urlUpdate route model =
   | Some p, Some HomeRoute ->
     let m, cmd = HomeArea.init api p
     { model with Area = HomeArea m }, Cmd.map HomeMsg cmd
+
 
   | Some p, Some (FixtureRoute r) ->
     let m, cmd = FixturesArea.urlUpdate api p r

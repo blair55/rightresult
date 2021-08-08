@@ -11,6 +11,7 @@
     <Compile Include="Areas\Components.fs" />
     <Compile Include="Areas\Login.fs" />
     <Compile Include="Areas\Home.fs" />
+    <Compile Include="Areas\HowItWorks.fs" />
 
     <Compile Include="Areas\Fixtures\FixtureDetails.fs" />
     <!-- <Compile Include="Areas\Fixtures\OmniFixtures.fs" /> -->
