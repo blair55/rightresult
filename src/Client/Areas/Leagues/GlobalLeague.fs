@@ -17,13 +17,13 @@ module GlobalLeague =
 
   type Model =
     { League : LeagueTableDoc WebData
-      MaxGameweekNo : GameweekNo WebData
+      ActiveGameweekNo : GameweekNo WebData
     }
 
   type Msg =
     | Init of Result<string, exn>
     | LeagueReceived of Rresult<LeagueTableDoc>
-    | MaxGwnoReceived of Rresult<GameweekNo>
+    | ActiveGwnoReceived of Rresult<GameweekNo>
     | NavTo of Route
 
   let init api player =
@@ -34,14 +34,14 @@ module GlobalLeague =
           LeagueReceived
           (Error >> Init)
         Cmd.OfAsync.either
-          api.getMaxGameweekNo
+          api.getEarliestOpenGwno
           player.Token
-          MaxGwnoReceived
+          ActiveGwnoReceived
           (Error >> Init)
       ]
     |> fun cmds ->
     { League = Fetching
-      MaxGameweekNo = Fetching
+      ActiveGameweekNo = Fetching
     }, cmds
 
   let leagueView {LeagueTableDoc.LeagueName = LeagueName name} (GameweekNo gwno) dispatch =
@@ -56,13 +56,15 @@ module GlobalLeague =
       ]
 
   let view (model:Model) dispatch =
-    match model.League, model.MaxGameweekNo with
+    match model.League, model.ActiveGameweekNo with
     | Success league, Success gwno -> leagueView league gwno dispatch
-    | _ -> div [] [ str "could not find league" ]
+    | WebError _, _
+    | _, WebError _ -> div [] [ str "could not find league" ]
+    | _ -> div [] [  ]
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with
     | Init _ -> model, []
     | LeagueReceived r -> { model with League = resultToWebData r }, []
-    | MaxGwnoReceived r -> { model with MaxGameweekNo = resultToWebData r }, []
+    | ActiveGwnoReceived r -> { model with ActiveGameweekNo = resultToWebData r }, []
     | NavTo r -> model, navTo r

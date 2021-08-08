@@ -133,7 +133,7 @@ let footabs model dispatch : ReactElement option =
   let players =
     [ a [ OnClick (fun _ -> NavTo (PlayersRoute MyProfileRoute) |> dispatch) ]
         [ Fa.i [ Fa.Regular.User ] []
-          desc "Players"
+          desc "My Profile"
         ]
     ]
 

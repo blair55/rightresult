@@ -78,8 +78,8 @@ module MyProfile =
         ]
 
       div [ Class "me-badge-list" ] [
-        badgeBox Fa.Solid.Award "Gameweek Winner" "Win a gameweek in the global league"
-        badgeBox Fa.Solid.Award "Month Winner" "Win a month in the global league"
+        badgeBox Fa.Solid.Award "Gameweek Winner" "Win a gameweek in the Global League"
+        badgeBox Fa.Solid.Award "Month Winner" "Win a month in the Global League"
         badgeBox Fa.Solid.Award "Nail a Double Down" "Get correct score when using Double Down"
         badgeBox Fa.Solid.Award "Nail a Big Up" "Get correct score when using Big Up"
         badgeBox Fa.Solid.Award "Full House" "Get correct score for every team"

@@ -23,9 +23,8 @@ module CreateLeagueSubscribers =
         (LeagueTableDoc.Init leagueName)
 
   let private createLeagueMatrixDoc (deps:Dependencies) created (leagueId, leagueName, _) =
-    deps.Queries.getFixturesInLatestFixtureSet ()
-    |> function
-    | Some (fsId, gwno, fixtures) ->
+    deps.Queries.getAllFixtureSetsAndFixtures ()
+    |> List.iter (fun (fsId, gwno, fixtures) ->
       let columns =
         fixtures
         |> List.ofSeq
@@ -44,9 +43,7 @@ module CreateLeagueSubscribers =
             GameweekNo = gwno
             Columns = columns
             Rows = Map.empty }
-          |> repo.Insert (Matrix (PrivateLeague leagueId, gwno))
-    | None ->
-      ()
+          |> repo.Insert (Matrix (PrivateLeague leagueId, gwno)))
 
   let all =
     [ createLeagueGraph

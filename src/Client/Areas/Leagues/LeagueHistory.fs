@@ -118,6 +118,22 @@ module LeagueHistory =
     div []
       [ Components.pageTitle leagueName
         Components.subHeading "History"
+        if Map.isEmpty fs && Map.isEmpty months then
+           Message.message [ Message.Color IsWarning ] [
+             Message.body [ Modifiers [ Modifier.TextAlignment(Screen.Mobile, TextAlignment.Left) ] ] [
+               str (sprintf "There is no history for this league yet. ")
+               a [ OnClick
+                     (fun _ ->
+                       LeagueRoute leagueIdStr
+                       |> LeaguesRoute
+                       |> NavTo
+                       |> dispatch) ] [
+                 str "League home"
+               ]
+               str "."
+             ]
+           ]
+        else
         Card.card []
           (match model.ViewMode with
           | FixtureSets ->
@@ -140,9 +156,7 @@ module LeagueHistory =
   let view (model:Model) dispatch =
     match model.LeagueName, model.FixtureSets, model.Months with
     | Success leagueName, Success fs, Success months -> leagueView dispatch model leagueName fs months
-    | WebError _, _, _
-    | _, WebError _, _
-    | _, _, WebError _ -> p [] [ str "League history not available yet" ]
+    | Success leagueName, WebError _, WebError _ -> leagueView dispatch model leagueName Map.empty Map.empty
     | _ -> div [] [ ]
 
   let update api player msg model : Model * Cmd<Msg> =

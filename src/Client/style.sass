@@ -103,6 +103,15 @@ $modal-card-foot-border-top: 0
 .button.is-outlined
   border-color: unset
 
+.message
+  .message-body
+    line-height: 1.5em
+  a
+    white-space: nowrap
+.panel
+  .panel-block
+    padding: 1em 0.75em
+
 .table tr.is-selected
   background-color: $light
   color: $dark
@@ -591,17 +600,14 @@ table.table th.text-left
     // .me-total-points-value
 
   .me-badges-bar
-    .message-body
-      line-height: 1.5em
-      i
-        margin: 3px
+    i
+      margin: 3px
     .me-badge-list
       margin-bottom: 2em
     .me-badge-list
       .message
         margin-bottom: 0.5em
       .message-body
-        line-height: 1.5em
         background-color: $white
 
     .me-badge-item

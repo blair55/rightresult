@@ -299,13 +299,13 @@ module GameweekFixtures =
                            Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
               Content.content [] [
                 Text.p [ Modifiers [ Modifier.TextWeight TextWeight.Bold ] ] [
-                  str "Big up for more points!"
+                  str "Big Up for more points!"
                 ]
                 li [] [
-                  str "Big ups are visible to all players"
+                  str "Big Ups are visible to all players"
                 ]
-                li [] [ str "Big ups cannot be edited" ]
-                li [] [ str "One big up per gameweek" ]
+                li [] [ str "Big Ups cannot be edited" ]
+                li [] [ str "One Big Up per gameweek" ]
               ]
             ]
           ]

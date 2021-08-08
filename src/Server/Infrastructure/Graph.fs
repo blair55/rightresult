@@ -78,16 +78,15 @@ let queries (gc:GraphClient) : Queries =
         .ResultsAsync.Result
       |> Seq.map buildFixtureRecord
 
-    getFixturesInLatestFixtureSet = fun () ->
+    getAllFixtureSetsAndFixtures = fun () ->
       gc.Cypher
         .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet)")
         .With("f, fs, fs.Id as fsId")
         .Return(fun f fsId -> f.CollectAs<FixtureNode>(), fsId.As<Guid>(), Return.As<int>("max(fs.GameweekNo)"))
-        .Limit(Nullable<int>(1))
         .ResultsAsync.Result
-      |> Seq.tryHead
-      |> Option.map (fun (fixtures, fixtureSetId, maxGwno) ->
-          FixtureSetId fixtureSetId, GameweekNo maxGwno, fixtures |> Seq.map buildFixtureRecord)
+      |> Seq.toList
+      |> List.map (fun (fixtures, fixtureSetId, maxGwno) ->
+          FixtureSetId fixtureSetId, GameweekNo maxGwno, fixtures |> Seq.toList |> List.map buildFixtureRecord)
 
     getFixturesInPlay = fun () ->
       gc.Cypher

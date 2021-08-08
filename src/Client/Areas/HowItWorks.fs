@@ -52,7 +52,7 @@ module HowItWorksArea =
         p [] [
           str
             "Right Result is fantasy football for match predictions.
-            Predict on every premier league fixture of the season and prove how much you know!"
+            Predict on every Premier League fixture of the season and prove how much you know!"
         ]
       ]
     ]
@@ -89,15 +89,15 @@ module HowItWorksArea =
         p [] [
           li [] [
             b [] [ str "1 point" ]
-            str " for the correct home team score"
+            str " for the correct home score"
           ]
           li [] [
             b [] [ str "1 point" ]
-            str " for the correct away team score"
+            str " for the correct away score"
           ]
           li [] [
             b [] [ str "1 point" ]
-            str " for the correct goal difference"
+            str " for the correct goal difference e.g. predict 3-1 with result 2-0."
           ]
         ]
         p [] [
@@ -116,11 +116,11 @@ module HowItWorksArea =
         p [] [
           str
             "The Double Down option can be applied to one fixture per gameweek.
-            Any points awarded will be doubled. You can change your mind about your double down
+            The points awarded will be doubled. You can change your mind about your double down
             any time before your selected double down fixture kicks off."
         ]
         p [] [
-            str "The maxium return for using Double Down is "
+            str "The maximum return for using Double Down is "
             b [] [ str "10 points" ]
             str "."
             str " The Double Down option cannot be combined with the Big Up option."

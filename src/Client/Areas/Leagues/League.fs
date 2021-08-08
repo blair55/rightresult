@@ -19,13 +19,13 @@ module League =
   type Model =
     { PrivateLeagueId: PrivateLeagueId
       League: LeagueTableDoc WebData
-      MaxGameweekNo: GameweekNo WebData
+      ActiveGameweekNo: GameweekNo WebData
       ShowInviteModal: bool }
 
   type Msg =
     | Init of Result<string, exn>
     | LeagueReceived of Rresult<LeagueTableDoc>
-    | MaxGwnoReceived of Rresult<GameweekNo>
+    | ActiveGwnoReceived of Rresult<GameweekNo>
     | NavTo of Route
     | ShowModal
     | HideModal
@@ -36,11 +36,11 @@ module League =
                   player.Token
                   LeagueReceived
                   (Error >> Init)
-                Cmd.OfAsync.either api.getMaxGameweekNo player.Token MaxGwnoReceived (Error >> Init) ]
+                Cmd.OfAsync.either api.getEarliestOpenGwno player.Token ActiveGwnoReceived (Error >> Init) ]
     |> fun cmds ->
          { PrivateLeagueId = privateleagueId
            League = Fetching
-           MaxGameweekNo = Fetching
+           ActiveGameweekNo = Fetching
            ShowInviteModal = false },
          cmds
 
@@ -120,21 +120,20 @@ module League =
       Components.leagueMenu (string leagueId) gwno (NavTo >> dispatch)
 
     let membershipFooter =
-      Components.card [ Menu.menu [] [
-                          Menu.list [] [
-                            Menu.Item.li [ Menu.Item.OnClick
-                                             (fun _ ->
-                                               LeaveLeagueRoute(string leagueId)
-                                               |> LeaguesRoute
-                                               |> NavTo
-                                               |> dispatch) ] [
-                              str "Leave"
-                            ]
-                            Menu.Item.li [ Menu.Item.OnClick(fun _ -> dispatch ShowModal) ] [
-                              str "Invite"
-                            ]
-                          ]
-                        ] ]
+      Panel.panel [ Panel.Color IsPrimary ] [
+        Panel.Block.div [ ] [
+          Panel.icon [] [
+            Fa.i [Fa.Solid.UserFriends] []
+          ]
+          a [ OnClick(fun _ -> dispatch ShowModal) ] [ str  "Invite"]
+        ]
+        Panel.Block.a [] [
+          Panel.icon [] [
+            Fa.i [Fa.Solid.History] []
+          ]
+          a [ OnClick(fun _ -> LeaveLeagueRoute(string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] [ str  "Leave"]
+        ]
+      ]
 
     div [ ClassName "block" ] [
       Components.pageTitle name
@@ -151,9 +150,11 @@ module League =
     ]
 
   let view (model: Model) dispatch =
-    match model.League, model.MaxGameweekNo with
+    match model.League, model.ActiveGameweekNo with
     | Success league, Success gwno -> leagueView league gwno model dispatch
-    | _ -> div [] [ str "could not find league" ]
+    | WebError _, _
+    | _, WebError _ -> div [] [ str "could not find league" ]
+    | _ -> div [] [  ]
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with
@@ -162,9 +163,9 @@ module League =
       { model with
           League = resultToWebData r },
       []
-    | MaxGwnoReceived r ->
+    | ActiveGwnoReceived r ->
       { model with
-          MaxGameweekNo = resultToWebData r },
+          ActiveGameweekNo = resultToWebData r },
       []
     | NavTo r -> model, navTo r
     | ShowModal -> { model with ShowInviteModal = true }, []

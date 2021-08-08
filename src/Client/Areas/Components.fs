@@ -272,8 +272,7 @@ module Components =
       str (ko.Raw.ToString("HH:mm"))
     ]
 
-  let gameweekDate (KickOffGroup s) =
-    subHeading s
+  let gameweekDate (KickOffGroup s) = subHeading s
 
   module ScoreBox =
 
@@ -287,19 +286,20 @@ module Components =
         ] ]
 
       |> fun homeAndAway ->
-            match modifier with
+           (match modifier with
             | PredictionModifier.None -> []
             | PredictionModifier.BigUp ->
-                [ div [ Class "scorebox-bigup" ] [
+              [ div [ Class "scorebox-bigup" ] [
                   Fa.i [ Fa.Solid.AngleDoubleUp ] []
                 ] ]
             | PredictionModifier.DoubleDown ->
-                [ div [ Class "scorebox-dd" ] [
+              [ div [ Class "scorebox-dd" ] [
                   Fa.i [ Fa.Solid.AngleDoubleDown ] []
-                ] ]
+                ] ])
            |> fun dd -> div [ Class "scorebox-container" ] (homeAndAway @ dd)
 
-    let emptyScoreBox () = boxes "no-points" "_" "_" PredictionModifier.None
+    let emptyScoreBox () =
+      boxes "no-points" "_" "_" PredictionModifier.None
 
     let openScoreBox (ScoreLine (Score h, Score a)) =
       boxes "open" (string h) (string a) PredictionModifier.None
@@ -320,20 +320,23 @@ module Components =
   open Routes
 
   let leagueMenu leagueId gwno nav =
-    card [ Menu.menu [] [
-             Menu.list [] [
-               Menu.Item.li [ Menu.Item.OnClick(fun _ -> LeagueTableRoute leagueId |> LeaguesRoute |> nav) ] [
-                 str "Table"
-               ]
-               Menu.Item.li [ Menu.Item.OnClick
-                                (fun _ ->
-                                  LeagueMatrixRoute(leagueId, gwno)
-                                  |> LeaguesRoute
-                                  |> nav) ] [
-                 str "Latest Matrix"
-               ]
-               Menu.Item.li [ Menu.Item.OnClick(fun _ -> LeagueHistoryRoute leagueId |> LeaguesRoute |> nav) ] [
-                 str "History"
-               ]
-             ]
-           ] ]
+    Panel.panel [ Panel.Color IsPrimary ] [
+      Panel.Block.div [ ] [
+        Panel.icon [] [
+          Fa.i [Fa.Solid.Trophy] []
+        ]
+        a [ OnClick(fun _ -> LeagueTableRoute leagueId |> LeaguesRoute |> nav) ] [ str  "Table"]
+      ]
+      Panel.Block.a [] [
+        Panel.icon [] [
+          Fa.i [Fa.Solid.History] []
+        ]
+        a [ OnClick(fun _ -> LeagueHistoryRoute leagueId |> LeaguesRoute |> nav) ] [ str  "History"]
+      ]
+      Panel.Block.a [] [
+        Panel.icon [] [
+          Fa.i [Fa.Solid.Table] []
+        ]
+        a [ OnClick(fun _ -> LeagueMatrixRoute(leagueId, gwno) |> LeaguesRoute |> nav) ] [ str  "Latest Matrix"]
+      ]
+    ]

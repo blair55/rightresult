@@ -32,7 +32,7 @@ type Repo<'d> =
     Upsert : Document -> 'd -> ('d -> 'd) -> unit
     Insert : Document -> 'd -> unit
     Delete : Document -> unit
-    Print : unit -> obj
+    Print : unit -> string
   }
 
 let repo ds =
@@ -41,5 +41,5 @@ let repo ds =
     Upsert = upsertDocument ds
     Insert = storeDocument ds
     Delete = deleteDocument ds
-    Print = fun () -> _ds :> obj
+    Print = fun () -> _ds |> Json.srlzToString
   }

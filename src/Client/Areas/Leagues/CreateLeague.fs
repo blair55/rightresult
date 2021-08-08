@@ -52,7 +52,7 @@ module CreateLeague =
       Box.box' [] [
         div [ Class "block" ] [
           p [ Style [ LineHeight "1.5em" ] ] [
-            str "Invite your mates to compete in a private league. See the winners by game week and month."
+            str "Invite your mates to compete in a private league. See the winners by gameweek and month."
           ]
         ]
         div [ Class "block" ] [

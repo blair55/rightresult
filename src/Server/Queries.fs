@@ -9,7 +9,7 @@ module Queries =
     { getKickedOffFixtures : DateTime -> FixtureRecord seq
       getAllFixtures : unit -> FixtureRecord seq
       getFixturesInFixtureSet : FixtureSetId -> FixtureRecord seq
-      getFixturesInLatestFixtureSet : unit -> (FixtureSetId * GameweekNo * (FixtureRecord seq)) option
+      getAllFixtureSetsAndFixtures : unit -> (FixtureSetId * GameweekNo * (FixtureRecord list)) list
       getFixturesInPlay : unit -> FixtureRecord seq
       getPlayerPredictionsByFixture : PlayerId -> (FixtureRecord * PredictionRecord option) seq
       getPlayerPredictionForFixture : PlayerId -> FixtureId -> PredictionRecord option
