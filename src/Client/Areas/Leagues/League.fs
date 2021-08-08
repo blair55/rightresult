@@ -52,61 +52,88 @@ module League =
       // (if Browser.Dom.window.location.port = "79" then "" else sprintf ":%s" Browser.Dom.window.location.port)
       (string leagueId |> Routes.joinLeaguePath)
 
-  let whatsAppLink =
-    encodeURI
-    >> fun uri ->
-         Menu.Item.li [ Menu.Item.Option.Href
-                        <| Components.Social.whatsAppHref uri ] [
-           Fa.i [ Fa.Size Fa.ISize.FaLarge
-                  Fa.Brand.WhatsappSquare ] []
-           span [ Style [ MarginLeft "5px" ] ] [
-             str "WhatsApp"
-           ]
-         ]
+  // let whatsAppLink =
+  //   encodeURI
+  //   >> fun uri ->
+  //        Menu.Item.li [ Menu.Item.Option.Href
+  //                       <| Components.Social.whatsAppHref uri ] [
+  //          Fa.i [ Fa.Size Fa.ISize.FaLarge
+  //                 Fa.Brand.WhatsappSquare ] []
+  //          span [ Style [ MarginLeft "5px" ] ] [
+  //            str "WhatsApp"
+  //          ]
+  //        ]
 
-  let facebookLink =
-    encodeURI
-    >> fun uri ->
-         Menu.Item.li [ Menu.Item.Option.Href
-                        <| Components.Social.facebookHref uri ] [
-           Fa.i [ Fa.Size Fa.ISize.FaLarge
-                  Fa.Brand.FacebookSquare ] []
-           span [ Style [ MarginLeft "5px" ] ] [
-             str "Facebook"
-           ]
-         ]
+  // let facebookLink =
+  //   encodeURI
+  //   >> fun uri ->
+  //        Menu.Item.li [ Menu.Item.Option.Href
+  //                       <| Components.Social.facebookHref uri ] [
+  //          Fa.i [ Fa.Size Fa.ISize.FaLarge
+  //                 Fa.Brand.FacebookSquare ] []
+  //          span [ Style [ MarginLeft "5px" ] ] [
+  //            str "Facebook"
+  //          ]
+  //        ]
 
-  let twitterLink =
-    encodeURI
-    >> fun uri ->
-         Menu.Item.li [ Menu.Item.Option.Href
-                        <| Components.Social.twitterHref uri ] [
-           Fa.i [ Fa.Size Fa.ISize.FaLarge
-                  Fa.Brand.TwitterSquare ] []
-           span [ Style [ MarginLeft "5px" ] ] [
-             str "Twitter"
-           ]
-         ]
+  // let twitterLink =
+  //   encodeURI
+  //   >> fun uri ->
+  //        Menu.Item.li [ Menu.Item.Option.Href
+  //                       <| Components.Social.twitterHref uri ] [
+  //          Fa.i [ Fa.Size Fa.ISize.FaLarge
+  //                 Fa.Brand.TwitterSquare ] []
+  //          span [ Style [ MarginLeft "5px" ] ] [
+  //            str "Twitter"
+  //          ]
+  //        ]
 
   let inviteModal (model: Model) dispatch =
     let inviteLink = buildInviteLink model.PrivateLeagueId
 
     Modal.modal [ Modal.IsActive model.ShowInviteModal ] [
       Modal.background [ Props [ OnClick(fun _ -> dispatch HideModal) ] ] []
-      Modal.content [] [
-        Box.box' [] [
-          Components.subHeading "Share invite link"
-          div [ Style [ MarginBottom "1em" ] ] [
-            a [ Href inviteLink ] [ str inviteLink ]
-          ]
+      Modal.Card.card [] [
+        Modal.Card.body [Props [Style [Padding "1em 0"]]] [
+          Content.content [] [
+            Components.subHeading "Share Invite Link"
+            Panel.panel [ Panel.Color IsPrimary ] [
+              Components.panelAnchorExternalUrl Fa.Solid.ShareSquare inviteLink inviteLink
+              Components.panelAnchorExternalUrl
+                Fa.Brand.FacebookSquare
+                "facebook"
+                (Components.Social.facebookHref inviteLink)
+              Components.panelAnchorExternalUrl
+                Fa.Brand.TwitterSquare
+                "twitter"
+                (Components.Social.twitterHref inviteLink)
+              Components.panelAnchorExternalUrl
+                Fa.Brand.WhatsappSquare
+                "whatsapp"
+                (Components.Social.whatsAppHref inviteLink)
 
-          Menu.menu [] [
-            Menu.list [] [
-              facebookLink inviteLink
-              twitterLink inviteLink
-              whatsAppLink inviteLink
+            // Panel.Block.a [Panel.Block.Props [Href inviteLink] ] [
+            //   Panel.icon [] [
+            //     Fa.i [Fa.Solid.UserFriends] []
+            //   ]
+            //   str "Invite"
+            // ]
+
             ]
           ]
+        // Box.box' [] [
+        //   div [ Style [ MarginBottom "1em" ] ] [
+        //     a [ Href inviteLink ] [ str inviteLink ]
+        //   ]
+
+        //   Menu.menu [] [
+        //     Menu.list [] [
+        //       facebookLink inviteLink
+        //       twitterLink inviteLink
+        //       whatsAppLink inviteLink
+        //     ]
+        //   ]
+        // ]
         ]
       ]
       Modal.close [ Modal.Close.Size IsLarge
@@ -121,18 +148,17 @@ module League =
 
     let membershipFooter =
       Panel.panel [ Panel.Color IsPrimary ] [
-        Panel.Block.div [ ] [
+        Panel.Block.div [ Panel.Block.Props [ OnClick(fun _ -> dispatch ShowModal) ] ] [
           Panel.icon [] [
-            Fa.i [Fa.Solid.UserFriends] []
+            Fa.i [ Fa.Solid.UserFriends ] []
           ]
-          a [ OnClick(fun _ -> dispatch ShowModal) ] [ str  "Invite"]
+          str "Invite"
         ]
-        Panel.Block.a [] [
-          Panel.icon [] [
-            Fa.i [Fa.Solid.History] []
-          ]
-          a [ OnClick(fun _ -> LeaveLeagueRoute(string leagueId) |> LeaguesRoute |> NavTo |> dispatch) ] [ str  "Leave"]
-        ]
+        Components.panelAnchor
+          Fa.Solid.DoorOpen
+          "Leave"
+          (NavTo >> dispatch)
+          (LeaguesRoute(LeaveLeagueRoute(string leagueId)))
       ]
 
     div [ ClassName "block" ] [
@@ -154,7 +180,7 @@ module League =
     | Success league, Success gwno -> leagueView league gwno model dispatch
     | WebError _, _
     | _, WebError _ -> div [] [ str "could not find league" ]
-    | _ -> div [] [  ]
+    | _ -> div [] []
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with

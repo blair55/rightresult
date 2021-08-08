@@ -255,9 +255,9 @@ let urlUpdate route model =
   match model.Player, route with
   | _, Some LoginRoute ->
     { model with Area = LoginArea }, Cmd.none
-  | Some _, Some ContactRoute ->
+  | _, Some ContactRoute ->
     { model with Area = ContactArea }, Cmd.none
-  | Some _, Some HowItWorksRoute ->
+  | _, Some HowItWorksRoute ->
     { model with Area = HowItWorksArea }, Cmd.none
   | _, Some LoggedInRoute ->
       let loginInAndRedirect playerString nav =

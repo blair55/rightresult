@@ -40,12 +40,11 @@ module PremTable =
   let desc = function
     | Real -> div [] []
     | Predicted ->
-        Components.card
-          [ Message.message [ Message.Color IsInfo ]
+            Message.message [ Message.Color IsInfo ]
               [ Message.body [ Modifiers [ Modifier.TextAlignment (Screen.Mobile, TextAlignment.Left) ] ]
                   [ str "How the table would look if all your predictions were correct" ]
               ]
-          ]
+
 
   let init api player table =
     { Type = table |> stringToTable; Table = Fetching },

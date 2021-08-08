@@ -97,11 +97,11 @@ let route : Parser<Route -> Route, _> =
   ]
 
 let private routeToPath = function
-  | HomeRoute                -> homePath
-  | LoginRoute               -> loginPath
-  | LoggedInRoute            -> loggedInPath
-  | HowItWorksRoute          -> howItWorksPath
-  | ContactRoute             -> contactPath
+  | HomeRoute          -> homePath
+  | LoginRoute         -> loginPath
+  | LoggedInRoute      -> loggedInPath
+  | HowItWorksRoute    -> howItWorksPath
+  | ContactRoute       -> contactPath
   | FixtureRoute r ->
     match r with
     // | OmniFixturesRoute      -> fixturesPath
@@ -133,6 +133,11 @@ let private routeToPath = function
 
 let navTo r =
   (routeToPath >> sprintf "/%s" >> Navigation.newUrl) r
+
+open Fable.React
+
+let href =
+   routeToPath >> sprintf "/%s" >> Props.HTMLAttr.Href
 
 let pushTo r =
   (routeToPath >> sprintf "/%s" >> Navigation.modifyUrl) r

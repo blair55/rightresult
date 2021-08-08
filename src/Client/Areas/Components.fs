@@ -336,24 +336,25 @@ module Components =
 
   open Routes
 
+  let panelAnchor icon text nav route =
+    Panel.Block.a [ Panel.Block.Props [ OnClick (fun e -> e.preventDefault(); nav route); (Routes.href route) ] ] [
+      Panel.icon [] [
+        Fa.i [icon] []
+      ]
+      str text
+    ]
+
+  let panelAnchorExternalUrl icon text url =
+    Panel.Block.a [ Panel.Block.Props [ (Href url) ] ] [
+      Panel.icon [] [
+        Fa.i [icon] []
+      ]
+      str text
+    ]
+
   let leagueMenu leagueId gwno nav =
     Panel.panel [ Panel.Color IsPrimary ] [
-      Panel.Block.div [ ] [
-        Panel.icon [] [
-          Fa.i [Fa.Solid.Trophy] []
-        ]
-        a [ OnClick(fun _ -> LeagueTableRoute leagueId |> LeaguesRoute |> nav) ] [ str  "Table"]
-      ]
-      Panel.Block.a [] [
-        Panel.icon [] [
-          Fa.i [Fa.Solid.History] []
-        ]
-        a [ OnClick(fun _ -> LeagueHistoryRoute leagueId |> LeaguesRoute |> nav) ] [ str  "History"]
-      ]
-      Panel.Block.a [] [
-        Panel.icon [] [
-          Fa.i [Fa.Solid.Table] []
-        ]
-        a [ OnClick(fun _ -> LeagueMatrixRoute(leagueId, gwno) |> LeaguesRoute |> nav) ] [ str  "Latest Matrix"]
-      ]
+      panelAnchor Fa.Solid.Trophy "Table" nav (LeaguesRoute(LeagueTableRoute leagueId))
+      panelAnchor Fa.Solid.History "History" nav (LeaguesRoute(LeagueHistoryRoute leagueId))
+      panelAnchor Fa.Solid.Table (sprintf "Gameweek %i Matrix" gwno) nav (LeaguesRoute(LeagueMatrixRoute(leagueId, gwno)))
     ]

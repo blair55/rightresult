@@ -117,10 +117,16 @@ $modal-card-foot-border-top: 0
   border-color: unset
 
 .message
+  margin-bottom: 1em !important
   .message-body
     line-height: 1.5em
   a
     white-space: nowrap
+
+.message.is-info
+  .message-body
+    background-color: $white
+
 .panel
   .panel-block
     padding: 1em 0.75em
@@ -354,6 +360,7 @@ table.table th.text-left
     display: inline-flex
     padding: 0.3em 0.7em
     font-weight: bold
+    font-size: $size-normal
     text-transform: uppercase
 
 .page-sub-title
@@ -364,6 +371,7 @@ table.table th.text-left
 .gw-fixture-item
   background-color: $background-alt
   margin-bottom: 2em
+  cursor: pointer
   // padding-bottom: 1em
 
 .gw-fixture-item.gw-fixture-item-ismodified
@@ -477,6 +485,8 @@ table.table th.text-left
   padding: 0
 
 .gw-fixture-modal-content
+  .gw-fixture-item
+    cursor: unset
   .gw-fixture-item-arrow
     display: none
 
