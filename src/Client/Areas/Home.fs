@@ -309,9 +309,22 @@ module HomeArea =
     ]
 
   let bigUpsBar dispatch bigups =
-    div [ Style [ MarginBottom "1em" ] ] [
+    div [ Style [] ] [
       div [ Class "big-up-box-container hide-scrollbars" ] [
         div [ Class "big-up-box-wrapper" ] (List.map (bigUpBox dispatch) bigups)
+      ]
+    ]
+
+  let cashLeague () =
+    div [ Class "is-clearfix"; Style [ MarginBottom "1em" ] ] [
+      Message.message [ Message.Color IsWarning ] [
+        Message.body [] [
+          p [] [
+            a [ Href Routes.contactPath ] [
+              str "Get in touch to play in a league for cash!"
+            ]
+          ]
+        ]
       ]
     ]
 
@@ -323,6 +336,7 @@ module HomeArea =
       titleBar
       fixtureReel ()
       bigUpsBar dispatch bigups
+      cashLeague ()
       homeMenu dispatch ]
 
   [<Emit("isSubscribableToPush()")>]

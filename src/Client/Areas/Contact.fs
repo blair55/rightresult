@@ -20,7 +20,13 @@ module ContactArea =
       Box.box' [] [
         rdmBadgeBox ()
         p [ Class "block" ] [
-          str "Comments, questions & ideas are all welcome. We'd love to hear from you!"
+          str "
+            We organise a private league for cash each season called Premier League 1.
+            All entrance fees are paid back as cash prizes throughout the seaon.
+            If you'd like to join our cash league please let us know."
+        ]
+        p [ Class "block" ] [
+            str "We'd also love to hear your comments, questions & ideas."
         ]
         p [ Class "block" ] [
           a [ Href(Components.Social.twitterHref "@rightresu_lt") ] [
@@ -37,7 +43,7 @@ module ContactArea =
         p [ Class "block" ] [
           a [ Href("mailto:predictionleague1@hotmail.com") ] [
             Fa.i [ Fa.Solid.At ] []
-            str "Email"
+            str "email"
           ]
         ]
       ]
