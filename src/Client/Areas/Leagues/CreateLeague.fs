@@ -58,7 +58,7 @@ module CreateLeague =
         div [ Class "block" ] [
           Input.text [ Input.Value leagueName
                        Input.Props [ AutoFocus true ]
-                       Input.Placeholder "Name e.g. Game of Throw Ins"
+                       Input.Placeholder "League Name e.g. Game of Throw Ins"
                        Input.OnChange(fun e -> LeagueName e.Value |> EditName |> dispatch) ]
         ]
         div [ Class "block" ] [

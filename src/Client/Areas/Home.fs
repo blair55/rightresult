@@ -204,8 +204,7 @@ module HomeArea =
              Button.Color IsInfo
              Button.IsOutlined
              Button.IsLight
-             Button.OnClick(fun _ -> NavTo HowItWorksRoute |> dispatch)
-              ])
+             Button.OnClick(fun _ -> NavTo HowItWorksRoute |> dispatch) ])
           [ str "How it works"
             Fa.i [ Fa.Solid.AngleDoubleRight ] [] ]
       ]
@@ -253,15 +252,17 @@ module HomeArea =
   let rand = new Random()
 
   let fixtureReel () =
-    div [ Class "fixture-reel-container hide-scrollbars" ] [
-      div
-        [ Class "fixture-reel" ]
-        (Teams.all
-         |> List.sortBy (fun _ -> rand.Next())
-         |> halveList
-         ||> List.zip
-         |> List.map TeamLine
-         |> List.map fixtureReelItem)
+    div [ Style [ MarginBottom "1em" ] ] [
+      div [ Class "fixture-reel-container hide-scrollbars" ] [
+        div
+          [ Class "fixture-reel" ]
+          (Teams.all
+           |> List.sortBy (fun _ -> rand.Next())
+           |> halveList
+           ||> List.zip
+           |> List.map TeamLine
+           |> List.map fixtureReelItem)
+      ]
     ]
 
   let bigUpBox
@@ -308,7 +309,11 @@ module HomeArea =
     ]
 
   let bigUpsBar dispatch bigups =
-    div [ Class "big-up-box-container hide-scrollbars" ] (List.map (bigUpBox dispatch) bigups)
+    div [ Style [ MarginBottom "1em" ] ] [
+      div [ Class "big-up-box-container hide-scrollbars" ] [
+        div [ Class "big-up-box-wrapper" ] (List.map (bigUpBox dispatch) bigups)
+      ]
+    ]
 
   let loadedView dispatch (model: Model) (points, winner, bigups) =
     [ Components.heroBar

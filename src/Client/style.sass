@@ -183,19 +183,15 @@ table.table th.text-left
   .hero-body
     padding: 2rem 1.5rem
 
-  .fixture-reel-container
-    overflow-x: scroll
-    margin-bottom: 1em
-      // display: flex
-      // flex-direction: row
-    .fixture-reel
-      display: flex
-      // flex-direction: row
-    .fixture-reel-item
-      display: flex
-      margin-right: 1em
-    .fixture-reel-item:last
-      margin-right: 0em
+.fixture-reel-container
+  overflow-x: scroll
+  .fixture-reel
+    display: flex
+  .fixture-reel-item
+    display: flex
+    margin-right: 1em
+  .fixture-reel-item:last
+    margin-right: 0em
 
 .movement-up
   color: $success
@@ -580,12 +576,16 @@ table.table th.text-left
 
 .big-up-box-container
   background-color: $white-ter
-  display: flex
-  justify-content: flex-start
   overflow-x: scroll
-  margin-bottom: 1em
+  .big-up-box-wrapper
+    display: flex
+    flex-direction: column
+    flex-wrap: wrap
+    align-items: flex-start
+    max-height: 12em
   .big-up-box-item
     margin-right: 1em
+    margin-bottom: 1em
   .big-up-box-top
     display: flex
     .big-up-box-heading
@@ -625,10 +625,10 @@ table.table th.text-left
     white-space: nowrap
 
 .hide-scrollbars
-  scrollbar-width: none
+  // scrollbar-width: none
   -ms-overflow-style: none
   &::-webkit-scrollbar
-    width: 0px
+    // width: 0px
     background: transparent
 
 .me-page

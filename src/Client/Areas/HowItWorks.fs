@@ -57,7 +57,7 @@ module HowItWorksArea =
           str "."
         ]
         p [] [
-          str "Irrespective of the result, a prediction can be awarded bonus points for any of the following:"
+          str "Irrespective of the result, a prediction will be awarded bonus points for any of the following:"
         ]
         p [] [
           li [] [
@@ -76,7 +76,7 @@ module HowItWorksArea =
           ]
         ]
         p [] [
-          str "A prediction with the correct scoreline is awarded all bonuses and returns the maximum score of "
+          str "A prediction with the correct scoreline will be awarded all bonuses and return the maximum "
           b [] [ str "5 points" ]
           str ". "
         ]
@@ -94,8 +94,8 @@ module HowItWorksArea =
         p [] [
           str
             "The Double Down option can be applied to one fixture per gameweek.
-            The points awarded will be doubled. You can change your mind about your double down
-            any time before your selected double down fixture kicks off."
+            The points awarded will be doubled.
+            You can change your mind about your Double Down any time before kick off."
         ]
         p [] [
           str "The maximum return for using Double Down is "
@@ -123,10 +123,10 @@ module HowItWorksArea =
             You cannot edit the scoreline of a Big Up prediction or combine with the Double Down option."
         ]
         p [] [
-          str "A Big Up prediction with a correct score is awarded an additional "
+          str "A Big Up prediction with a correct scoreline will be awarded an additional "
           b [] [ str "3 points" ]
           str ". "
-          str "A Big Up prediction with a correct result is awarded an additional "
+          str "A Big Up prediction with a correct result will be awarded an additional "
           b [] [ str "1 point" ]
           str "."
         ]

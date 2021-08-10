@@ -59,14 +59,12 @@ module Leagues =
              leaguename
              (NavTo >> dispatch)
              (LeaguesRoute(LeagueRoute(string leagueId))))
-    |> fun items ->
-         (Components.panelAnchor
-           Fa.Solid.GlobeAfrica
-           "Global League"
-           (NavTo >> dispatch)
-           (LeaguesRoute(GlobalLeagueRoute)))
-         :: items
     |> Panel.panel [ Panel.Color IsPrimary ]
+
+  let globalLeaguePanel dispatch =
+    Panel.panel [ Panel.Color IsPrimary ] [
+      (Components.panelAnchor Fa.Solid.GlobeAfrica "Global League" (NavTo >> dispatch) (LeaguesRoute(GlobalLeagueRoute)))
+    ]
 
   let premTables dispatch =
     Panel.panel [ Panel.Color IsPrimary ] [
@@ -87,12 +85,18 @@ module Leagues =
     | Success l ->
       div [] [
         Components.pageTitle "Prediction Leagues"
+        Components.subHeading "Global League"
+        Card.card [ CustomClass "card-footer-only"
+                    Props [ Style [ MarginBottom "1em" ] ] ] [
+          globalLeaguePanel dispatch
+        ]
+        Components.subHeading "Private Leagues"
         Card.card [ CustomClass "card-footer-only"
                     Props [ Style [ MarginBottom "1em" ] ] ] [
           leaguesList dispatch l
         ]
         createLeagueButton dispatch l
-        Components.subHeading "Premier League"
+        Components.pageTitle "Premier League"
         Card.card [ CustomClass "card-footer-only"
                     Props [ Style [ MarginBottom "1em" ] ] ] [
           premTables dispatch
