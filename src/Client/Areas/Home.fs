@@ -21,7 +21,7 @@ module HomeArea =
     { Player: ClientSafePlayer
       TotalPoints: PredictionPointsMonoid WebData
       GlobalGwWinner: WebData<GlobalGameweekWinner option>
-      BigUps: WebData<HomePageBigUpViewModel list>
+      BigUps: WebData<BigUpViewModel list>
       ShowFeedbackModal: bool
       FeedbackText: string
       IsSubscribable: bool
@@ -32,7 +32,7 @@ module HomeArea =
     | AlertInfo of string
     | PlayerPointsTotalRecieved of Rresult<PredictionPointsMonoid>
     | GlobalGwWinnerReceived of Rresult<GlobalGameweekWinner option>
-    | BigUpsReceived of Rresult<HomePageBigUpViewModel list>
+    | BigUpsReceived of Rresult<BigUpViewModel list>
     | NavTo of Route
     | Logout
     | ShowFeedbackModal
@@ -265,55 +265,12 @@ module HomeArea =
       ]
     ]
 
-  let bigUpBox
-    dispatch
-    { PlayerName = PlayerName player
-      PlayerId = PlayerId playerId
-      ScoreLine = ScoreLine (Score homeScore, Score awayScore)
-      TeamLine = TeamLine (Team homeTeam, Team awayTeam) }
-    =
-    div [ Class "big-up-box-item" ] [
-      div [ Class "big-up-box-top" ] [
-        span [ Class "big-up-box-heading" ] [
-          Fa.i [ Fa.Solid.AngleDoubleUp ] []
-          str "Big up"
-        ]
-        a [ Class "big-up-box-player"
-            OnClick
-              (fun _ ->
-                PlayersRoute(PlayerRoute playerId)
-                |> NavTo
-                |> dispatch) ] [
-          str ("@" + player)
-        ]
-      ]
-      div [ Class "big-up-box-bottom" ] [
-        // div [ Class "big-up-box-pred" ] [
-        span [ Class "big-up-box-team" ] [
-          str homeTeam
-        ]
-        div [ Class "big-up-box-pred" ] [
-          span [] [
-            str (
-              string<int> homeScore
-              + "-"
-              + string<int> awayScore
-            )
-          ]
-        ]
-        span [ Class "big-up-box-team" ] [
-          str awayTeam
-        ]
-      // ]
-      ]
-    ]
-
   let bigUpsBar dispatch bigups =
     let one, two = halveList bigups
-    div [ Class "is-clearfix"; Style [] ] [
+    div [ Class "is-clearfix" ] [
       div [ Class "big-up-box-container hide-scrollbars" ] [
-        div [ Class "big-up-box-wrapper" ] (List.map (bigUpBox dispatch) one)
-        div [ Class "big-up-box-wrapper" ] (List.map (bigUpBox dispatch) two)
+        div [ Class "big-up-box-wrapper" ] (List.map (Components.bigUpBox (NavTo >> dispatch)) one)
+        div [ Class "big-up-box-wrapper" ] (List.map (Components.bigUpBox (NavTo >> dispatch)) two)
       ]
     ]
 
@@ -323,7 +280,7 @@ module HomeArea =
         Message.body [] [
           p [] [
             a [ Href Routes.contactPath ] [
-              str "Get in touch to play in a league for cash!"
+              str "Get in touch to play for cash!"
             ]
           ]
         ]

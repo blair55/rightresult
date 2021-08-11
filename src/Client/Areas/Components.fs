@@ -26,6 +26,9 @@ module Components =
     else
       string i
 
+  let simpleScore (ScoreLine(Score h, Score a)) =
+    str (sprintf "%i-%i" h a)
+
   let heroBar =
     Hero.hero [ Hero.Color IsPrimary
                 Hero.Props [ Style [ MarginBottom "1em" ] ] ] [
@@ -368,4 +371,40 @@ module Components =
       panelAnchor Fa.Solid.Trophy "Table" nav (LeaguesRoute(LeagueTableRoute leagueId))
       panelAnchor Fa.Solid.History "History" nav (LeaguesRoute(LeagueHistoryRoute leagueId))
       panelAnchor Fa.Solid.Table (sprintf "Gameweek %i Matrix" gwno) nav (LeaguesRoute(LeagueMatrixRoute(leagueId, gwno)))
+    ]
+
+  let bigUpBox
+    dispatch
+    { PlayerName = PlayerName player
+      PlayerId = PlayerId playerId
+      ScoreLine = sl
+      TeamLine = TeamLine (Team homeTeam, Team awayTeam) }
+    =
+    div [ Class "big-up-box-item" ] [
+      div [ Class "big-up-box-top" ] [
+        span [ Class "big-up-box-heading" ] [
+          Fa.i [ Fa.Solid.AngleDoubleUp ] []
+          str "Big up"
+        ]
+        a [ Class "big-up-box-player"
+            OnClick
+              (fun _ ->
+                PlayersRoute(PlayerRoute playerId)
+                |> dispatch) ] [
+          str ("@" + player)
+        ]
+      ]
+      div [ Class "big-up-box-bottom" ] [
+        span [ Class "big-up-box-team" ] [
+          str homeTeam
+        ]
+        div [ Class "big-up-box-pred" ] [
+          span [] [
+            simpleScore sl
+          ]
+        ]
+        span [ Class "big-up-box-team" ] [
+          str awayTeam
+        ]
+      ]
     ]

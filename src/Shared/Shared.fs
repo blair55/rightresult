@@ -307,6 +307,67 @@ module FixtureNode =
       HomeScore = 0
       AwayScore = 0 }
 
+type PremTable =
+  { Rows : Map<Team, PremTableRow> }
+  static member Init =
+    { Rows =
+        Teams.all
+        |> List.map (fun t -> t, PremTableRow.Init)
+        |> Map.ofList }
+and PremTableRow =
+  { Position : int
+    Played : int
+    Won : int
+    Lost : int
+    Drawn : int
+    GoalsFor : int
+    GoalsAgainst : int
+    Points : int }
+  static member Init =
+    { Position = 0; Played = 0; Won = 0; Lost = 0; Drawn = 0; GoalsFor = 0; GoalsAgainst = 0; Points = 0 }
+  static member (+) (a:PremTableRow, b:PremTableRow) =
+    { Position = 0
+      Played = a.Played + b.Played
+      Won = a.Won + b.Won
+      Lost = a.Lost + b.Lost
+      Drawn = a.Drawn + b.Drawn
+      GoalsFor = a.GoalsFor + b.GoalsFor
+      GoalsAgainst = a.GoalsAgainst + b.GoalsAgainst
+      Points = a.Points + b.Points }
+
+type BigUpViewModel =
+  { TeamLine: TeamLine
+    ScoreLine: ScoreLine
+    PlayerId: PlayerId
+    PlayerName: PlayerName }
+
+type FixtureDetails =
+  { KickOff : KickOff
+    Id : FixtureId
+    BigUps : BigUpViewModel list
+    Home : FixtureDetailsColumn
+    Away : FixtureDetailsColumn }
+  static member Init fId ko =
+    { Id = fId; KickOff = ko; BigUps = []; Home = FixtureDetailsColumn.Init; Away = FixtureDetailsColumn.Init }
+and FixtureDetailsColumn =
+  { Team : Team
+    PremTableRow : PremTableRow
+    FormGuide : FormFixture list }
+  static member Init =
+    { Team = Team ""
+      PremTableRow = PremTableRow.Init
+      FormGuide = [] }
+and FormFixture =
+  { KickOff : KickOff
+    Venue : FormVenue
+    Result : FormResult
+    GoalsFor : Score
+    GoalsAgainst : Score }
+and FormVenue =
+  | H | A
+and FormResult =
+  | W | L | D
+
 type FixturePredictionViewModel =
   { Id : FixtureId
     FixtureSetId : FixtureSetId
@@ -314,14 +375,12 @@ type FixturePredictionViewModel =
     SortOrder : int
     KickOff : KickOff
     KickOffGroup : KickOffGroup
-    // IsMoreThanOneHourBeforeKickOff : bool
     TeamLine : TeamLine
     State : FixtureState
     Prediction : (ScoreLine * PredictionModifier) option
     BigUpState : BigUpState
-    // IsBigUpAvailable
-    // IsBigUpExpanded : bool
     Points : int * PointVector list
+    FixtureDetails : FixtureDetails option
     InProgress : bool
     Neighbours: FixtureId option * FixtureId option }
 and [<RequireQualifiedAccess>] BigUpState =
@@ -457,12 +516,6 @@ type GameweekFixturesViewModel =
     Rank: int
   }
 
-type HomePageBigUpViewModel =
-  { TeamLine: TeamLine
-    ScoreLine: ScoreLine
-    PlayerId: PlayerId
-    PlayerName: PlayerName }
-
 [<RequireQualifiedAccess>]
 type PredictionAction =
   | SetScoreline of FixtureSetId * FixtureId * ScoreLine
@@ -495,60 +548,6 @@ type GlobalGameweekWinner =
     Member : LeagueTableMember
   }
 
-type PremTable =
-  { Rows : Map<Team, PremTableRow> }
-  static member Init =
-    { Rows =
-        Teams.all
-        |> List.map (fun t -> t, PremTableRow.Init)
-        |> Map.ofList }
-and PremTableRow =
-  { Position : int
-    Played : int
-    Won : int
-    Lost : int
-    Drawn : int
-    GoalsFor : int
-    GoalsAgainst : int
-    Points : int }
-  static member Init =
-    { Position = 0; Played = 0; Won = 0; Lost = 0; Drawn = 0; GoalsFor = 0; GoalsAgainst = 0; Points = 0 }
-  static member (+) (a:PremTableRow, b:PremTableRow) =
-    { Position = 0
-      Played = a.Played + b.Played
-      Won = a.Won + b.Won
-      Lost = a.Lost + b.Lost
-      Drawn = a.Drawn + b.Drawn
-      GoalsFor = a.GoalsFor + b.GoalsFor
-      GoalsAgainst = a.GoalsAgainst + b.GoalsAgainst
-      Points = a.Points + b.Points }
-
-
-type FixtureDetails =
-  { KickOff : KickOff
-    Id : FixtureId
-    Home : FixtureDetailsColumn
-    Away : FixtureDetailsColumn }
-  static member Init fId ko =
-    { Id = fId; KickOff = ko; Home = FixtureDetailsColumn.Init; Away = FixtureDetailsColumn.Init }
-and FixtureDetailsColumn =
-  { Team : Team
-    PremTableRow : PremTableRow
-    FormGuide : FormFixture list }
-  static member Init =
-    { Team = Team ""
-      PremTableRow = PremTableRow.Init
-      FormGuide = [] }
-and FormFixture =
-  { KickOff : KickOff
-    Venue : FormVenue
-    Result : FormResult
-    GoalsFor : Score
-    GoalsAgainst : Score }
-and FormVenue =
-  | H | A
-and FormResult =
-  | W | L | D
 
 /// separate because sourced by db query,
 /// its not document at rest. Also maybe we don't
@@ -616,7 +615,7 @@ type IProtocol =
     getDateFormat : DateTime -> String -> AppToken -> Ars<String>
     getLeagueMatrix : LeagueId -> GameweekNo -> AppToken -> Ars<MatrixDoc>
     getGlobalGameweekWinner : AppToken -> Ars<GlobalGameweekWinner option>
-    getHomePageBigUps : AppToken -> Ars<HomePageBigUpViewModel list>
+    getHomePageBigUps : AppToken -> Ars<BigUpViewModel list>
     getRealPremTable : AppToken -> Ars<PremTable>
     getPredictedPremTable : AppToken -> Ars<PremTable>
     getFixtureDetails : AppToken -> FixtureId -> Ars<FixtureDetails>
@@ -676,6 +675,7 @@ module Global =
 /// - server side tidy
 /// + fix serviceworker error
 /// - page per fixture & swipe
+/// - capture score in big up event
 
 /// FIXTURE - PRED
 /// open    - none

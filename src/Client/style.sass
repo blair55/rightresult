@@ -32,34 +32,11 @@ $background-alt: $white
 $body-background-color: $background
 $white-ter: $background
 
-// $family-primary:
 $radius: 0
 $radius-small: 0
 $radius-large: 0
 $shadow: none
 $body-line-height: 1
-// $border: solid 1px $light
-
-// $modal-card-head-background-color: $background
-// $modal-card-head-padding: 0
-// $modal-card-head-radius: 0
-// $modal-card-foot-radius: 0
-
-// $tabs-link-color: $primary
-// $navbar-tab-active-color: $primary
-// $navbar-item-color: $primary
-// $navbar-height:4em
-
-$tabs-toggle-link-active-background-color: $primary
-$tabs-toggle-link-border-width: 2px
-$tabs-toggle-link-border-color: $primary
-$tabs-toggle-link-hover-border-color: $dark
-$tabs-toggle-link-active-border-color: $dark
-.navbar .tabs a span
-  text-transform: uppercase
-  font-weight: bold
-  font-size: 0.75em
-
 $modal-card-foot-border-top: 0
 
 // Bulma
@@ -68,7 +45,21 @@ $modal-card-foot-border-top: 0
 @import "~bulma/sass/utilities/derived-variables"
 
 .navbar
+  background-color: $primary
   min-height: 0px
+  border: none
+  .tabs a, .tabs a:hover
+    border: none
+    color: $background
+    background-color: $primary
+  .tabs a:hover
+    color: $warning
+  .tabs li.is-active a
+    color: $warning
+  .tabs a span
+    text-transform: uppercase
+    font-weight: bold
+    font-size: 0.75em
 
 .box
   border-radius: 0
@@ -525,6 +516,9 @@ table.table th.text-left
     .button:last-child
       margin-right: 0
 
+  .message.is-info .message-body
+    background-color: $info-light
+
 .gw-fixture
   .modal-card
     max-height: unset
@@ -608,7 +602,6 @@ table.table th.text-left
   white-space: nowrap
 
 .big-up-box-container
-  background-color: $white-ter
   overflow-x: scroll
   overflow-y: hidden
   .big-up-box-wrapper
@@ -658,11 +651,20 @@ table.table th.text-left
     font-size: 0.7em
     white-space: nowrap
 
+.home
+  .big-up-box-container
+    background-color: $white-ter
+
+.gw-fixture-modal-content
+  .big-up-box-bottom
+    background-color: $background
+
+
 .hide-scrollbars
-  // scrollbar-width: none
+  scrollbar-width: none
   -ms-overflow-style: none
   &::-webkit-scrollbar
-    // width: 0px
+    width: 0px
     background: transparent
 
 .me-page

@@ -342,6 +342,18 @@ module GameweekFixtures =
 
     | _ -> button [ Button.Disabled true ] ignore (icon Fa.Solid.AngleDoubleUp "Big Up")
 
+  let bigUps dispatch (fp: FixturePredictionViewModel) =
+    match fp.BigUpState, fp.FixtureDetails with
+    | BigUpState.Expanded, _
+    | _, None
+    | _, Some { BigUps = [] } -> div [] []
+    | _, Some { BigUps = bigUps } ->
+      div [ Class "is-clearfix" ] [
+        div [ Class "big-up-box-container hide-scrollbars" ] [
+          div [ Class "big-up-box-wrapper" ] (List.map (Components.bigUpBox (NavTo >> dispatch)) bigUps)
+        ]
+      ]
+
   let openFixtureModalContent dispatch (model: GameweekFixturesViewModel) (fp: FixturePredictionViewModel) =
     let homeScore =
       Option.map (fun (ScoreLine (Score h, _), _) -> h) fp.Prediction
@@ -364,13 +376,10 @@ module GameweekFixtures =
              Button.Color IsPrimary
              Button.IsFullWidth
              Button.Disabled(isBigUp fp)
-             Button.Props [ Props.Style [ Width "4em" ]
-                            OnClick
+             Button.Props [ OnClick
                               (fun _ ->
                                 dispatch (Prediction(fp.Id, PredictionAction.SetScoreline(fp.FixtureSetId, fp.Id, sl)))) ] ])
-        [
-
-          str (string homeScore + "-" + string awayScore) ]
+        [ Components.simpleScore sl ]
 
     [ div [ Class "" ] [
         div [ Class "gw-fixture-preset-score-row" ] [
@@ -407,26 +416,27 @@ module GameweekFixtures =
       div [ Class "block" ] [
         doubleDownButton dispatch model fp
       ]
-      div [ Class "block" ] [
+      div [ Style [ MarginBottom "2em" ]
+            Class "block" ] [
         bigUpButton dispatch model fp
+      ]
+      div [ Class "block" ] [
+        bigUps dispatch fp
       ] ]
 
   let fixtureStateLabel state =
     div [ Class "gw-fixture-modal-state" ] [
-        Columns.columns [ Columns.IsMobile
-                          Columns.IsGapless
-                          Columns.Props [ Props.Style [ MarginBottom "0" ] ] ] [
-          Column.column [ Column.Modifiers [ Modifier.FlexJustifyContent FlexJustifyContent.Center ]
-                          Column.Width(Screen.All, Column.IsFull) ] [
-            span [ ] [
-              str state
-            ]
-          ]
+      Columns.columns [ Columns.IsMobile
+                        Columns.IsGapless
+                        Columns.Props [ Props.Style [ MarginBottom "0" ] ] ] [
+        Column.column [ Column.Modifiers [ Modifier.FlexJustifyContent FlexJustifyContent.Center ]
+                        Column.Width(Screen.All, Column.IsFull) ] [
+          span [] [ str state ]
         ]
       ]
+    ]
 
-  let inplayFixtureModalContent =
-    [ fixtureStateLabel "In play" ]
+  let inplayFixtureModalContent = [ fixtureStateLabel "In play" ]
 
   let vectorRow left right =
     div [ Class "point-vector-row" ] [
@@ -745,12 +755,25 @@ module GameweekFixtures =
              (fun fixture ->
                { fixture with
                    BigUpState = BigUpState.Set
+                   FixtureDetails =
+                     (fixture.FixtureDetails, fixture.Prediction)
+                     ||> Option.map2
+                           (fun fd (sl, _) ->
+                             { fd with
+                                 BigUps =
+                                   { PlayerName = PlayerName player.Name
+                                     PlayerId = player.Id
+                                     TeamLine = fixture.TeamLine
+                                     ScoreLine = sl }
+                                   :: fd.BigUps })
                    Prediction =
                      fixture.Prediction
                      |> Option.map (fun (sl, _) -> sl, PredictionModifier.BigUp) })
 
-         m, infoAlert "Bigged up prediction!"
-       | Error e -> model, alert e)
+         m, infoAlert "Big Up!"
+       | Error e -> model, alert e
+
+    )
 // |> (fun (({ GameweekFixtures = gwfs }, _) as r) ->
 //   match gwfs with
 //   | WebData.Success f ->

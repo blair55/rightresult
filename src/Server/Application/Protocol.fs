@@ -35,13 +35,6 @@ module Protocol =
     let validateToken = deps.ValidateToken
     let config = deps.ApplicationConfiguration
 
-    // let getClassifiedInfo (pred:PredictionRecord option) (result:ScoreLine) =
-    //   pred
-    //   |> Option.map (fun p -> p.ScoreLine, p.IsDoubleDown)
-    //   |> Points.getPointsForPrediction result
-    //   |> fun (points, category) -> result, points.Points, category
-    //   |> FixtureState.Classified
-
     let getPoints { FixtureRecord.State = state } pred =
       match state, pred with
       | FixtureState.Classified result, Some { PredictionRecord.Modifier = modifier; ScoreLine = pred } ->
@@ -60,33 +53,6 @@ module Protocol =
       match f.State with
       | FixtureState.Open ko when (now()) > ko.Raw -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed 0)
       | s -> s
-
-    // let getFixturesForPlayer (from, size) (jwtPlayer:Jwt.JwtPlayer) : Map<FixtureId, FixturePredictionViewModel> =
-
-    //   let fixturesAndPredictions =
-    //     q.getPlayerPredictionsByFixture (PlayerId jwtPlayer.playerId)
-    //     |> List.ofSeq
-    //     |> List.sortByDescending (fun (f, _) -> f.KickOff)
-    //     |> List.skip from
-    //     |> List.truncate size
-
-    //   fixturesAndPredictions
-    //   |> List.map (fun (f, pred) ->
-    //     f.Id,
-    //     { FixturePredictionViewModel.Id = f.Id
-    //       FixtureSetId = f.FixtureSetId
-    //       GameweekNo = f.GameweekNo
-    //       SortOrder = f.SortOrder
-    //       KickOff = f.KickOff
-    //       KickOffGroup = Ko.groupFormat f.KickOff
-    //       TeamLine = f.TeamLine
-    //       State = fixtureStateFirstMinuteHack now f
-    //       Prediction = pred |> Option.map (fun p -> p.ScoreLine)
-    //       Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points=p}, v) -> p, v
-    //       IsDoubleDown = match pred with | Some p -> p.IsDoubleDown | _ -> false
-    //       InProgress = false
-    //       Neighbours = None, None })
-    //   |> Map.ofSeq
 
     let getGameweekFixtures gwno (jwtPlayer:Jwt.JwtPlayer) : Rresult<GameweekFixturesViewModel> =
       match q.getGameweekNoFixtureSet gwno with
@@ -110,6 +76,9 @@ module Protocol =
           | _ -> BigUpState.Available
         fixturesAndPredictions
         |> List.map (fun (f, pred) ->
+          Documents.repo deps.ElasticSearch
+          |> fun repo -> repo.Read (FixtureDetailsDocument f.Id)
+          |> fun fixtureDetails ->
           f.Id,
           { FixturePredictionViewModel.Id = f.Id
             FixtureSetId = f.FixtureSetId
@@ -118,6 +87,7 @@ module Protocol =
             KickOff = f.KickOff
             KickOffGroup = Ko.groupFormat f.KickOff
             TeamLine = f.TeamLine
+            FixtureDetails = fixtureDetails
             State = fixtureStateFirstMinuteHack now f
             Prediction = pred |> Option.map (fun p -> p.ScoreLine, p.Modifier)
             Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points = p}, v) -> p, v
@@ -269,7 +239,6 @@ module Protocol =
         |> List.ofSeq
       let gwno =
         q.getFixtureSetGameweekNo fsId
-      // let sumPoints =
       if List.isEmpty fixturesAndPredictionsInFixtureSet then
         ValidationError "could not get playerfixture set" |> Error
       else
@@ -366,7 +335,7 @@ module Protocol =
     let getHomePageBigUps () =
       q.getHomePageBigUps ()
       |> List.map (fun (f, pred, player) ->
-        { HomePageBigUpViewModel.TeamLine = f.TeamLine
+        { BigUpViewModel.TeamLine = f.TeamLine
           ScoreLine = pred.ScoreLine
           PlayerName = player.Name
           PlayerId = player.Id })

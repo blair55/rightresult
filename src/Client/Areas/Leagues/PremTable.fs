@@ -53,7 +53,7 @@ module PremTable =
         player.Token
         PremTableReceived
 
-  let buildTable table =
+  let buildTable (table:PremTable) =
     Table.table [ Table.IsHoverable; Table.IsFullWidth ]
       [ thead []
           [ tr []

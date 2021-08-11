@@ -122,8 +122,21 @@ module UpdatePredictionModifier =
 
 module PredictionBigUpAppliedSubscribers =
 
+  let updateFixtureDetails (deps:Dependencies) (pId, fId) =
+    let player = deps.Queries.getPlayer pId
+    let pred = deps.Queries.getPlayerPredictionForFixture pId fId
+    match player, pred with
+    | Some pl, Some pr ->
+        let repo = Documents.repo deps.ElasticSearch
+        repo.Edit
+          (FixtureDetailsDocument fId)
+          (fun fd -> { fd with BigUps = {PlayerName=pl.Name; PlayerId= pl.Id; TeamLine=TeamLine(fd.Home.Team, fd.Away.Team); ScoreLine=pr.ScoreLine}::fd.BigUps })
+        |> ignore<Rresult<Unit>>
+    | _ -> ()
+
   let all =
     [ UpdatePredictionModifier.setModifier PredictionModifier.Consts.BigUp
+      updateFixtureDetails
     ]
 
 module PredictionDoubleDownAppliedSubscribers =

@@ -111,7 +111,7 @@ module FixtureSetCreatedSubscribers =
       Documents.repo deps.ElasticSearch
       |> fun repo ->
         repo.Insert (FixtureDetailsDocument fId)
-          { Id = fId; KickOff = ko; Home = buildColumn deps home; Away = buildColumn deps away })
+          { Id = fId; KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
 
   let all =
     [ createFixtureSet
@@ -540,8 +540,10 @@ module FixtureClassifiedSubscribers =
     |> List.iter (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
       Documents.repo deps.ElasticSearch
       |> fun repo ->
-        repo.Insert (FixtureDetailsDocument fId)
-          { Id = fId; KickOff = ko; Home = buildColumn deps home; Away = buildColumn deps away })
+        repo.Upsert
+          (FixtureDetailsDocument fId)
+          ({ Id = fId; KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
+          (fun fd -> { fd with Home = buildColumn deps home; Away = buildColumn deps away }))
 
 
   let all =
@@ -566,7 +568,7 @@ module FixtureAppendedSubscribers =
       Documents.repo deps.ElasticSearch
       |> fun repo ->
         repo.Insert (FixtureDetailsDocument fId)
-          { Id = fId; KickOff = ko; Home = buildColumn deps home; Away = buildColumn deps away })
+          { Id = fId; KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
 
   let createFixture (deps:Dependencies) created (FixtureSetId fsId, fixture) =
 

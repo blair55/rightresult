@@ -65,7 +65,7 @@ module TestData =
 
       PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetHomeScore(Score 3), fId2, PredictionEditDate now))
       PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetAwayScore(Score 3), fId2, PredictionEditDate now))
-      PredictionSetCommand(pId, fsId, DatedPredictionCommand(BigUp, fId2, PredictionEditDate now))
+      // PredictionSetCommand(pId, fsId, DatedPredictionCommand(BigUp, fId2, PredictionEditDate now))
 
       PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetScoreLine(ScoreLine(Score 0, Score 2)), fId3, PredictionEditDate now))
 
