@@ -252,7 +252,7 @@ module HomeArea =
   let rand = new Random()
 
   let fixtureReel () =
-    div [ Style [ MarginBottom "1em" ] ] [
+    div [ Class "is-clearfix"; Style [ MarginBottom "1em" ] ] [
       div [ Class "fixture-reel-container hide-scrollbars" ] [
         div
           [ Class "fixture-reel" ]
@@ -309,9 +309,11 @@ module HomeArea =
     ]
 
   let bigUpsBar dispatch bigups =
-    div [ Style [] ] [
+    let one, two = halveList bigups
+    div [ Class "is-clearfix"; Style [] ] [
       div [ Class "big-up-box-container hide-scrollbars" ] [
-        div [ Class "big-up-box-wrapper" ] (List.map (bigUpBox dispatch) bigups)
+        div [ Class "big-up-box-wrapper" ] (List.map (bigUpBox dispatch) one)
+        div [ Class "big-up-box-wrapper" ] (List.map (bigUpBox dispatch) two)
       ]
     ]
 

@@ -610,12 +610,13 @@ table.table th.text-left
 .big-up-box-container
   background-color: $white-ter
   overflow-x: scroll
+  overflow-y: hidden
   .big-up-box-wrapper
     display: flex
-    flex-direction: column
+    flex-direction: row
     flex-wrap: wrap
-    align-items: flex-start
-    max-height: 12em
+    justify-content: flex-start
+    width: max-content
   .big-up-box-item
     margin-right: 1em
     margin-bottom: 1em
