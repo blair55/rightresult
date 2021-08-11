@@ -435,6 +435,8 @@ table.table th.text-left
         background-color: $warning-light
 
   .gw-fixture-result-row.gw-fixture-classified
+    .gw-fixture-result-desc
+      // color: $white-ter
     .gw-fixture-result-container
       background-color: $warning
     .gw-fixture-result-box
@@ -522,15 +524,11 @@ table.table th.text-left
       margin-right: 2px
     .button:last-child
       margin-right: 0
-  // .gw-fixture-preset-score-row:last-child
-  //   margin-bottom: 0
 
 .gw-fixture
   .modal-card
     max-height: unset
     height: calc(100vh - 120px)
-    // background-color: $background
-    // position: relative
   .modal-card-body
     padding: 0
   .modal-card-foot
@@ -556,11 +554,46 @@ table.table th.text-left
       .button:not(:last-child)
         margin-right: 2px
 
+.gw-fixture-modal-state
+  padding: 5px
+  margin-bottom: 5px
+  span
+    font-weight: bold
+    white-space: nowrap
+    text-transform: uppercase
+    color: $grey
+    font-size: $size-small
+
+.point-vector-row
+  .point-vector-row-left, .point-vector-row-right
+    padding: 5px
+    margin-bottom: 5px
+  .point-vector-row-left
+    font-weight: bold
+    white-space: nowrap
+    text-transform: uppercase
+    color: $primary
+    background-color: $background
+    font-size: $size-small
+  .point-vector-row-right
+    font-weight: bold
+    font-size: $size-small
+    white-space: nowrap
+.point-vector-row-header
+  .point-vector-row
+    .point-vector-row-left
+      background-color: $white
+      color: $grey
+.point-vector-row-total
+  .point-vector-row
+    .point-vector-row-right
+      font-size: $size-medium
+
+
 .kick-off-time
   background-color: $info
   padding: 0.3em 0.5em
   color: $white-ter
-  // font-size: 0.7rem
   font-size: $size-small
   font-weight: bold
 

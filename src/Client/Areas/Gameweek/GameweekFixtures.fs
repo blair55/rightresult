@@ -72,7 +72,10 @@ module GameweekFixtures =
       Components.badge Components.BadgeSize.L team
     ]
 
-  let fixtureScoreBox state =
+  let fixtureScoreBox
+    { FixturePredictionViewModel.State = state
+      Points = (p, _) }
+    =
     div [ Class "gw-fixture-result-container" ] [
       match state with
       | FixtureState.Open ko ->
@@ -97,7 +100,7 @@ module GameweekFixtures =
         ]
       | FixtureState.Classified (ScoreLine (Score h, Score a)) ->
         div [ Class "gw-fixture-result-desc" ] [
-          span [] [ str ("FT") ]
+          span [] [ Components.pluralPoints p ]
         ]
 
         div [ Class "gw-fixture-result-box" ] [
@@ -185,7 +188,7 @@ module GameweekFixtures =
       rowOf3
         $"gw-fixture-result-row {resultClass}"
         [ fixtureBadge home ]
-        [ div [] [ fixtureScoreBox fp.State ] ]
+        [ div [] [ fixtureScoreBox fp ] ]
         [ fixtureBadge away ]
       rowOf3
         $"gw-fixture-pred-row {predClass}"
@@ -408,14 +411,92 @@ module GameweekFixtures =
         bigUpButton dispatch model fp
       ] ]
 
-  let inplayFixtureModalContent dispatch (fp: FixturePredictionViewModel) = [ str "in play" ]
-
-  let classifiedFixtureModalContent dispatch (fp: FixturePredictionViewModel) (sl) =
-    [ Components.ScoreBox.resultScoreBox sl
-      str "classified"
-      // str (sprintf "points %i" points)
-      // str (sprintf "%A" rc)
+  let fixtureStateLabel state =
+    div [ Class "gw-fixture-modal-state" ] [
+        Columns.columns [ Columns.IsMobile
+                          Columns.IsGapless
+                          Columns.Props [ Props.Style [ MarginBottom "0" ] ] ] [
+          Column.column [ Column.Modifiers [ Modifier.FlexJustifyContent FlexJustifyContent.Center ]
+                          Column.Width(Screen.All, Column.IsFull) ] [
+            span [ ] [
+              str state
+            ]
+          ]
+        ]
       ]
+
+  let inplayFixtureModalContent =
+    [ fixtureStateLabel "In play" ]
+
+  let vectorRow left right =
+    div [ Class "point-vector-row" ] [
+      Columns.columns [ Columns.IsMobile
+                        Columns.IsGapless
+                        Columns.Props [ Props.Style [ MarginBottom "0" ] ] ] [
+        Column.column
+          [ Column.Modifiers [ Modifier.FlexDirection FlexDirection.RowReverse ]
+            Column.Width(Screen.All, Column.IsHalf) ]
+          left
+        Column.column
+          [ Column.Modifiers [ Modifier.FlexJustifyContent FlexJustifyContent.Left ]
+            Column.Width(Screen.All, Column.IsHalf) ]
+          right
+      ]
+    ]
+
+  let (|VectorDesc|DoubleDownDesc|) =
+    function
+    | PointVector.Result -> VectorDesc(str "Right Result", pluralPoints 2)
+    | PointVector.HomeScore -> VectorDesc(str "Home Score", pluralPoints 1)
+    | PointVector.AwayScore -> VectorDesc(str "Away Score", pluralPoints 1)
+    | PointVector.GoalDifference -> VectorDesc(str "Goal Difference", pluralPoints 1)
+    | PointVector.BigUp b -> VectorDesc(str "Big Up", pluralPoints b)
+    | PointVector.DoubleDown -> DoubleDownDesc(str "Double Down")
+
+  let vector =
+    function
+    | VectorDesc (desc, p) ->
+      vectorRow [ div [ Class "point-vector-row-left" ] [
+                    desc
+                  ] ] [
+        div [ Class "point-vector-row-right" ] [
+          str "+ "
+          p
+        ]
+      ]
+    | DoubleDownDesc desc ->
+      vectorRow [ div [ Class "point-vector-row-left" ] [
+                    desc
+                  ] ] [
+        div [ Class "point-vector-row-right" ] [
+          str "× 2"
+        ]
+      ]
+
+  // let pointsHeader =
+  //   div [ Class "point-vector-row-header" ] [
+  //     vectorRow [ div [ Class "point-vector-row-left" ] [
+  //                   str "score"
+  //                 ] ] []
+  //   ]
+
+  let totalPoints p =
+    div [ Class "point-vector-row-total" ] [
+      vectorRow [] [
+        div [ Class "point-vector-row-right" ] [
+          pluralPoints p
+        ]
+      ]
+    ]
+
+  let classifiedFixtureModalContent dispatch ({ Points = (p, vts) } as fp: FixturePredictionViewModel) =
+    let rows =
+      vts
+      |> List.map (vector)
+      |> fun v -> v @ [ totalPoints p ]
+
+    [ fixtureStateLabel "Score"
+      div [] rows ]
 
   let pageGwButton dispatch icon =
     function
@@ -452,8 +533,8 @@ module GameweekFixtures =
       let body =
         match fp.State with
         | FixtureState.Open _ -> openFixtureModalContent dispatch model fp
-        | FixtureState.InPlay _ -> inplayFixtureModalContent dispatch fp
-        | FixtureState.Classified sl -> classifiedFixtureModalContent dispatch fp sl
+        | FixtureState.InPlay _ -> inplayFixtureModalContent
+        | FixtureState.Classified _ -> classifiedFixtureModalContent dispatch fp
         |> Text.div [ Props [ Class "" ] ]
 
       Modal.modal [ Modal.IsActive true ] [
