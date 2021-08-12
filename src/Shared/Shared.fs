@@ -670,11 +670,11 @@ module Global =
 /// - fix push!
 /// - only run bg tasks when web available & tasks not running
 /// dcr --no-deps --rm rr bgdaily
-/// - landing page
-/// - points
-/// - server side tidy
+/// + landing page
+/// + points
+/// + server side tidy
 /// + fix serviceworker error
-/// - page per fixture & swipe
+/// + page per fixture & swipe
 /// - capture score in big up event
 
 /// FIXTURE - PRED

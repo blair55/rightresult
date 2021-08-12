@@ -3,6 +3,7 @@ namespace Areas.Gameweek
 open Elmish
 open Shared
 open Routes
+open Fable.Core
 open Fable.React
 open Fable.React.Props
 open Fable.FontAwesome
@@ -23,6 +24,7 @@ module GameweekFixtures =
 
   type Msg =
     | Init of Result<string, exn>
+    | Noop
     | GameweekFixturesReceived of Rresult<GameweekFixturesViewModel>
     | ShowModal of FixtureId
     | HideModal
@@ -302,8 +304,7 @@ module GameweekFixtures =
       div [] [
         div [ Class "block" ] [
           Message.message [ Message.Color IsInfo ] [
-            Message.body [ Props [ Style [ LineHeight "1.5em" ] ]
-                           Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
+            Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
               Content.content [] [
                 Text.p [ Modifiers [ Modifier.TextWeight TextWeight.Bold ] ] [
                   str "Big Up for more points!"
@@ -436,7 +437,18 @@ module GameweekFixtures =
       ]
     ]
 
-  let inplayFixtureModalContent = [ fixtureStateLabel "In play" ]
+  let inplayFixtureModalContent dispatch (GameweekNo gwno) =
+    [ fixtureStateLabel "In play"
+      Message.message [ Message.Color IsInfo ] [
+        Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
+          Content.content [] [
+            str "See all predictions in the "
+            a
+              (anchorNavProps (NavTo >> dispatch) (LeaguesRoute(LeagueMatrixRoute(Global.identifier, gwno))))
+              [ str (sprintf "gameweek %i matrix" gwno) ]
+          ]
+        ]
+      ] ]
 
   let vectorRow left right =
     div [ Class "point-vector-row" ] [
@@ -543,7 +555,7 @@ module GameweekFixtures =
       let body =
         match fp.State with
         | FixtureState.Open _ -> openFixtureModalContent dispatch model fp
-        | FixtureState.InPlay _ -> inplayFixtureModalContent
+        | FixtureState.InPlay _ -> inplayFixtureModalContent dispatch model.GameweekNo
         | FixtureState.Classified _ -> classifiedFixtureModalContent dispatch fp
         |> Text.div [ Props [ Class "" ] ]
 
@@ -679,8 +691,9 @@ module GameweekFixtures =
                    else
                      fixture.BigUpState })
 
-       { m with ModalState = ModalOpen fId }, []
-     | HideModal -> { model with ModalState = ModalClosed }, []
+       { m with ModalState = ModalOpen fId }, Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
+     | HideModal -> { model with ModalState = ModalClosed }, Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop)
+     | Noop -> model, []
      | NavTo r -> model, (Routes.navTo r)
 
      | Prediction (fId, action) ->

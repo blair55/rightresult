@@ -1,12 +1,10 @@
 namespace Areas.Leagues
 
 open Elmish
-open System
 
 open Fable.React
 open Fable.React.Props
 open Fable.Import
-open Fable.Core.JS
 
 open Areas
 open Shared
@@ -24,6 +22,7 @@ module League =
 
   type Msg =
     | Init of Result<string, exn>
+    | Noop
     | LeagueReceived of Rresult<LeagueTableDoc>
     | ActiveGwnoReceived of Rresult<GameweekNo>
     | NavTo of Route
@@ -52,49 +51,13 @@ module League =
       // (if Browser.Dom.window.location.port = "79" then "" else sprintf ":%s" Browser.Dom.window.location.port)
       (string leagueId |> Routes.joinLeaguePath)
 
-  // let whatsAppLink =
-  //   encodeURI
-  //   >> fun uri ->
-  //        Menu.Item.li [ Menu.Item.Option.Href
-  //                       <| Components.Social.whatsAppHref uri ] [
-  //          Fa.i [ Fa.Size Fa.ISize.FaLarge
-  //                 Fa.Brand.WhatsappSquare ] []
-  //          span [ Style [ MarginLeft "5px" ] ] [
-  //            str "WhatsApp"
-  //          ]
-  //        ]
-
-  // let facebookLink =
-  //   encodeURI
-  //   >> fun uri ->
-  //        Menu.Item.li [ Menu.Item.Option.Href
-  //                       <| Components.Social.facebookHref uri ] [
-  //          Fa.i [ Fa.Size Fa.ISize.FaLarge
-  //                 Fa.Brand.FacebookSquare ] []
-  //          span [ Style [ MarginLeft "5px" ] ] [
-  //            str "Facebook"
-  //          ]
-  //        ]
-
-  // let twitterLink =
-  //   encodeURI
-  //   >> fun uri ->
-  //        Menu.Item.li [ Menu.Item.Option.Href
-  //                       <| Components.Social.twitterHref uri ] [
-  //          Fa.i [ Fa.Size Fa.ISize.FaLarge
-  //                 Fa.Brand.TwitterSquare ] []
-  //          span [ Style [ MarginLeft "5px" ] ] [
-  //            str "Twitter"
-  //          ]
-  //        ]
-
   let inviteModal (model: Model) dispatch =
     let inviteLink = buildInviteLink model.PrivateLeagueId
 
     Modal.modal [ Modal.IsActive model.ShowInviteModal ] [
       Modal.background [ Props [ OnClick(fun _ -> dispatch HideModal) ] ] []
       Modal.Card.card [] [
-        Modal.Card.body [Props [Style [Padding "1em 0"]]] [
+        Modal.Card.body [ Props [ Style [ Padding "1em 0" ] ] ] [
           Content.content [] [
             Components.subHeading "Share Invite Link"
             Panel.panel [ Panel.Color IsPrimary ] [
@@ -111,29 +74,8 @@ module League =
                 Fa.Brand.WhatsappSquare
                 "whatsapp"
                 (Components.Social.whatsAppHref inviteLink)
-
-            // Panel.Block.a [Panel.Block.Props [Href inviteLink] ] [
-            //   Panel.icon [] [
-            //     Fa.i [Fa.Solid.UserFriends] []
-            //   ]
-            //   str "Invite"
-            // ]
-
             ]
           ]
-        // Box.box' [] [
-        //   div [ Style [ MarginBottom "1em" ] ] [
-        //     a [ Href inviteLink ] [ str inviteLink ]
-        //   ]
-
-        //   Menu.menu [] [
-        //     Menu.list [] [
-        //       facebookLink inviteLink
-        //       twitterLink inviteLink
-        //       whatsAppLink inviteLink
-        //     ]
-        //   ]
-        // ]
         ]
       ]
       Modal.close [ Modal.Close.Size IsLarge
@@ -185,6 +127,7 @@ module League =
   let update api player msg model : Model * Cmd<Msg> =
     match msg with
     | Init _ -> model, []
+    | Noop _ -> model, []
     | LeagueReceived r ->
       { model with
           League = resultToWebData r },
@@ -194,5 +137,5 @@ module League =
           ActiveGameweekNo = resultToWebData r },
       []
     | NavTo r -> model, navTo r
-    | ShowModal -> { model with ShowInviteModal = true }, []
-    | HideModal -> { model with ShowInviteModal = false }, []
+    | ShowModal -> { model with ShowInviteModal = true }, Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
+    | HideModal -> { model with ShowInviteModal = false }, Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop)

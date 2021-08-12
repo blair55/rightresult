@@ -18,6 +18,26 @@ module CustomClasses =
   [<Literal>]
   let TextCenter = "has-text-centered"
 
+  [<Literal>]
+  let IsClipped = "is-clipped"
+
+module Html =
+
+  let private elem () =
+    Browser
+      .Dom
+      .document
+      .getElementsByTagName("html")
+      .Item 0
+
+  let clip =
+    elem
+    >> fun e -> e.classList.add (CustomClasses.IsClipped)
+
+  let unClip =
+    elem
+    >> fun e -> e.classList.remove (CustomClasses.IsClipped)
+
 module Components =
 
   let signedInt i =
@@ -26,8 +46,7 @@ module Components =
     else
       string i
 
-  let simpleScore (ScoreLine(Score h, Score a)) =
-    str (sprintf "%i-%i" h a)
+  let simpleScore (ScoreLine (Score h, Score a)) = str (sprintf "%i-%i" h a)
 
   let heroBar =
     Hero.hero [ Hero.Color IsPrimary
@@ -282,13 +301,12 @@ module Components =
   let rand = new System.Random()
 
   let bigBackgroundBadge team =
-    div [Class "bg-badge-box" ][
+    div [ Class "bg-badge-box" ] [
       badge BadgeSize.XL team
     ]
 
   let rdmBadgeBox () =
-    Teams.all.[rand.Next(0, 20)]
-    |> bigBackgroundBadge
+    Teams.all.[rand.Next(0, 20)] |> bigBackgroundBadge
 
   let shortTeamName team =
     div [ Class "" ] [
@@ -350,19 +368,23 @@ module Components =
 
   open Routes
 
+  let anchorNavProps nav route =
+    [ OnClick
+        (fun e ->
+          e.preventDefault ()
+          nav route)
+      :> IHTMLProp
+      Routes.href route :> IHTMLProp ]
+
   let panelAnchor icon text nav route =
-    Panel.Block.a [ Panel.Block.Props [ OnClick (fun e -> e.preventDefault(); nav route); (Routes.href route) ] ] [
-      Panel.icon [] [
-        Fa.i [icon] []
-      ]
+    Panel.Block.a [ Panel.Block.Props(anchorNavProps nav route) ] [
+      Panel.icon [] [ Fa.i [ icon ] [] ]
       str text
     ]
 
   let panelAnchorExternalUrl icon text url =
     Panel.Block.a [ Panel.Block.Props [ (Href url) ] ] [
-      Panel.icon [] [
-        Fa.i [icon] []
-      ]
+      Panel.icon [] [ Fa.i [ icon ] [] ]
       str text
     ]
 
@@ -370,7 +392,11 @@ module Components =
     Panel.panel [ Panel.Color IsPrimary ] [
       panelAnchor Fa.Solid.Trophy "Table" nav (LeaguesRoute(LeagueTableRoute leagueId))
       panelAnchor Fa.Solid.History "History" nav (LeaguesRoute(LeagueHistoryRoute leagueId))
-      panelAnchor Fa.Solid.Table (sprintf "Gameweek %i Matrix" gwno) nav (LeaguesRoute(LeagueMatrixRoute(leagueId, gwno)))
+      panelAnchor
+        Fa.Solid.Table
+        (sprintf "Gameweek %i Matrix" gwno)
+        nav
+        (LeaguesRoute(LeagueMatrixRoute(leagueId, gwno)))
     ]
 
   let bigUpBox
@@ -387,10 +413,7 @@ module Components =
           str "Big up"
         ]
         a [ Class "big-up-box-player"
-            OnClick
-              (fun _ ->
-                PlayersRoute(PlayerRoute playerId)
-                |> dispatch) ] [
+            OnClick(fun _ -> PlayersRoute(PlayerRoute playerId) |> dispatch) ] [
           str ("@" + player)
         ]
       ]
@@ -399,9 +422,7 @@ module Components =
           str homeTeam
         ]
         div [ Class "big-up-box-pred" ] [
-          span [] [
-            simpleScore sl
-          ]
+          span [] [ simpleScore sl ]
         ]
         span [ Class "big-up-box-team" ] [
           str awayTeam
