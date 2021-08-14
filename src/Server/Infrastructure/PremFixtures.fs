@@ -2,6 +2,7 @@ namespace Server.Infrastructure
 
 open FSharp.Data
 open Shared
+open System
 open Server.Infrastructure.Time
 
 module PremFixtures =
@@ -39,7 +40,7 @@ module PremFixtures =
 
   let private toTeam = premTeamIdToName >> Team
 
-  let private newPremFixtures (GameweekNo no) =
+  let newPremFixtures (GameweekNo no) =
     premFixturesUrl no
     |> PremFixtures.Load
     |> List.ofSeq
@@ -54,15 +55,50 @@ module PremFixtures =
     (f.TeamHScore, f.TeamAScore)
     ||> Option.map2 (fun h a -> ScoreLine(Score h, Score a))
 
-  let (|FixtureHasResult|_|) (f: PremFixtures.Fixture) =
-    match f.Started, f, f with
-    | true, FixtureScoreLine sl, FixtureTeamLine tl -> Some(tl, sl)
+  let (|FixtureInPlay|_|) (f: PremFixtures.Fixture) =
+    match f.Started, f.FinishedProvisional with
+    | true, false -> Some()
     | _ -> None
 
-  let (|FixtureIsFinished|_|) (f: PremFixtures.Fixture) =
-    match f.Started, f.FinishedProvisional, f, f with
-    | true, true, FixtureScoreLine sl, FixtureTeamLine tl -> Some(tl, sl)
+  let (|FixtureClassified|_|) (f: PremFixtures.Fixture) =
+    match f.Started, f.FinishedProvisional with
+    | true, true -> Some()
     | _ -> None
+
+
+module PremPulse =
+
+  type PremPulse = JsonProvider<Sample="Infrastructure/PremPulseSample.json", SampleIsList=true, RootName="Pulse">
+
+  let private getPremPulseJson pulseId =
+    sprintf "%s/football/fixtures/%i" (Environment.GetEnvironmentVariable "PULSEAPI") pulseId
+    |> fun url -> Http.RequestString(url, headers = [ "origin", "https://www.premierleague.com" ])
+    |> PremPulse.Parse
+
+  let (|PulseMinutes|_|) (p: PremPulse.Pulse) =
+    p.Clock
+    |> Option.map (fun c -> MinutesPlayed(c.Secs / 60))
+
+  let (|PulseScoreLine|_|) (p: PremPulse.Pulse) =
+    let score i =
+      Array.tryItem i p.Teams
+      |> Option.bind (fun t -> Option.map Score t.Score)
+
+    (score 0, score 1)
+    ||> Option.map2 (fun h a -> ScoreLine(h, a))
+
+  let (|PulseInPlay|_|) (f: PremFixtures.PremFixtures.Fixture) =
+    let pulse = getPremPulseJson (f.PulseId)
+
+    match pulse, pulse with
+    | PulseMinutes mp, PulseScoreLine sl -> Some(mp, sl)
+    | _ -> None
+
+
+module GameweekSources =
+
+  open PremFixtures
+  open PremPulse
 
   type NewGameweek = NewGameweek of (GameweekNo -> (TeamLine * KickOff) list)
 
@@ -76,18 +112,15 @@ module PremFixtures =
     match f, f with
     | FixtureTeamLine tl, FixtureKickoff ko -> tl, ko
 
-  let private resultState (f: PremFixtures.Fixture) =
-    match f.Started, f.FinishedProvisional, f, f with
-    | true, false, FixtureScoreLine sl, FixtureTeamLine tl ->
-      Some(GameweekResultState.InPlay(tl, sl, MinutesPlayed f.Minutes))
-    | true, true, FixtureScoreLine sl, FixtureTeamLine tl -> Some(GameweekResultState.Classified(tl, sl))
+  let private resultState f =
+    match f, f, f with
+    | FixtureClassified, FixtureTeamLine tl, FixtureScoreLine sl -> Some(GameweekResultState.Classified(tl, sl))
+    | FixtureInPlay, FixtureTeamLine tl, PulseInPlay (mp, sl) -> Some(GameweekResultState.InPlay(tl, sl, mp))
     | _ -> None
-
 
   type FixtureSources =
     { NewGameweek: NewGameweek
       GameweekResults: GameweekResults }
-
 
   let fixturesSources =
     { NewGameweek = NewGameweek(newPremFixtures >> List.map newFixture)

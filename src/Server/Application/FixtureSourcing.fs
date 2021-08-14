@@ -5,6 +5,7 @@ open Server.Commands
 open Server.Queries
 open Shared
 open Server.Infrastructure
+open GameweekSources
 
 module FixtureSourcing =
 
@@ -17,7 +18,7 @@ module FixtureSourcing =
     |> GameweekNo
 
   let getNewFixtureSetViewModel
-    ({ Dependencies.FixtureSources = { NewGameweek = PremFixtures.NewGameweek ngw } } as deps)
+    ({ Dependencies.FixtureSources = { NewGameweek = NewGameweek ngw } } as deps)
     =
     let gwno = getNewGameweekNo deps
 
@@ -27,7 +28,7 @@ module FixtureSourcing =
          { NewFixtureSetViewModel.GameweekNo = gwno
            Fixtures = items }
 
-  let addNewFixtureSet ({ Dependencies.FixtureSources = { NewGameweek = PremFixtures.NewGameweek ngw } } as deps) =
+  let addNewFixtureSet ({ Dependencies.FixtureSources = { NewGameweek = NewGameweek ngw } } as deps) =
     let gwno = getNewGameweekNo deps
     let fsId = FixtureSetId(Guid.NewGuid())
 
@@ -45,7 +46,7 @@ module FixtureSourcing =
     |> fun fixtures -> FixtureSetCommand(fsId, CreateFixtureSet(gwno, fixtures))
 
   let getEditedFixtureKickOffs
-    ({ Dependencies.FixtureSources = { NewGameweek = PremFixtures.NewGameweek ngw }
+    ({ Dependencies.FixtureSources = { NewGameweek = NewGameweek ngw }
        Queries = q })
     =
     q.getUnconcludedFixtureSets ()

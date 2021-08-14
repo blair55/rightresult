@@ -694,7 +694,10 @@ module GameweekFixtures =
        { m with ModalState = ModalOpen fId }, Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
      | HideModal -> { model with ModalState = ModalClosed }, Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop)
      | Noop -> model, []
-     | NavTo r -> model, (Routes.navTo r)
+     | NavTo r ->
+       model,
+       Cmd.batch [ Routes.navTo r
+                   Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop) ]
 
      | Prediction (fId, action) ->
        updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),

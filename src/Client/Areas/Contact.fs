@@ -21,7 +21,7 @@ module ContactArea =
         rdmBadgeBox ()
         p [ Class "block" ] [
           str "
-            We organise a private league for cash each season called Premier League 1.
+            We organise a private league for cash each season called Prediction League 1.
             All entrance fees are paid back as cash prizes throughout the seaon.
             If you'd like to join our cash league please let us know."
         ]

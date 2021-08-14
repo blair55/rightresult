@@ -13,4 +13,4 @@ type Dependencies =
     PushNotify : Push.PushNotify
     ValidateToken: AppToken -> Result<Server.Jwt.JwtPlayer, RemoteError>
     ApplicationConfiguration: Server.Config.ApplicationConfiguration
-    FixtureSources: PremFixtures.FixtureSources }
+    FixtureSources: GameweekSources.FixtureSources }

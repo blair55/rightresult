@@ -26,8 +26,8 @@ let compositionRoot () =
   let graphClient = Graph.client appConfig.neo4jUrl
   let queries = Graph.queries graphClient
   let nonQueries = Graph.nonQueries graphClient
-  // let now () = Time.toUkTime DateTime.UtcNow
-  let now () = DateTime.Now
+  let now () = Time.toUkTime DateTime.UtcNow
+  // let now () = DateTime.Now
 
   let validateToken =
     Jwt.appTokenToJwtPlayer appConfig.encryptionKey
@@ -52,7 +52,7 @@ let compositionRoot () =
       PushNotify = pushNotify
       ValidateToken = validateToken
       ApplicationConfiguration = appConfig
-      FixtureSources = PremFixtures.fixturesSources }
+      FixtureSources = GameweekSources.fixturesSources }
 
   deps, handleCommand
 
@@ -91,6 +91,9 @@ let main =
     |> printfn "Test data\n%A"
 
     0
+
+  | [| a |] ->
+    failwithf "running unknown command! %s" a
 
 
   | _ ->

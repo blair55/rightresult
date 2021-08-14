@@ -4,14 +4,14 @@ open Shared
 open Server.Commands
 open Server.Queries
 open Server.Infrastructure
-open Server.Infrastructure.PremFixtures
+open Server.Infrastructure.GameweekSources
 
 module Classifier =
 
   let private classifyFixtures
     desc
     (handle: Command -> Ars<Unit>)
-    { Dependencies.FixtureSources = { GameweekResults = PremFixtures.GameweekResults results }
+    { Dependencies.FixtureSources = { GameweekResults = GameweekSources.GameweekResults results }
       NonQueries = { updateInPlayFixture = updateInPlayFixture } }
     (fixtures:FixtureRecord list)
     =

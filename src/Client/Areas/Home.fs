@@ -252,7 +252,8 @@ module HomeArea =
   let rand = new Random()
 
   let fixtureReel () =
-    div [ Class "is-clearfix"; Style [ MarginBottom "1em" ] ] [
+    div [ Class "is-clearfix"
+          Style [ MarginBottom "1em" ] ] [
       div [ Class "fixture-reel-container hide-scrollbars" ] [
         div
           [ Class "fixture-reel" ]
@@ -267,6 +268,7 @@ module HomeArea =
 
   let bigUpsBar dispatch bigups =
     let one, two = halveList bigups
+
     div [ Class "is-clearfix" ] [
       div [ Class "big-up-box-container hide-scrollbars" ] [
         div [ Class "big-up-box-wrapper" ] (List.map (Components.bigUpBox (NavTo >> dispatch)) one)
@@ -275,7 +277,8 @@ module HomeArea =
     ]
 
   let cashLeague () =
-    div [ Class "is-clearfix"; Style [ MarginBottom "1em" ] ] [
+    div [ Class "is-clearfix"
+          Style [ MarginBottom "1em" ] ] [
       Message.message [ Message.Color IsWarning ] [
         Message.body [] [
           p [] [
@@ -287,6 +290,33 @@ module HomeArea =
       ]
     ]
 
+  let globalLeaderBoard () =
+    div []
+      [
+        Components.subHeading "Gameweek 1"
+        div [ Class "global-leaderboard hide-scrollbars" ] [
+          // div [ Class "global-leaderboard-head" ] [
+          //   str "Global League Leaders GW1"
+          // ]
+          div [ Class "global-leaderboard-body" ] [
+            div [ Class "global-leaderboard-item" ] [
+              span [Class"global-leaderboard-pos"] [str "1st"]
+              span [Class"global-leaderboard-points"] [str "21 pts"]
+              str "@tester"
+            ]
+            div [ Class "global-leaderboard-item" ] [
+              span [Class"global-leaderboard-pos"] [str "2nd"]
+              span [Class"global-leaderboard-points"] [str "18 pts"]
+              str "@Matthew Jones"
+            ]
+            div [ Class "global-leaderboard-item" ] [
+              span [Class"global-leaderboard-pos"] [str "3rd"]
+              span [Class"global-leaderboard-points"] [str "18 pts"]
+              str "@Andy Spud Robertson"
+            ]
+          ]]
+      ]
+
   let loadedView dispatch (model: Model) (points, winner, bigups) =
     [ Components.heroBar
       // notificationPrompt model dispatch
@@ -295,6 +325,7 @@ module HomeArea =
       titleBar
       fixtureReel ()
       bigUpsBar dispatch bigups
+      globalLeaderBoard ()
       cashLeague ()
       homeMenu dispatch ]
 
