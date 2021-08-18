@@ -347,32 +347,18 @@ type BigUpViewModel =
     PlayerName: PlayerName }
 
 type FixtureDetails =
-  { // KickOff : KickOff
-    // Id : FixtureId
-    BigUps : BigUpViewModel list
+  { BigUps : BigUpViewModel list
     Home : PremTableRow
     Away : PremTableRow
     FormGuide : (FormFixture option * FormFixture option) list }
-  // static member Init fId ko =
   static member Init =
-    // { Id = fId; KickOff = ko; BigUps = []; Home = FixtureDetailsColumn.Init; Away = FixtureDetailsColumn.Init }
     { BigUps = []; Home = PremTableRow.Init; Away = PremTableRow.Init; FormGuide = [] }
-// and FixtureDetailsColumn =
-//   { Team : Team
-//     PremTableRow : PremTableRow
-//     FormGuide : FormFixture list }
-//   static member Init =
-//     { Team = Team ""
-//       PremTableRow = PremTableRow.Init
-//       FormGuide = [] }
 and FormFixture =
   { KickOff : KickOff
-    Opponent : Team
+    TeamLine : TeamLine
     Venue : FormVenue
     Result : FormResult
     Scoreline : ScoreLine }
-    // GoalsFor : Score
-    // GoalsAgainst : Score }
 and [<RequireQualifiedAccess>] FormVenue =
   | H | A
 and [<RequireQualifiedAccess>] FormResult =

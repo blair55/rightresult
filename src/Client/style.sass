@@ -19,8 +19,8 @@ $primary: #114B5F
 $secondary: #AA4465
 $link: $primary
 $info: #5AB1BB
-$success: #DCF763
-$warning: #FFAD05
+$success: #376D49
+$warning: #FAA613
 // $warning-light:#FFEBC2
 $danger: #F05D5E // #F0803C
 // $danger-light: #FCD9D9
@@ -401,17 +401,15 @@ table.table th.text-left
 .gw-fixture-modal-container
   background-color: $background
   padding: 1em 0 0
-.gw-fixture-modal-content
-  padding: 0
 
 .gw-fixture-modal-content
   .gw-fixture-item
     cursor: unset
     border-left-width: 0px
     outline: none
-    position: sticky
-    top: 2em
-    z-index: 99
+    // position: sticky
+    // top: 2em
+    // z-index: 99
   .gw-fixture-item-arrow
     display: none
 
@@ -504,44 +502,44 @@ table.table th.text-left
 
 .gw-fixture-formguide
   margin-bottom: 1em
+  .gw-fixture-formguide-row:not(:last-child)
+    margin-bottom: 4px
   .gw-fixture-formguide-row
-    .formguide-team, .formguide-scoreline, .formguide-result-w, .formguide-result-d, .formguide-result-l, .formguide-venue
-      padding: 5px
-      margin: 0 5px 5px
+    .formguide-result-w, .formguide-result-d, .formguide-result-l
+      display: flex
+      width: 2em
+      padding: 0.5em 0
+      margin: 0 0.5em
+      justify-content: center
       font-weight: bold
       white-space: nowrap
       text-transform: uppercase
-      color: $primary
-      background-color: $background
       font-size: $size-small
-    // .formguide-result
-    //   font-weight: bold
-    //   color: $white-ter
-    //   background-color: $primary
-    //   margin: 0 6px
-    //   padding: 2px 4px
-    //   font-size: $size-small
-    //   white-space: nowrap
+      border-radius: 20px
+    .formguide-result-w
+      color: $success
+      background-color: $success-light
+    .formguide-result-d
+      opacity: 0.6
+      color: $grey
+      background-color: $grey-lighter
+      filter: saturate(0.2)
+    .formguide-result-l
+      color: $danger
+      background-color: $danger-light
+    .formguide-team, .formguide-venue
+      display: flex
+      padding: 0.5em 0
+      white-space: nowrap
+      text-transform: uppercase
+      color: $primary
+      font-size: $size-small
+      .formguide-scoreline
+        font-weight: bold
+        margin: 0 4px
+        white-space: nowrap
 
 
-    // .formguide-result-w,
-    // .formguide-result-d,
-    // .formguide-result-l
-    //   text-align: center
-    //   padding: 0.2em
-    //   border-radius: 2px
-    //   font-size: 0.8em
-    //   font-weight: bold
-    //   color: $light
-    // // .formguide-result-d
-    //   // background-image: $darkgrey-grad
-    // .formguide-venue-h,
-    // .formguide-venue-a
-    //   text-align: center
-    //   margin: 0.5em 0 0
-    //   font-size: 0.6em
-    //   text-transform: uppercase
-    //   color: $gray-light
 
 .kick-off-time
   background-color: $info

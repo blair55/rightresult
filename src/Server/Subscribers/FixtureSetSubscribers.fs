@@ -518,11 +518,11 @@ module FixtureClassifiedSubscribers =
       |> List.sortBy (fun f -> f.KickOff)
       |> List.choose (fun f -> FixtureState.classifiedScoreLine f.State |> Option.map (fun sl -> f, sl))
       // |> List.map (fun ({ TeamLine = TeamLine (homeTeam, _); KickOff = ko }, ScoreLine (homeScore, awayScore)) ->
-      |> List.map (fun ({ TeamLine = TeamLine (homeTeam, awayTeam); KickOff = ko }, scoreline) ->
+      |> List.map (fun ({ TeamLine = tl; KickOff = ko }, scoreline) ->
         let scoreResult = getScoreResult scoreline
         if team = homeTeam then
           { FormFixture.KickOff = ko
-            Opponent = awayTeam
+            TeamLine = tl
             Venue = FormVenue.H
             Result =
               match scoreResult with
@@ -532,7 +532,7 @@ module FixtureClassifiedSubscribers =
             Scoreline = scoreline }
         else
         { FormFixture.KickOff = ko
-          Opponent = homeTeam
+          TeamLine = tl
           Venue = FormVenue.A
           Result =
             match scoreResult with

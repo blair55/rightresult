@@ -566,7 +566,8 @@ module GameweekFixtures =
     | FormVenue.H -> "H"
     | FormVenue.A -> "A"
 
-  let formGuideResult = function
+  let formGuideResult =
+    function
     | FormResult.W ->
       div [ Class "formguide-result-w" ] [
         span [] [ str "W" ]
@@ -580,16 +581,14 @@ module GameweekFixtures =
         span [] [ str "L" ]
       ]
 
-  let formGuideElements ({ Opponent = op } as f: FormFixture) =
+  let formGuideElements ({ TeamLine = TeamLine (home, away) } as f: FormFixture) =
     [ formGuideResult f.Result
-      div [ Class "formguide-scoreline" ] [
-        simpleScore f.Scoreline
-      ]
       div [ Class "formguide-team" ] [
-        str (badgeAbbrv op)
-      ]
-      div [ Class "formguide-venue" ] [
-        str (venueToString f.Venue)
+        div [] [ str (badgeAbbrv home) ]
+        div [ Class "formguide-scoreline" ] [
+          simpleScore f.Scoreline
+        ]
+        div [] [ str (badgeAbbrv away) ]
       ] ]
 
   let fixtureModal dispatch (model: GameweekFixturesViewModel) modalState =
