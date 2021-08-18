@@ -96,6 +96,14 @@ let queries (gc:GraphClient) : Queries =
         .ResultsAsync.Result
       |> Seq.map buildFixtureRecord
 
+    getOpenFixtures = fun () ->
+      gc.Cypher
+        .Match("(f:Fixture)")
+        .Where(fun (f:FixtureNode) -> f.State = FixtureState.OpenStr)
+        .Return<FixtureNode>("f")
+        .ResultsAsync.Result
+      |> Seq.map buildFixtureRecord
+
     getPlayerPredictionsByFixture = fun (PlayerId playerId) ->
       gc.Cypher
         .Match("(f:Fixture)")

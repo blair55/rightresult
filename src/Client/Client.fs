@@ -15,7 +15,6 @@ open Thoth.Elmish.Toast
 
 open Routes
 open Areas
-open Areas.Fixtures
 open Areas.Gameweek
 open Areas.Leagues
 open Areas.Players
@@ -28,38 +27,34 @@ type Area =
   | HowItWorksArea
   | ContactArea
   | HomeArea of HomeArea.Model
-  // | FixturesArea of FixturesArea.Model
   | GameweekArea of GameweekArea.Model
   | LeaguesArea of LeaguesArea.Model
   | PlayersArea of PlayersArea.Model
 
 type Model =
-  { Player : ClientSafePlayer option
-    ErrorMsg : RemoteError option
-    Area : Area }
+  { Player: ClientSafePlayer option
+    ErrorMsg: RemoteError option
+    Area: Area }
 
 type Msg =
   | Init of Result<string, exn>
   | NavTo of Route
   | HomeMsg of HomeArea.Msg
-  // | FixturesMsg of FixturesArea.Msg
   | GameweekMsg of GameweekArea.Msg
   | LeaguesMsg of LeaguesArea.Msg
   | PlayersMsg of PlayersArea.Msg
 
-let api : IProtocol =
-  Remoting.createApi()
+let api: IProtocol =
+  Remoting.createApi ()
   |> Remoting.withRouteBuilder Routes.builder
   |> Remoting.buildProxy<IProtocol>
 
-let playerStorageKey =
-  "player-21/22"
+let playerStorageKey = "player-21/22"
 
 [<Emit("window.navigator.standalone === true")>]
-let isIosStandalone : bool =
-  jsNative
+let isIosStandalone: bool = jsNative
 
-let update msg (model:Model) : Model * Cmd<Msg> =
+let update msg (model: Model) : Model * Cmd<Msg> =
   // printfn "m %A" model
   // printfn "msg %A" msg
 // printfn "p %A" model.Player
@@ -74,10 +69,6 @@ let update msg (model:Model) : Model * Cmd<Msg> =
   | Some p, HomeArea m, HomeMsg msg ->
     let m, cmd = HomeArea.update api p msg m
     { model with Area = HomeArea m }, Cmd.map HomeMsg cmd
-
-  // | Some p, FixturesArea m, FixturesMsg msg ->
-  //   let m, cmd = FixturesArea.update api p msg m
-  //   { model with Area = FixturesArea m }, Cmd.map FixturesMsg cmd
 
   | Some p, GameweekArea m, GameweekMsg msg ->
     let m, cmd = GameweekArea.update api p msg m
@@ -95,56 +86,55 @@ let update msg (model:Model) : Model * Cmd<Msg> =
 
 let footabs model dispatch : ReactElement option =
   let desc s =
-    Text.span
-      [ Modifiers [ Modifier.IsHidden (Screen.Mobile, true) ]
-        Props [ Style [ MarginLeft "5px" ] ]
-      ]
-      [ str s ]
+    Text.span [ Modifiers [ Modifier.IsHidden(Screen.Mobile, true) ]
+                Props [ Style [ MarginLeft "5px" ] ] ] [
+      str s
+    ]
 
   let back =
-    [ a [ Href "javascript:history.back();" ]
-        [ Fa.i [ Fa.Solid.ChevronLeft ] []
-          desc "Back"
-        ]
-    ]
+    [ a [ Href "javascript:history.back();" ] [
+        Fa.i [ Fa.Solid.ChevronLeft ] []
+        desc "Back"
+      ] ]
 
   let home =
-    [ a [ OnClick (fun _ -> NavTo HomeRoute |> dispatch) ]
+    [ a
+        (anchorNavProps (NavTo >> dispatch) HomeRoute)
         [ Fa.i [ Fa.Solid.Home ] []
-          desc "Home"
-        ]
-    ]
-  // let fixtures =
-  //   [ a [ OnClick (fun _ -> NavTo (FixtureRoute OmniFixturesRoute) |> dispatch) ]
-  //       [ Fa.i [ Fa.Solid.CalendarAlt ] []
-  //         desc "Fixtures"
-  //       ]
-  //   ]
+          desc "Home" ] ]
+
   let gameweek =
-    [ a [ OnClick (fun _ -> NavTo (GameweekRoute GameweekInitRoute) |> dispatch) ]
+    [ a
+        (anchorNavProps (NavTo >> dispatch) (GameweekRoute GameweekInitRoute))
         [ Fa.i [ Fa.Regular.Futbol ] []
-          desc "Gameweek"
-        ]
-    ]
+          desc "Gameweek" ] ]
+
   let leagues =
-    [ a [ OnClick (fun _ -> NavTo (LeaguesRoute PlayerLeaguesRoute) |> dispatch) ]
+    [ a
+        (anchorNavProps (NavTo >> dispatch) (LeaguesRoute PlayerLeaguesRoute))
         [ Fa.i [ Fa.Solid.Trophy ] []
-          desc "Leagues"
-        ]
-    ]
+          desc "Leagues" ] ]
+
   let players =
-    [ a [ OnClick (fun _ -> NavTo (PlayersRoute MyProfileRoute) |> dispatch) ]
+    [ a
+        (anchorNavProps (NavTo >> dispatch) (PlayersRoute MyProfileRoute))
         [ Fa.i [ Fa.Regular.User ] []
-          desc "My Profile"
-        ]
-    ]
+          desc "My Profile" ] ]
 
   let tabs tabList =
     let backButtonTab =
       Tabs.tab [ Tabs.Tab.CustomClass "back-button" ] back
+
     Tabs.tabs
-      [ Tabs.IsCentered; Tabs.IsFullWidth; Tabs.IsToggle; Tabs.Size IsMedium ]
-      ((if isIosStandalone then [ backButtonTab ] else []) @ tabList)
+      [ Tabs.IsCentered
+        Tabs.IsFullWidth
+        Tabs.IsToggle
+        Tabs.Size IsMedium ]
+      ((if isIosStandalone then
+          [ backButtonTab ]
+        else
+          [])
+       @ tabList)
     |> Some
 
   match model.Area with
@@ -152,83 +142,78 @@ let footabs model dispatch : ReactElement option =
   | ContactArea _
   | LoginArea _ -> None
   | HomeArea _ ->
-    tabs
-      [ Tabs.tab [ Tabs.Tab.IsActive true ] home
-        Tabs.tab [] gameweek
-        Tabs.tab [] leagues
-        Tabs.tab [] players ]
-  // | FixturesArea _ ->
-  //   tabs
-  //     [ Tabs.tab [] home
-  //       Tabs.tab [ Tabs.Tab.IsActive true ] gameweek
-  //       Tabs.tab [] leagues
-  //       Tabs.tab [] players ]
+    tabs [ Tabs.tab [ Tabs.Tab.IsActive true ] home
+           Tabs.tab [] gameweek
+           Tabs.tab [] leagues
+           Tabs.tab [] players ]
   | GameweekArea _ ->
-    tabs
-      [ Tabs.tab [] home
-        Tabs.tab [ Tabs.Tab.IsActive true ] gameweek
-        Tabs.tab [] leagues
-        Tabs.tab [] players ]
+    tabs [ Tabs.tab [] home
+           Tabs.tab [ Tabs.Tab.IsActive true ] gameweek
+           Tabs.tab [] leagues
+           Tabs.tab [] players ]
   | LeaguesArea _ ->
-    tabs
-      [ Tabs.tab [] home
-        Tabs.tab [] gameweek
-        Tabs.tab [ Tabs.Tab.IsActive true ] leagues
-        Tabs.tab [] players ]
+    tabs [ Tabs.tab [] home
+           Tabs.tab [] gameweek
+           Tabs.tab [ Tabs.Tab.IsActive true ] leagues
+           Tabs.tab [] players ]
   | PlayersArea _ ->
-    tabs
-      [ Tabs.tab [] home
-        Tabs.tab [] gameweek
-        Tabs.tab [] leagues
-        Tabs.tab [ Tabs.Tab.IsActive true ] players ]
+    tabs [ Tabs.tab [] home
+           Tabs.tab [] gameweek
+           Tabs.tab [] leagues
+           Tabs.tab [ Tabs.Tab.IsActive true ] players ]
 
 let logoBar =
-  Navbar.navbar [Navbar.Color IsPrimary; Navbar.Props [ Style [ MarginBottom "1em" ] ] ]
-    [ Navbar.Brand.div []
-        [ div [ Style [ Padding "1em" ] ]
-            [ Heading.h5 [ Heading.Modifiers [ Modifier.TextColor IsWhite; Modifier.TextTransform TextTransform.UpperCase ] ]
-                [ a [ Href "/"; Style [ Color "#fff" ] ] [ str "Right Result" ]
-                ]
-            ]
+  Navbar.navbar [ Navbar.Color IsPrimary
+                  Navbar.Props [ Style [ MarginBottom "1em" ] ] ] [
+    Navbar.Brand.div [] [
+      div [ Style [ Padding "1em" ] ] [
+        Heading.h5 [ Heading.Modifiers [ Modifier.TextColor IsWhite
+                                         Modifier.TextTransform TextTransform.UpperCase ] ] [
+          a [ Href "/"; Style [ Color "#fff" ] ] [
+            str "Right Result"
+          ]
         ]
+      ]
     ]
+  ]
 
 let title model =
   match model.Area with
   | ContactArea _
   | HowItWorksArea _
   | HomeArea _ -> div [] []
-  | _          -> logoBar
+  | _ -> logoBar
 
 let navBar model dispatch =
   match footabs model dispatch with
   | Some tabs -> // tabs
-      Navbar.navbar [ Navbar.IsFixedBottom ]
-        [ tabs ]
+    Navbar.navbar [ Navbar.IsFixedBottom ] [
+      tabs
+    ]
   | _ -> div [] []
 
 let area model dispatch =
   match model.Area with
-  | LoginArea      -> LoginArea.view dispatch
+  | LoginArea -> LoginArea.view dispatch
   | HowItWorksArea -> HowItWorksArea.view dispatch
-  | ContactArea    -> ContactArea.view dispatch
-  | HomeArea m     -> HomeArea.view m (HomeMsg >> dispatch)
-  // | FixturesArea m -> FixturesArea.view m (FixturesMsg >> dispatch)
+  | ContactArea -> ContactArea.view dispatch
+  | HomeArea m -> HomeArea.view m (HomeMsg >> dispatch)
   | GameweekArea m -> GameweekArea.view m (GameweekMsg >> dispatch)
-  | LeaguesArea m  -> LeaguesArea.view m (LeaguesMsg >> dispatch)
-  | PlayersArea m  -> PlayersArea.view m (PlayersMsg >> dispatch)
+  | LeaguesArea m -> LeaguesArea.view m (LeaguesMsg >> dispatch)
+  | PlayersArea m -> PlayersArea.view m (PlayersMsg >> dispatch)
 
-let view (model:Model) dispatch =
-  Container.container [ ]
-    [ Columns.columns [Columns.IsDesktop; Columns.IsGapless]
-        [ Column.column [ Column.Width (Screen.All, Column.Is6) ]
-            [ title model
-              div [ Style [ CSSProp.MarginBottom "100px" ] ]
-                [ area model dispatch ]
-              navBar model dispatch
-            ]
+let view (model: Model) dispatch =
+  Container.container [] [
+    Columns.columns [ Columns.IsDesktop; Columns.IsGapless ] [
+      Column.column [ Column.Width(Screen.All, Column.Is6) ] [
+        title model
+        div [ Style [ CSSProp.MarginBottom "100px" ] ] [
+          area model dispatch
         ]
+        navBar model dispatch
+      ]
     ]
+  ]
 
 #if DEBUG
 open Elmish.Debug
@@ -241,45 +226,39 @@ open Elmish.UrlParser
 open Elmish.Navigation
 open Thoth.Json
 
-let clearFragment () =
-  Browser.Dom.window.location.hash <- ""
+let clearFragment () = Browser.Dom.window.location.hash <- ""
 
-let loadPlayerFromBrowserStorage() =
+let loadPlayerFromBrowserStorage () =
   Browser.WebStorage.localStorage.getItem playerStorageKey
   |> Decode.fromString Decoders.decodeClientSafePlayer
   |> function
-  | Ok p -> Some p
-  | _ -> None
+    | Ok p -> Some p
+    | _ -> None
 
 let urlUpdate route model =
   match model.Player, route with
-  | _, Some LoginRoute ->
-    { model with Area = LoginArea }, Cmd.none
-  | _, Some ContactRoute ->
-    { model with Area = ContactArea }, Cmd.none
-  | _, Some HowItWorksRoute ->
-    { model with Area = HowItWorksArea }, Cmd.none
+  | _, Some LoginRoute -> { model with Area = LoginArea }, Cmd.none
+  | _, Some ContactRoute -> { model with Area = ContactArea }, Cmd.none
+  | _, Some HowItWorksRoute -> { model with Area = HowItWorksArea }, Cmd.none
   | _, Some LoggedInRoute ->
-      let loginInAndRedirect playerString nav =
-        playerString
-        |> JS.decodeURIComponent
-        |> Browser.Dom.window.atob
-        |> fun p -> Browser.WebStorage.localStorage.setItem(playerStorageKey, p)
-        { model with Player = loadPlayerFromBrowserStorage() }, nav
-      match getFragmentValue "player", getFragmentValue "redirectPath" with
-      | Some playerString, Some path when path <> "" ->
-        loginInAndRedirect playerString (Navigation.newUrl path)
-      | Some playerString, _ ->
-        loginInAndRedirect playerString (navTo HomeRoute)
-      | _ -> model, []
+    let loginInAndRedirect playerString nav =
+      playerString
+      |> JS.decodeURIComponent
+      |> Browser.Dom.window.atob
+      |> fun p -> Browser.WebStorage.localStorage.setItem (playerStorageKey, p)
+
+      { model with
+          Player = loadPlayerFromBrowserStorage () },
+      nav
+
+    match getFragmentValue "player", getFragmentValue "redirectPath" with
+    | Some playerString, Some path when path <> "" -> loginInAndRedirect playerString (Navigation.newUrl path)
+    | Some playerString, _ -> loginInAndRedirect playerString (navTo HomeRoute)
+    | _ -> model, []
 
   | Some p, Some HomeRoute ->
     let m, cmd = HomeArea.init api p
     { model with Area = HomeArea m }, Cmd.map HomeMsg cmd
-
-  // | Some p, Some (FixtureRoute r) ->
-  //   let m, cmd = FixturesArea.urlUpdate api p r
-  //   { model with Area = FixturesArea m }, Cmd.map FixturesMsg cmd
 
   | Some p, Some (GameweekRoute r) ->
     let m, cmd = GameweekArea.urlUpdate api p r
@@ -299,11 +278,16 @@ let urlUpdate route model =
 
 let init route =
   let player =
-    try loadPlayerFromBrowserStorage()
-    with _ -> None
+    try
+      loadPlayerFromBrowserStorage ()
+    with
+    | _ -> None
+
   if Option.isNone player then
     Browser.WebStorage.localStorage.removeItem playerStorageKey
-  urlUpdate route
+
+  urlUpdate
+    route
     { Player = player
       ErrorMsg = None
       Area = LoginArea }

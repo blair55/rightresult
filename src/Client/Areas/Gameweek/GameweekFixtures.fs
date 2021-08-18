@@ -93,7 +93,7 @@ module GameweekFixtures =
         ]
       | FixtureState.InPlay (ScoreLine (Score h, Score a), MinutesPlayed mp) ->
         div [ Class "gw-fixture-result-desc" ] [
-          span [] [ str (string<int> mp + "'") ]
+          span [] [ str mp ]
         ]
 
         div [ Class "gw-fixture-result-box" ] [
@@ -545,6 +545,53 @@ module GameweekFixtures =
           Fa.i [ icon ] []
         ]
 
+  let formGuideRow left right =
+    div [ Class "gw-fixture-formguide-row" ] [
+      Columns.columns [ Columns.IsMobile
+                        Columns.IsGapless
+                        Columns.Props [ Props.Style [ MarginBottom "0" ] ] ] [
+        Column.column
+          [ Column.Modifiers [ Modifier.FlexDirection FlexDirection.RowReverse ]
+            Column.Width(Screen.All, Column.IsHalf) ]
+          left
+        Column.column
+          [ Column.Modifiers [ Modifier.FlexDirection FlexDirection.Row ]
+            Column.Width(Screen.All, Column.IsHalf) ]
+          right
+      ]
+    ]
+
+  let venueToString =
+    function
+    | FormVenue.H -> "H"
+    | FormVenue.A -> "A"
+
+  let formGuideResult = function
+    | FormResult.W ->
+      div [ Class "formguide-result-w" ] [
+        span [] [ str "W" ]
+      ]
+    | FormResult.D ->
+      div [ Class "formguide-result-d" ] [
+        span [] [ str "D" ]
+      ]
+    | FormResult.L ->
+      div [ Class "formguide-result-l" ] [
+        span [] [ str "L" ]
+      ]
+
+  let formGuideElements ({ Opponent = op } as f: FormFixture) =
+    [ formGuideResult f.Result
+      div [ Class "formguide-scoreline" ] [
+        simpleScore f.Scoreline
+      ]
+      div [ Class "formguide-team" ] [
+        str (badgeAbbrv op)
+      ]
+      div [ Class "formguide-venue" ] [
+        str (venueToString f.Venue)
+      ] ]
+
   let fixtureModal dispatch (model: GameweekFixturesViewModel) modalState =
 
     match modalState with
@@ -559,6 +606,23 @@ module GameweekFixtures =
         | FixtureState.Classified _ -> classifiedFixtureModalContent dispatch fp
         |> Text.div [ Props [ Class "" ] ]
 
+      let formGuide ({ FixtureDetails = fd } as fp: FixturePredictionViewModel) =
+        match fd with
+        | Some details ->
+          details.FormGuide
+          |> List.map
+               (fun (h, a) ->
+                 formGuideRow
+                   (match h with
+                    | Some h -> formGuideElements h
+                    | _ -> [])
+                   (match a with
+                    | Some a -> formGuideElements a
+                    | _ -> []))
+        | _ -> []
+        |> div [ Class "gw-fixture-formguide" ]
+
+
       Modal.modal [ Modal.IsActive true ] [
         Modal.background [ Props [ OnClick(fun _ -> dispatch HideModal) ] ] []
         Modal.close [ Modal.Close.Size IsLarge
@@ -572,7 +636,9 @@ module GameweekFixtures =
 
               div [ Class "gw-fixture-modal-content" ] [
                 fixtureItemSwitch dispatch fp
+                // div [ ] ([1..50] |> List.map(fun _ -> div [] [str "hello"]))
                 Box.box' [ Props [ Style [ PaddingTop "0" ] ] ] [
+                  formGuide fp
                   body
                 ]
               ]

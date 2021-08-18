@@ -56,24 +56,25 @@ module TestData =
     let pId =
       PlayerId(sprintf $"{playerPrefix}-{pIdStr}")
 
-    [ FixtureSetCommand(fsId, CreateFixtureSet(gwno, fixtures))
+    [ //FixtureSetCommand(fsId, CreateFixtureSet(gwno, fixtures))
       PlayerCommand(pId, Login(PlayerName playerName, ""))
 
-      PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetHomeScore(Score 2), fId1, PredictionEditDate now))
-      PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetAwayScore(Score 1), fId1, PredictionEditDate now))
-      PredictionSetCommand(pId, fsId, DatedPredictionCommand(DoubleDown, fId1, PredictionEditDate now))
+      // PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetHomeScore(Score 2), fId1, PredictionEditDate now))
+      // PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetAwayScore(Score 1), fId1, PredictionEditDate now))
+      // PredictionSetCommand(pId, fsId, DatedPredictionCommand(DoubleDown, fId1, PredictionEditDate now))
 
-      PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetHomeScore(Score 3), fId2, PredictionEditDate now))
-      PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetAwayScore(Score 3), fId2, PredictionEditDate now))
-      // PredictionSetCommand(pId, fsId, DatedPredictionCommand(BigUp, fId2, PredictionEditDate now))
+      // PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetHomeScore(Score 3), fId2, PredictionEditDate now))
+      // PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetAwayScore(Score 3), fId2, PredictionEditDate now))
+      // // PredictionSetCommand(pId, fsId, DatedPredictionCommand(BigUp, fId2, PredictionEditDate now))
 
-      PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetScoreLine(ScoreLine(Score 0, Score 2)), fId3, PredictionEditDate now))
+      // PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetScoreLine(ScoreLine(Score 0, Score 2)), fId3, PredictionEditDate now))
 
-      FixtureSetCommand(fsId, KickOffFixture fId1)
-      FixtureSetCommand(fsId, ClassifyFixture(fId1, ScoreLine(Score 2, Score 1)))
+      // FixtureSetCommand(fsId, KickOffFixture fId1)
+      // FixtureSetCommand(fsId, ClassifyFixture(fId1, ScoreLine(Score 2, Score 1)))
 
-      FixtureSetCommand(fsId, KickOffFixture fId2)
-      FixtureSetCommand(fsId, ClassifyFixture(fId2, ScoreLine(Score 1, Score 1)))
+      // FixtureSetCommand(fsId, KickOffFixture fId2)
+      // FixtureSetCommand(fsId, ClassifyFixture(fId2, ScoreLine(Score 1, Score 1)))
 
-      FixtureSetCommand(fsId, KickOffFixture fId3)
-      FixtureSetCommand(fsId, ClassifyFixture(fId3, ScoreLine(Score 1, Score 1))) ]
+      // FixtureSetCommand(fsId, KickOffFixture fId3)
+      // FixtureSetCommand(fsId, ClassifyFixture(fId3, ScoreLine(Score 1, Score 1)))
+      ]

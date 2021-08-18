@@ -76,8 +76,10 @@ module PremPulse =
     |> PremPulse.Parse
 
   let (|PulseMinutes|_|) (p: PremPulse.Pulse) =
-    p.Clock
-    |> Option.map (fun c -> MinutesPlayed(c.Secs / 60))
+    match p.Phase.String, p.Clock with
+    | Some "H", _ -> Some(MinutesPlayed "HT")
+    | _, Some c -> Some(MinutesPlayed(c.Label.TrimEnd('0')))
+    | _ -> None
 
   let (|PulseScoreLine|_|) (p: PremPulse.Pulse) =
     let score i =

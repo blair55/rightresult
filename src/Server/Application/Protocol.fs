@@ -51,7 +51,7 @@ module Protocol =
 
     let fixtureStateFirstMinuteHack now (f:FixtureRecord) =
       match f.State with
-      | FixtureState.Open ko when (now()) > ko.Raw -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed 0)
+      | FixtureState.Open ko when (now()) > ko.Raw -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed.init)
       | s -> s
 
     let getGameweekFixtures gwno (jwtPlayer:Jwt.JwtPlayer) : Rresult<GameweekFixturesViewModel> =

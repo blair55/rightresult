@@ -127,10 +127,11 @@ module PredictionBigUpAppliedSubscribers =
     let pred = deps.Queries.getPlayerPredictionForFixture pId fId
     match player, pred with
     | Some pl, Some pr ->
+        let { FixtureRecord.TeamLine = teamline } = deps.Queries.getFixtureRecord fId
         let repo = Documents.repo deps.ElasticSearch
         repo.Edit
           (FixtureDetailsDocument fId)
-          (fun fd -> { fd with BigUps = {PlayerName=pl.Name; PlayerId= pl.Id; TeamLine=TeamLine(fd.Home.Team, fd.Away.Team); ScoreLine=pr.ScoreLine}::fd.BigUps })
+          (fun fd -> { fd with BigUps = {PlayerName=pl.Name; PlayerId= pl.Id; TeamLine=teamline; ScoreLine=pr.ScoreLine}::fd.BigUps })
         |> ignore<Rresult<Unit>>
     | _ -> ()
 

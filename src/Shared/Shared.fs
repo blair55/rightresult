@@ -101,7 +101,8 @@ and [<RequireQualifiedAccess>] FixtureState =
   | InPlay of (ScoreLine * MinutesPlayed)
   | Classified of ScoreLine
 
-and MinutesPlayed = MinutesPlayed of int
+and MinutesPlayed = MinutesPlayed of string
+
 and PredictionRecord =
   { PlayerId : PlayerId
     FixtureId : FixtureId
@@ -121,6 +122,10 @@ and PlayerRecord =
   { Id : PlayerId
     Name : PlayerName
   }
+
+module MinutesPlayed =
+
+  let init = MinutesPlayed "0'"
 
 type AppToken =
   AppToken of string
@@ -227,7 +232,7 @@ and [<CLIMutable>] FixtureNode =
     HomeTeam : string
     AwayTeam : string
     State: string
-    MinutesPlayed: int
+    MinutesPlayed: string
     HomeScore : int
     AwayScore : int }
 
@@ -301,7 +306,7 @@ module FixtureNode =
       SortOrder = sortOrder
       KickOff = ko.Raw
       State = FixtureState.OpenStr
-      MinutesPlayed = 0
+      MinutesPlayed = ""
       HomeTeam = home
       AwayTeam = away
       HomeScore = 0
@@ -342,30 +347,35 @@ type BigUpViewModel =
     PlayerName: PlayerName }
 
 type FixtureDetails =
-  { KickOff : KickOff
-    Id : FixtureId
+  { // KickOff : KickOff
+    // Id : FixtureId
     BigUps : BigUpViewModel list
-    Home : FixtureDetailsColumn
-    Away : FixtureDetailsColumn }
-  static member Init fId ko =
-    { Id = fId; KickOff = ko; BigUps = []; Home = FixtureDetailsColumn.Init; Away = FixtureDetailsColumn.Init }
-and FixtureDetailsColumn =
-  { Team : Team
-    PremTableRow : PremTableRow
-    FormGuide : FormFixture list }
+    Home : PremTableRow
+    Away : PremTableRow
+    FormGuide : (FormFixture option * FormFixture option) list }
+  // static member Init fId ko =
   static member Init =
-    { Team = Team ""
-      PremTableRow = PremTableRow.Init
-      FormGuide = [] }
+    // { Id = fId; KickOff = ko; BigUps = []; Home = FixtureDetailsColumn.Init; Away = FixtureDetailsColumn.Init }
+    { BigUps = []; Home = PremTableRow.Init; Away = PremTableRow.Init; FormGuide = [] }
+// and FixtureDetailsColumn =
+//   { Team : Team
+//     PremTableRow : PremTableRow
+//     FormGuide : FormFixture list }
+//   static member Init =
+//     { Team = Team ""
+//       PremTableRow = PremTableRow.Init
+//       FormGuide = [] }
 and FormFixture =
   { KickOff : KickOff
+    Opponent : Team
     Venue : FormVenue
     Result : FormResult
-    GoalsFor : Score
-    GoalsAgainst : Score }
-and FormVenue =
+    Scoreline : ScoreLine }
+    // GoalsFor : Score
+    // GoalsAgainst : Score }
+and [<RequireQualifiedAccess>] FormVenue =
   | H | A
-and FormResult =
+and [<RequireQualifiedAccess>] FormResult =
   | W | L | D
 
 type FixturePredictionViewModel =
@@ -668,14 +678,14 @@ module Global =
 /// - felizify
 /// + detect fixture ko change
 /// - fix push!
+/// - gw fixtures header: top score - avg score - my score
+/// - homepage gw global leaderboard
 /// - only run bg tasks when web available & tasks not running
-/// dcr --no-deps --rm rr bgdaily
-/// + landing page
-/// + points
-/// + server side tidy
-/// + fix serviceworker error
-/// + page per fixture & swipe
+/// - swipabe fixture page
 /// - capture score in big up event
+/// - prevent double fixture classification event?
+/// - scrolling preset boxes
+/// - my predicted table should only update on classify?
 
 /// FIXTURE - PRED
 /// open    - none
@@ -684,6 +694,11 @@ module Global =
 /// inplay  - none
 
 
+/// + landing page
+/// + points
+/// + server side tidy
+/// + fix serviceworker error
+/// + page per fixture
 /// + add fixture score to matrix
 /// + real & predicted prem tables
 /// + league position delta

@@ -325,7 +325,7 @@ module HomeArea =
       titleBar
       fixtureReel ()
       bigUpsBar dispatch bigups
-      globalLeaderBoard ()
+      // globalLeaderBoard ()
       cashLeague ()
       homeMenu dispatch ]
 

@@ -11,6 +11,7 @@ module Queries =
       getFixturesInFixtureSet : FixtureSetId -> FixtureRecord seq
       getAllFixtureSetsAndFixtures : unit -> (FixtureSetId * GameweekNo * (FixtureRecord list)) list
       getFixturesInPlay : unit -> FixtureRecord seq
+      getOpenFixtures : unit -> FixtureRecord seq
       getPlayerPredictionsByFixture : PlayerId -> (FixtureRecord * PredictionRecord option) seq
       getPlayerPredictionForFixture : PlayerId -> FixtureId -> PredictionRecord option
       getFixtureSetEarliestKickOff : FixtureSetId -> KickOff

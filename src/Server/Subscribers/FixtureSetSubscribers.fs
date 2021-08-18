@@ -33,22 +33,39 @@ module FixtureSubscribersAssistance =
     |> Option.defaultValue []
     |> List.distinct
 
-  let buildColumn (deps:Dependencies) team =
-    let getFormGuide team : FormFixture list =
-      Documents.repo deps.ElasticSearch
-      |> fun repo ->
-      repo.Read (FormGuideDocument team)
-      |> Option.defaultValue []
-      |> List.sortByDescending (fun f -> f.KickOff)
-    let getPremTableRow team =
-      Documents.repo deps.ElasticSearch
-      |> fun repo ->
-      repo.Read RealPremTable
-      |> Option.bind (fun (table:PremTable) -> Map.tryFind team table.Rows)
-      |> Option.defaultValue PremTableRow.Init
-    { FixtureDetailsColumn.Team = team
-      PremTableRow = getPremTableRow team
-      FormGuide = getFormGuide team }
+  let getPremTableRow (deps:Dependencies) team =
+    let repo = Documents.repo deps.ElasticSearch
+    repo.Read RealPremTable
+    |> Option.bind (fun (table:PremTable) -> Map.tryFind team table.Rows)
+    |> Option.defaultValue PremTableRow.Init
+
+  let getFormGuide (deps:Dependencies) team : FormFixture list =
+    let repo = Documents.repo deps.ElasticSearch
+    repo.Read (FormGuideDocument team)
+    |> Option.defaultValue []
+    |> List.sortByDescending (fun f -> f.KickOff)
+  // let buildColumn (deps:Dependencies) team =
+  //   let getFormGuide team : FormFixture list =
+  //     let repo = Documents.repo deps.ElasticSearch
+  //     repo.Read (FormGuideDocument team)
+  //     |> Option.defaultValue []
+  //     |> List.sortByDescending (fun f -> f.KickOff)
+  //   let getPremTableRow team =
+  //     let repo = Documents.repo deps.ElasticSearch
+  //     repo.Read RealPremTable
+  //     |> Option.bind (fun (table:PremTable) -> Map.tryFind team table.Rows)
+  //     |> Option.defaultValue PremTableRow.Init
+  //   { FixtureDetailsColumn.Team = team
+  //     PremTableRow = getPremTableRow team
+  //     FormGuide = getFormGuide team }
+
+  let makeListsOfEqualLength a b =
+    [ 1 .. System.Math.Max (List.length a, List.length b) ]
+    |> List.mapi (fun i _ -> List.tryItem i a, List.tryItem i b)
+
+  let buildFormGuide (deps:Dependencies) home away =
+    makeListsOfEqualLength (getFormGuide deps home) (getFormGuide deps away)
+
 
 module FixtureSetCreatedSubscribers =
 
@@ -107,11 +124,11 @@ module FixtureSetCreatedSubscribers =
 
   let createFixtureDetails (deps:Dependencies) _ (_, _, fixtures) =
     fixtures
-    |> List.iter (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
-      Documents.repo deps.ElasticSearch
-      |> fun repo ->
-        repo.Insert (FixtureDetailsDocument fId)
-          { Id = fId; KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
+    |> List.iter (fun { FixtureRecord.Id = fId; TeamLine = TeamLine (home, away) } ->
+      let repo = Documents.repo deps.ElasticSearch
+      repo.Insert (FixtureDetailsDocument fId)
+        // { Id = fId; KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
+        { BigUps = []; Home = getPremTableRow deps home; Away = getPremTableRow deps away; FormGuide = [] })
 
   let all =
     [ createFixtureSet
@@ -492,41 +509,38 @@ module FixtureClassifiedSubscribers =
     |> repo.Insert RealPremTable
 
   let updateFormGuideDoc deps _ (_, fId, _) =
-    let repo =
-      Documents.repo deps.ElasticSearch
+    let repo = Documents.repo deps.ElasticSearch
+    let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } = deps.Queries.getFixtureRecord fId
+
     let rebuildFormGuide team =
       deps.Queries.getFixturesForTeam team
       |> List.ofSeq
       |> List.sortBy (fun f -> f.KickOff)
       |> List.choose (fun f -> FixtureState.classifiedScoreLine f.State |> Option.map (fun sl -> f, sl))
-      |> List.map (fun ({ TeamLine = TeamLine (homeTeam, _); KickOff = ko }, ScoreLine (homeScore, awayScore)) ->
-        getScoreResult (ScoreLine (homeScore, awayScore))
-        |> fun scoreResult ->
-        match if team = homeTeam then H else A with
-        | H ->
-          { KickOff = ko
-            Venue = H
+      // |> List.map (fun ({ TeamLine = TeamLine (homeTeam, _); KickOff = ko }, ScoreLine (homeScore, awayScore)) ->
+      |> List.map (fun ({ TeamLine = TeamLine (homeTeam, awayTeam); KickOff = ko }, scoreline) ->
+        let scoreResult = getScoreResult scoreline
+        if team = homeTeam then
+          { FormFixture.KickOff = ko
+            Opponent = awayTeam
+            Venue = FormVenue.H
             Result =
               match scoreResult with
-              | HomeWin -> W
-              | AwayWin -> L
-              | Draw -> D
-            GoalsFor = homeScore
-            GoalsAgainst = awayScore }
-        | A ->
-          { KickOff = ko
-            Venue = A
-            Result =
-              match scoreResult with
-              | HomeWin -> L
-              | AwayWin -> W
-              | Draw -> D
-            GoalsFor = awayScore
-            GoalsAgainst = homeScore })
-        |> repo.Insert (FormGuideDocument team)
-
-    let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } =
-      deps.Queries.getFixtureRecord fId
+              | HomeWin -> FormResult.W
+              | AwayWin -> FormResult.L
+              | Draw -> FormResult.D
+            Scoreline = scoreline }
+        else
+        { FormFixture.KickOff = ko
+          Opponent = homeTeam
+          Venue = FormVenue.A
+          Result =
+            match scoreResult with
+            | HomeWin -> FormResult.L
+            | AwayWin -> FormResult.W
+            | Draw -> FormResult.D
+          Scoreline = scoreline })
+        |> fun (f:FormFixture list) -> repo.Insert (FormGuideDocument team) f
 
     rebuildFormGuide homeTeam
     rebuildFormGuide awayTeam
@@ -534,16 +548,21 @@ module FixtureClassifiedSubscribers =
 
   let updateOpenFixtureDetails deps _ (_, _, _) =
     /// needed to update fd with first result when a team appears twice in one gw
-    deps.Queries.getAllFixtures ()
+    deps.Queries.getOpenFixtures ()
     |> List.ofSeq
-    |> List.filter (fun f -> FixtureState.isClassified f.State)
-    |> List.iter (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
+    |> List.iter (fun { FixtureRecord.Id = fId; TeamLine = TeamLine (home, away) } ->
       Documents.repo deps.ElasticSearch
       |> fun repo ->
         repo.Upsert
           (FixtureDetailsDocument fId)
-          ({ Id = fId; KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
-          (fun fd -> { fd with Home = buildColumn deps home; Away = buildColumn deps away }))
+          FixtureDetails.Init
+          // ({ KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
+          // (fun fd -> { fd with Home = buildColumn deps home; Away = buildColumn deps away }))
+          (fun fd ->
+            { fd with
+                  Home = getPremTableRow deps home
+                  Away = getPremTableRow deps away
+                  FormGuide = buildFormGuide deps home away }))
 
 
   let all =
@@ -564,11 +583,14 @@ module FixtureAppendedSubscribers =
 
   let createFixtureDetails (deps:Dependencies) _ (_, fixture) =
     fixture
-    |> (fun { FixtureRecord.Id = fId; KickOff = ko; TeamLine = TeamLine (home, away) } ->
+    |> (fun { FixtureRecord.Id = fId; TeamLine = TeamLine (home, away) } ->
       Documents.repo deps.ElasticSearch
       |> fun repo ->
         repo.Insert (FixtureDetailsDocument fId)
-          { Id = fId; KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
+          { BigUps = []
+            Home = getPremTableRow deps home
+            Away = getPremTableRow deps away
+            FormGuide = buildFormGuide deps home away })
 
   let createFixture (deps:Dependencies) created (FixtureSetId fsId, fixture) =
 

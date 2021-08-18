@@ -102,7 +102,6 @@ $modal-card-foot-border-top: 0
     right: 1em
     top: 1em
 
-
 .button
   border: solid 2px $dark
   text-transform: uppercase
@@ -256,91 +255,8 @@ table.table th.text-left
   .card-footer
     border-top: none
 
-.fixture-details-container
-  background-color: $grey-lighter
-  .quickview
-    box-shadow: 0px 0 20px 10px rgba(0, 0, 0, 0.5)
-  .quickview-footer
-    display: block
-    justify-content: inherit
-    padding: 0
-    min-height: inherit
-    background-color: $white
-    border: none
-  .quickview-footer .card-footer
-    margin: 0
-.fixture-details
-  box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1)
-  margin-bottom: 1em
-  background-image: linear-gradient(70deg, whitesmoke 15%, #fff 40%)
-  .fd-badge-container
-    padding: 1em
-  .fd-badge
-    position: relative
-  .fd-team-name
-    padding-top: 0.7em
-    padding-left: 1.2em
-    padding-bottom: 0.2em
-  .fd-position-ordinal
-    padding-left: 1.2em
-  .fd-ordinal
-    text-transform: uppercase
-    font-size: 0.6em
 
-  $darkgrey-grad: linear-gradient(140deg, #9e9e9e 50%, #888 100%)
 
-  .fd-league-row
-    padding: 0.4em 1em
-    text-align: center
-    background-color: $grey-lighter
-    .fd-key
-      display: inline-block
-      margin-right: 0.3em
-      text-transform: uppercase
-      font-size: 0.6em
-      color: #fff
-    .fd-val
-      font-size: 0.8em
-      display: inline-block
-      font-weight: bold
-      color: #fff
-
-  .form-guide
-    padding: 0 1em 1em
-    margin-top: -1em
-    .fg-column
-      margin-right: 2px
-      .hero
-        border-radius: 2px
-    .fg-goal
-      height: 7px
-      border-radius: 2px
-    .fg-goals-for .fg-goal-some,
-    .fg-goals-against .fg-goal-some
-      background-color: $grey-lighter
-    .fg-goals-for .fg-goal
-      margin-bottom: 2px
-    .fg-goals-against .fg-goal
-      margin-top: 2px
-
-    .fg-result-w,
-    .fg-result-d,
-    .fg-result-l
-      text-align: center
-      padding: 0.2em
-      border-radius: 2px
-      font-size: 0.8em
-      font-weight: bold
-      color: $light
-    .fg-result-d
-      background-image: $darkgrey-grad
-    .fg-venue-h,
-    .fg-venue-a
-      text-align: center
-      margin: 0.5em 0 0
-      font-size: 0.6em
-      text-transform: uppercase
-      color: #aaa
 
 .page-title, .page-sub-title
   // padding-left: 1em
@@ -493,6 +409,9 @@ table.table th.text-left
     cursor: unset
     border-left-width: 0px
     outline: none
+    position: sticky
+    top: 2em
+    z-index: 99
   .gw-fixture-item-arrow
     display: none
 
@@ -583,6 +502,46 @@ table.table th.text-left
     .point-vector-row-right
       font-size: $size-medium
 
+.gw-fixture-formguide
+  margin-bottom: 1em
+  .gw-fixture-formguide-row
+    .formguide-team, .formguide-scoreline, .formguide-result-w, .formguide-result-d, .formguide-result-l, .formguide-venue
+      padding: 5px
+      margin: 0 5px 5px
+      font-weight: bold
+      white-space: nowrap
+      text-transform: uppercase
+      color: $primary
+      background-color: $background
+      font-size: $size-small
+    // .formguide-result
+    //   font-weight: bold
+    //   color: $white-ter
+    //   background-color: $primary
+    //   margin: 0 6px
+    //   padding: 2px 4px
+    //   font-size: $size-small
+    //   white-space: nowrap
+
+
+    // .formguide-result-w,
+    // .formguide-result-d,
+    // .formguide-result-l
+    //   text-align: center
+    //   padding: 0.2em
+    //   border-radius: 2px
+    //   font-size: 0.8em
+    //   font-weight: bold
+    //   color: $light
+    // // .formguide-result-d
+    //   // background-image: $darkgrey-grad
+    // .formguide-venue-h,
+    // .formguide-venue-a
+    //   text-align: center
+    //   margin: 0.5em 0 0
+    //   font-size: 0.6em
+    //   text-transform: uppercase
+    //   color: $gray-light
 
 .kick-off-time
   background-color: $info
@@ -659,35 +618,6 @@ table.table th.text-left
   .big-up-box-bottom
     background-color: $background
 
-.global-leaderboard
-  // background-color: $primary
-  // color: $white
-  // padding: 0.7em
-  margin: 1em 0
-  overflow-x: scroll
-  .global-leaderboard-body
-    display: flex
-  .global-leaderboard-item
-    margin-right: 1em
-    margin-bottom: 1em
-    padding: 12px
-    color: $primary
-    background-color: $white
-    white-space: nowrap
-    .global-leaderboard-points
-      font-weight: bold
-      color: $white-ter
-      background-color: $primary
-      margin: 0 6px
-      padding: 2px 4px
-      font-size: 0.7em
-      white-space: nowrap
-  // .global-leaderboard-head
-  //   font-weight: bold
-  //   white-space: nowrap
-  //   text-transform: uppercase
-  //   margin-bottom: 0.3em
-
 .hide-scrollbars
   scrollbar-width: none
   -ms-overflow-style: none
@@ -702,8 +632,6 @@ table.table th.text-left
   .me-total-points-bar
     margin-bottom: 1em
 
-    // .me-total-points-value
-
   .me-badges-bar
     i
       margin: 3px
@@ -716,27 +644,19 @@ table.table th.text-left
         background-color: $white
 
     .me-badge-item
-      // position: relative
-      // padding: 1em
-      // margin-bottom: 0.5em
-
       .me-badge-title
         font-weight: bold
         text-transform: uppercase
         color: $primary
         margin-left: 5px
-        // margin-bottom: 5px
       p
         font-size: $size-small
         line-height: 1.4em
         color: $dark
-        // padding: 1em 0 0
         display: block
         margin-left: 2.3em
       p:not(:last-child)
         margin-bottom: 0.5em
-
-
 
 .team-title.ARS
   background-image: linear-gradient(180deg, #e10512 50%, rgb(0, 0, 0, 0) 50%)
