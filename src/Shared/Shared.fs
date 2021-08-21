@@ -2,6 +2,13 @@ namespace Shared
 
 open System
 
+module Option =
+
+  let mapF f df =
+    function
+    | Some x -> f x
+    | None -> df
+
 type RemoteError =
   | LoginProblem of string
   | InvalidToken
@@ -47,6 +54,9 @@ module Ko =
 
   let groupFormat (KickOff ko) =
     KickOffGroup (ko.ToString("ddd d MMM yyyy"))
+
+  let shortDay (KickOff ko) =
+    ko.ToString("ddd")
 
   let hasKickedOff now (KickOff ko) =
     now > ko
@@ -289,7 +299,7 @@ module PredictionModifier =
   let isModified = function
     | PredictionModifier.BigUp
     | PredictionModifier.DoubleDown -> true
-    | _ -> false
+    | PredictionModifier.None -> false
 
 module FixtureNode =
   let init (FixtureSetId fsId)
@@ -371,6 +381,7 @@ type FixturePredictionViewModel =
     SortOrder : int
     KickOff : KickOff
     KickOffGroup : KickOffGroup
+    KickOffShortDay : string
     TeamLine : TeamLine
     State : FixtureState
     Prediction : (ScoreLine * PredictionModifier) option

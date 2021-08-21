@@ -1,9 +1,11 @@
 
 .badge-20,
 .badge-25,
-.badge-50,
+.badge-50 {
+  filter: grayscale(0.6) drop-shadow(1px 1px 1px #ccc)
+}
 .badge-100 {
-  filter: grayscale(0.6)
+  filter: grayscale(0.6) drop-shadow(1px 1px 1px #888)
 }
 
 .badge-20 {

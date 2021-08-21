@@ -86,6 +86,7 @@ module Protocol =
             SortOrder = f.SortOrder
             KickOff = f.KickOff
             KickOffGroup = Ko.groupFormat f.KickOff
+            KickOffShortDay = Ko.shortDay f.KickOff
             TeamLine = f.TeamLine
             FixtureDetails = fixtureDetails
             State = fixtureStateFirstMinuteHack now f
