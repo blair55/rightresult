@@ -54,22 +54,19 @@ module LeagueHistoryTable =
         | _ -> []
         )
 
-  let leagueView (league:LeagueTableDoc) desc (model:Model) dispatch =
-    let playerClick (PlayerId pId) =
-      pId |> (PlayerRoute >> PlayersRoute >> NavTo >> dispatch)
-    let (LeagueName name) =
-      league.LeagueName
+  let leagueView dispatch (league:LeagueTableDoc) desc (model:Model) =
+    let (LeagueName name) = league.LeagueName
     div [ ClassName "block" ]
       [ Components.pageTitle name
         Components.subHeading desc
         Card.card []
-          [ Components.table league model.Player.Id playerClick
+          [ Components.table (NavTo >> dispatch) league model.Player.Id
           ]
       ]
 
   let view (model:Model) dispatch =
     match model.LeagueTable, model.WindowDescription with
-    | Success league, Success desc -> leagueView league desc model dispatch
+    | Success league, Success desc -> leagueView dispatch league desc model
     | _ -> div [] []
 
   let update api player msg model : Model * Cmd<Msg> =

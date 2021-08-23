@@ -34,15 +34,12 @@ module LeagueTable =
         LeagueReceived
         (Error >> Init)
 
-  let leagueView (league:LeagueTableDoc) (model:Model) dispatch =
-    let playerClick (PlayerId pId) =
-      pId |> (PlayerRoute >> PlayersRoute >> NavTo >> dispatch)
-    let (LeagueName name) =
-      league.LeagueName
+  let leagueView dispatch (league:LeagueTableDoc) (model:Model) =
+    let (LeagueName name) = league.LeagueName
     div [ ClassName "block" ]
       [ Components.pageTitle name
         Card.card []
-          [ Components.table league model.Player.Id playerClick
+          [ Components.table (NavTo >> dispatch) league model.Player.Id
           ]
       ]
 
@@ -51,7 +48,7 @@ module LeagueTable =
     | NotAsked
     | Fetching -> div [] []
     | WebError _ -> div [] [ str "could not find league" ]
-    | Success league -> leagueView league model dispatch
+    | Success league -> leagueView dispatch league model
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with

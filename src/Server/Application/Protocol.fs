@@ -49,10 +49,30 @@ module Protocol =
         | Some p when PredictionModifier.isDoubleDown p.Modifier && fgwno = gwno && (now()) > ko.Raw -> true
         | _ -> false)
 
+    let isAnyFixtureForGameweekClosed =
+      List.exists (fun ({ FixtureRecord.State = state; KickOff = ko }, _) ->
+        match state with
+          | FixtureState.InPlay _
+          | FixtureState.Classified _
+          | FixtureState.Open _ when (now()) > ko.Raw -> true
+          | _ -> false)
+
     let fixtureStateFirstMinuteHack now (f:FixtureRecord) =
       match f.State with
       | FixtureState.Open ko when (now()) > ko.Raw -> FixtureState.InPlay(ScoreLine.Init, MinutesPlayed.init)
       | s -> s
+
+    let ordinal (num:int) =
+      match num % 100 with
+      | 11
+      | 12
+      | 13 -> "th"
+      | _ ->
+          match num % 10 with
+          | 1 -> "st"
+          | 2 -> "nd"
+          | 3 -> "rd"
+          | _ -> "th"
 
     let getGameweekFixtures gwno (jwtPlayer:Jwt.JwtPlayer) : Rresult<GameweekFixturesViewModel> =
       match q.getGameweekNoFixtureSet gwno with
@@ -74,6 +94,20 @@ module Protocol =
           | true, _, _
           | _, true, _ -> BigUpState.Unavailable
           | _ -> BigUpState.Available
+        let gwTable (GameweekNo gwno) =
+          let playerId = PlayerId jwtPlayer.playerId
+          let repo = Documents.repo deps.ElasticSearch
+          let table = repo.Read (LeagueTableDocument (GlobalLeague, Week gwno))
+          let pointsAndPosition =
+            table
+            |> Option.bind (fun (t:LeagueTableDoc) ->
+                Map.ofList t.Members |> Map.tryFind playerId)
+            |> Option.map (fun t -> t.Points.Points, t.Position, ordinal t.Position)
+          table
+          |> Option.map (fun t ->
+            { AveragePoints = t.AvergagePointsWithAtLeastOnePrediction
+              HighestPoints = t.MaximumPoints
+              Player = pointsAndPosition })
         fixturesAndPredictions
         |> List.map (fun (f, pred) ->
           Documents.repo deps.ElasticSearch
@@ -102,9 +136,7 @@ module Protocol =
               Fixtures = fixtures
               IsDoubleDownAvailable = not <| isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno fixturesAndPredictions
               Neighbours = Neighbours.get gwNeighbours gwno
-              TotalPoints = 0
-              AveragePoints = 0m
-              Rank = 0
+              GlobalGameweekStats = if isAnyFixtureForGameweekClosed fixturesAndPredictions then gwTable gwno else None
             } |> Ok
 
     let getLeaguesPlayerIsIn (jwtPlayer:Jwt.JwtPlayer) : Map<PrivateLeagueId, PlayerLeagueViewModel> =

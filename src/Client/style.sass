@@ -19,7 +19,7 @@ $primary: #114B5F
 $secondary: #AA4465
 $link: $primary
 $info: #5AB1BB
-$success: #376D49
+$success: #1EA896
 $warning: #FFAD05
 // $warning: #FAA613
 // $warning-light:#FFEBC2
@@ -30,7 +30,7 @@ $dark: $grey-darker
 $text: $grey-dark
 $background: #F1F8F9
 // $background: #E2F1F3
-$background-alt: $white
+$background-alt: #dbe7ea
 $body-background-color: $background
 $white-ter: $background
 
@@ -39,7 +39,7 @@ $radius-small: 0
 $radius-large: 0
 $shadow: none
 $body-line-height: 1
-$modal-card-foot-border-top: 0
+// $modal-card-foot-border-top: 0
 
 // Bulma
 @import "~bulma/bulma"
@@ -108,7 +108,7 @@ $modal-card-foot-border-top: 0
   border: solid 1px $dark
   box-shadow: 1px 1px 1px #ccc
   text-transform: uppercase
-  font-weight: bold
+  // font-weight: bold
 
 .button.is-outlined
   border-color: unset
@@ -169,7 +169,7 @@ table.table th.text-left
     white-space: nowrap
     line-height: 2em
 
-.title em, .title span, .subtitle em, .subtitle span
+.title em, .title span
   font-weight: bold !important
 
 .home
@@ -222,8 +222,6 @@ table.table th.text-left
   .scorebox-right
     right: 1px
 
-  // .scorebox.kicked-off
-  // .scorebox.no-points
   .scorebox.correct-result
     background-color: $white
     border-color: $brand-green
@@ -260,7 +258,8 @@ table.table th.text-left
 
 
 
-
+.page-title
+  font-weight: bold
 .page-title, .page-sub-title
   // padding-left: 1em
   margin-bottom: 1em
@@ -269,7 +268,7 @@ table.table th.text-left
     background-color: $secondary
     display: inline-flex
     padding: 0.3em 0.7em
-    font-weight: bold
+    // font-weight: bold
     font-size: $size-normal
     text-transform: uppercase
 
@@ -277,115 +276,6 @@ table.table th.text-left
   span
     background-color: $warning
     color: unset
-
-// .gw-fixture-item
-//   margin-bottom: 2em
-//   cursor: pointer
-//   position: relative
-//   border-left: solid 4px $primary
-//   background-color: $white
-//   box-sizing: border-box
-//   .gw-fixture-item-team
-//     margin-top: -1.5em
-//     margin-bottom: 1em
-//   .gw-fixture-item-team, .gw-fixture-item-core
-//     display: flex
-//     flex-direction: column
-//     align-items: center
-//     position: relative
-//     .short-team-name
-//       margin-top: 0.3em
-//       margin-bottom: 1em
-
-//   .gw-fixture-item-core
-//     // margin-top: -0.8em
-//     // position: relative
-
-
-//     .gw-fixture-result
-//       position: relative
-
-//       .gw-fixture-result-box
-//         z-index: 1
-//         // position: absolute
-//         // width: 100%
-//         // top: 0
-//         // left: 0
-//         // right: 0
-
-//       .gw-fixture-result-box
-//         div
-//           font-size: 4em
-//           font-weight: bold
-//           opacity: 0.15
-//           color: $primary
-//           position: absolute
-//           top: 6px
-//         div:first-child
-//           left:0.4em
-//         div:last-child
-//           right:0.4em
-
-//       // .result-score
-//       //   color: $primary
-//       //   // background-color: $background
-//       //   font-weight: bold
-//       //   font-size: $size-normal
-//       //   width: 2em
-//       //   text-align: center
-
-
-//       .gw-fixture-result-clock
-//         color: $primary
-//         // background-color: $background
-//         text-align: center
-//         font-size: $size-small
-//         padding: 1.7em 0 0.3em
-
-    // .gw-fixture-pred-box, .gw-fixture-result-box
-    //   display: flex
-    //   justify-content: center
-    //   .pred-score
-    //     color: $primary
-    //     // background-color: $background
-    //     background-color: rgb(241, 248, 249, 0.7)
-    //     font-weight: bold
-    //     font-size: $size-medium
-    //     width: 1.8em
-    //     text-align: center
-    //     padding: 0.3em
-
-    //   .pred-score:not(:last-child)
-    //     margin-right: 2px
-
-    // .gw-fixture-pred-box
-    //   // margin-top: 2em
-    //   z-index: 2
-    //   position: relative
-
-    //   .pred-dd, .pred-bigup
-    //     background-color: $warning
-    //     position: absolute
-    //     width: 19px
-    //     bottom: 0
-    //     text-align: center
-    //     padding: 2px 0px
-    //     left: 29px
-
-    // .gw-fixture-result-pointer
-    //   display: flex
-    //   justify-content: center
-    //   font-size: $size-small
-    //   padding: 0.5em 0
-    //   height: 2em
-    //   i
-    //     margin-left: 2px
-    //     line-height: 1.1em
-    // .gw-fixture-result-pointer.predict
-    //   color: $danger
-    //   opacity: 0.7
-    // .gw-fixture-result-pointer.points
-    //   color: $grey-light
 
 
 
@@ -445,16 +335,19 @@ table.table th.text-left
     margin-top: -53px
 
   .gw-item-space
-    opacity: 0.1
-    background-color: $primary
+    background-color: $background-alt
     height: 62px
+
+  .gw-item-space.gw-item-inplay
+    background-color: $warning
 
   .gw-item-prediction, .gw-item-result
     flex-grow: 1
     position: relative
 
   .gw-item-score-polygon
-    background: linear-gradient(0deg, $primary 1px, $white 0px)
+    background-color: $white
+    border-bottom: solid 1px $primary
     display: flex
     justify-content: center
     padding: 50px 0 15px
@@ -463,15 +356,16 @@ table.table th.text-left
 
   .gw-item-ismodified
     .gw-item-score-polygon
-      background: linear-gradient(0deg, $warning 2px, $warning-light 0px)
+      background-color: $warning-light
+      border-bottom-color: $warning
 
   .gw-item-prediction
     .gw-item-score-polygon
-      clip-path: polygon(0% 0%,100% 0%,90% 100%,0% 100%)
+      clip-path: polygon(0% 0%,100% 0%,90% 101%,0% 101%)
 
   .gw-item-result
     .gw-item-score-polygon
-      clip-path: polygon(10% 0%,100% 0%,100% 100%,0% 100%)
+      clip-path: polygon(10% 0%,100% 0%,100% 101%,0% 101%)
 
   .gw-item-badges
     display: flex
@@ -487,7 +381,7 @@ table.table th.text-left
 .pred-score, .pred-score-empty
   width: 26px
   height: 26px
-  padding: 4px 0
+  padding: 5px 0
   font-weight: bold
   text-align: center
   box-shadow: 1px 1px 1px $grey-lighter
@@ -512,142 +406,88 @@ table.table th.text-left
   border: solid 1px $primary
   box-sizing: content-box
 
-// .pred-score:first-child
-//   border-radius: 2px 0 0 2px
-// .pred-score:last-child
-//   border-radius: 0 2px 2px 0
-
 .pred-score-empty
   border: solid 1px $primary
   color: $primary
   background-color: $background
-  // background-color: $primary
-  // opacity: 0.1
+
+.gw-stats
+  padding: 1em 0 0.5em
+  color: $primary
+  background-color: $white
+  margin-bottom: 2em
+  border-bottom: solid 1px $primary
+  .level
+    .heading
+      letter-spacing: unset
+      margin-bottom: 0.5em
+    .title
+      font-size: $size-medium
+      .ordinal
+        font-size: $size-small
+        text-transform: uppercase
+        color: $secondary
+        font-weight: normal
 
 
-  // padding-bottom: 1em
+.formguide
+  background-color: $background-alt
+  padding: 1em 0em 2.5em
+  min-height: 2em
+  .formguide-row:not(:last-child)
+    margin-bottom: 4px
+  .formguide-row
+    .formguide-result-w, .formguide-result-d, .formguide-result-l
+      border-bottom: solid 1px
+    .formguide-result-w
+      color: $success
+      border-color: $success
+      background-color: $white
+    .formguide-result-d
+      color: $grey
+      border-color: $grey
+      background-color: $white
+    .formguide-result-d
+    .formguide-result-l
+      color: $danger
+      border-color: $danger
+      background-color: $white
+    .formguide-home
+      margin-right: 3px
+      clip-path: polygon(0% 0%,100% 0%,96% 100%,0% 100%)
+    .formguide-away
+      clip-path: polygon(4% 0%,100% 0%,100% 100%,0% 100%)
+      margin-left: 3px
+    .formguide-team
+      display: flex
+      flex-grow: 1
+      padding: 9px 17px
+      white-space: nowrap
+      text-transform: uppercase
+      // color: $primary
+      font-size: $size-small
+      // font-weight: bold
+      .formguide-scoreline
+        font-weight: bold
+        margin: 0 4px
+        white-space: nowrap
+      span
+        margin-right: 4px
+        font-weight: bold
 
-  // .bg-badge-container
-  //   // overflow: hidden
-  //   position: relative
-  //   div:first-child
-  //     left: 1em
-  //     top: 1em
-  //   div:last-child
-  //     right: 1em
-  //     top: 1em
 
-// .gw-fixture-item.gw-fixture-item-ismodified
-//   background-color: $warning-light
-//   outline: solid 2px $warning
-//   border-left: solid 4px $warning
-// .gw-fixture-item
-//   .gw-fixture-result-row
-//     position: relative
-//     top: -16px
-
-//   .gw-fixture-result-container
-//     padding: 2px
-//   .gw-fixture-result-desc
-//     font-size: $size-small
-//     display: flex
-//     margin-bottom: 2px
-//     span
-//       flex-grow: 1
-//       text-align: center
-//       font-weight: bold
-
-//   .gw-fixture-result-box
-//     display: flex
-
-//     div
-//       text-align: center
-//       font-weight: bold
-//       margin-right: 2px
-//       padding: 6px 0
-//       width: 30px
-//     div:last-child
-//       margin-right: 0
-
-//   .gw-fixture-result-row.gw-fixture-open
-//     .gw-fixture-result-desc
-//       color: $white-ter
-//     .gw-fixture-result-container
-//       background-color: $info
-//     .gw-fixture-result-box
-//       div
-//         background-color: $info-light
-
-//   .gw-fixture-result-row.gw-fixture-inplay
-//     .gw-fixture-result-container
-//       background-color: $warning
-//     .gw-fixture-result-box
-//       div
-//         background-color: $warning-light
-
-//   .gw-fixture-result-row.gw-fixture-classified
-//     .gw-fixture-result-desc
-//       // color: $white-ter
-//     .gw-fixture-result-container
-//       background-color: $warning
-//     .gw-fixture-result-box
-//       div
-//         background-color: $warning-light
-
-//   .gw-fixture-pred-row
-//     position: relative
-//     top: -12px
-//   .gw-fixture-pred-container
-//     padding: 2px
-//     position: relative
-//     top: -6px
-//     .gw-fixture-pred-box
-//       display: flex
-//       .pred-score
-//         text-align: center
-//         font-weight: bold
-//         margin-right: 2px
-//         padding: 6px 0
-//         width: 35px
-//         font-size: 1.2em
-//       .pred-score:last-child
-//         margin-right: 0
-//       .pred-dd, .pred-bigup
-//         background-color: $warning
-//         position: absolute
-//         width: 19px
-//         bottom: 0
-//         text-align: center
-//         padding: 2px 0px
-//         left: 29px
-
-//   .gw-fixture-pred-row.gw-fixture-nopred
-//     .gw-fixture-pred-container
-//       background-color: $danger
-//     .gw-fixture-pred-box
-//       .pred-score
-//         background-color: $danger-light
-//         color: $danger
-
-//   .gw-fixture-pred-row.gw-fixture-haspred
-//     .gw-fixture-pred-container
-//       background-color: $info
-//     .gw-fixture-pred-box
-//       .pred-score
-//         background-color: $info-light
-
-  // .gw-fixture-item-arrow
-  //   position: absolute
-  //   right: 1em
-  //   top: 3em
-
+// $formguideHeight: 10em
 .gw-fixture-modal-container
-  background-color: $background
+  // background-color: $background
   // padding: 1em 0 0
+  .gw-fixture-modal-title-container
+    position: sticky
+    top: 0
 
   .gw-fixture-modal-title
-    padding: 1em 1em 2em
+    padding: 1em
     display: flex
+    // background-color: $background
     color: $primary
     text-transform: uppercase
     .gw-fixture-modal-team
@@ -664,11 +504,6 @@ table.table th.text-left
       white-space: nowrap
     .gw-fixture-modal-title-minutes
       margin-left: 4px
-
-  // .gw-fixture-modal-space
-  //   opacity: 0.1
-  //   background-color: $primary
-  //   height: 34px
 
   .gw-fixture-modal-clock
     margin-bottom: 2px
@@ -695,7 +530,6 @@ table.table th.text-left
   .gw-fixture-modal-prediction
 
     .pred-score-container
-      // margin-top: 1em
 
     .pred-score, .pred-score-empty
       width: 36px
@@ -703,37 +537,15 @@ table.table th.text-left
       padding: 8px 0
       font-size: $size-medium
 
-    // .pred-score:first-child, .pred-score-empty:first-child
-    //   margin-right: 2px
-    // .pred-score:nth-child(2), .pred-score-empty:nth-child(2)
-    //   margin-left: 2px
-
     .pred-dd, .pred-bigup
       width: 22px
       bottom: -9px
-      // border-width: 1px
       font-size: $size-medium
 
 
 .gw-fixture-modal-content
-  // .gw-fixture-item
-  //   cursor: unset
-  //   border-left-width: 0px
-  //   outline: none
-  //   // position: sticky
-  //   // top: 2em
-  //   // z-index: 99
-  // .gw-fixture-result-pointer
-  //   display: none !important
-
-  // .gw-fixture-item.gw-fixture-item-ismodified
-  //   background-color: $white
-  //   border: none
-
-  // .gw-fixture-item
-  //   margin-bottom: 0
-  //   padding-bottom: 0
-
+  position: relative
+  border-top: solid 1px #dbdbdb
   .block
     margin-bottom: 1em
   .gw-fixture-preset-score-row
@@ -757,6 +569,7 @@ table.table th.text-left
     padding: 0
   .modal-card-foot
     justify-content: center
+    z-index: 20
   .modal-card-foot .button, .modal-card-foot .button:focus
     background-color: $secondary
     border: none
@@ -777,16 +590,6 @@ table.table th.text-left
         flex-grow: 1
       .button:not(:last-child)
         margin-right: 2px
-
-// .gw-fixture-modal-state
-//   padding: 5px
-//   margin-bottom: 5px
-//   span
-//     font-weight: bold
-//     white-space: nowrap
-//     text-transform: uppercase
-//     color: $grey-light
-//     font-size: $size-small
 
 .point-vector-row
   .point-vector-row-left, .point-vector-row-right
@@ -812,47 +615,6 @@ table.table th.text-left
   .point-vector-row
     .point-vector-row-right
       font-size: $size-medium
-
-.gw-fixture-formguide
-  margin-bottom: 1em
-  .gw-fixture-formguide-row:not(:last-child)
-    margin-bottom: 4px
-  .gw-fixture-formguide-row
-    .formguide-result-w, .formguide-result-d, .formguide-result-l
-      display: flex
-      width: 2em
-      padding: 0.5em 0
-      margin: 0 0.9em
-      justify-content: center
-      font-weight: bold
-      white-space: nowrap
-      text-transform: uppercase
-      font-size: $size-small
-      border-radius: 20px
-    .formguide-result-w
-      color: $success
-      background-color: $success-light
-    .formguide-result-d
-      opacity: 0.6
-      color: $grey
-      background-color: $grey-lighter
-      filter: saturate(0.2)
-    .formguide-result-l
-      color: $danger
-      background-color: $danger-light
-    .formguide-team, .formguide-venue
-      display: flex
-      padding: 0.5em 0
-      white-space: nowrap
-      text-transform: uppercase
-      color: $primary
-      font-size: $size-small
-      .formguide-scoreline
-        font-weight: bold
-        margin: 0 4px
-        white-space: nowrap
-
-
 
 .kick-off-time
   background-color: $info
@@ -888,8 +650,8 @@ table.table th.text-left
     .big-up-box-heading
       background-color: $warning
       display: inline-flex
-      padding: 0.3em 0.7em
-      font-weight: bold
+      padding: 4px 12px
+      // font-weight: bold
       text-transform: uppercase
       position: relative
       margin-bottom: 10px
@@ -905,15 +667,16 @@ table.table th.text-left
 
   .big-up-box-bottom
     display: flex
-    padding: 12px
+    padding: 10px
     background-color: $white
+    // border-bottom: solid 1px $primary
   .big-up-box-team
-    font-weight: bold
+    // font-weight: bold
     white-space: nowrap
     text-transform: uppercase
     color: $primary
   .big-up-box-pred
-    font-weight: bold
+    // font-weight: bold
     color: $white-ter
     background-color: $primary
     margin: 0 6px

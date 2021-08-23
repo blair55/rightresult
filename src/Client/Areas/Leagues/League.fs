@@ -103,8 +103,31 @@ module League =
           (LeaguesRoute(LeaveLeagueRoute(string leagueId)))
       ]
 
+    let cashLeague dispatch =
+      div [ Class "is-clearfix"
+            Style [ MarginBottom "1em" ] ] [
+        Message.message [ Message.Color IsWarning ] [
+          Message.body [] [
+            p [] [
+              span [Style[FontWeight "bold"]] [str"New Players"]
+              br []
+              str "Please "
+              a (Components.anchorNavProps (NavTo >> dispatch) Route.ContactRoute) [
+                str "get in touch"
+              ]
+              str " before August 30th to arrange entry fee."
+            ]
+          ]
+        ]
+      ]
+
     div [ ClassName "block" ] [
       Components.pageTitle name
+
+      match string leagueId with
+      | "11227906-876b-4d3b-8c2a-5dd902b2b9c6" -> cashLeague dispatch
+      | _ -> div [] []
+
       Components.subHeading "Standings"
       Card.card [ CustomClass "card-footer-only"
                   Props [ Style [ MarginBottom "1em" ] ] ] [

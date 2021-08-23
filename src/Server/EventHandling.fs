@@ -1,5 +1,6 @@
 ﻿namespace Server
 
+open System.Diagnostics
 open FSharp.Core
 open Shared
 open Server.Events
@@ -71,13 +72,13 @@ module EventHandling =
       |> List.iter (fun f -> f deps created (fsId, fId))
 
     | FixtureClassified (fsId, fId, scoreLine) ->
-      // deps.Queries.getFixtureRecord fId
-      // |> fun fixture ->
-      //   match fixture.ScoreLine with
-      //   | Some _ -> printfn "fixture already classified: %A" event
-      //   | _ -> FixtureClassifiedSubscribers.all |> List.iter (fun f -> f deps created (fsId, fId, scoreLine))
-      FixtureClassifiedSubscribers.all
-      |> List.iter (fun f -> f deps created (fsId, fId, scoreLine))
+      deps.Queries.getFixtureRecord fId
+      |> fun fixture ->
+        match fixture.State with
+        | FixtureState.InPlay _ ->
+            FixtureClassifiedSubscribers.all
+            |> List.iter (fun f -> f deps created (fsId, fId, scoreLine))
+        | _ -> printfn "fixture already classified: %A" event
 
     | FixtureAppended (fsId, fixture) ->
       FixtureAppendedSubscribers.all

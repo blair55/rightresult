@@ -38,6 +38,24 @@ module Html =
     elem
     >> fun e -> e.classList.remove (CustomClasses.IsClipped)
 
+  let private elemById elemId =
+    Browser
+      .Dom
+      .document
+      .getElementById(elemId)
+
+  let resetScrollTop =
+    elemById
+    >> fun e -> e.scrollTop <- 0.
+
+  let resetScrollToBottom =
+    elemById
+    >> fun e -> e.scrollTop <- e.scrollHeight
+
+  let resetScrollLeft =
+    elemById
+    >> fun e -> e.scrollLeft <- 0.
+
 module Components =
 
   let signedInt i =
@@ -152,79 +170,6 @@ module Components =
         Card.content [] content
         Card.footer [] footer
       ]
-    ]
-
-  let toShortPoints (m: PredictionPointsMonoid) =
-    // m.Points, m.CorrectResults + m.DoubleDownCorrectResults, m.CorrectScores + m.DoubleDownCorrectScores
-    m.Points, m.CorrectResults, m.CorrectScores
-
-  let table (league: LeagueTableDoc) activePlayerId (playerClick: PlayerId -> Unit) =
-    let playerLink pId (m: LeagueTableMember) =
-      let (PlayerName name) = m.PlayerName
-
-      a [ OnClick(fun _ -> playerClick pId) ] [
-        str name
-      ]
-
-    let movementIcon m =
-      if m > 0 then
-        [ Fa.i [ Fa.CustomClass "movement-up"
-                 Fa.Size Fa.FaSmall
-                 Fa.Solid.AngleUp ] [] ]
-      elif m < 0 then
-        [ Fa.i [ Fa.CustomClass "movement-down"
-                 Fa.Size Fa.FaSmall
-                 Fa.Solid.AngleDown ] [] ]
-      else
-        [ Fa.i [ Fa.CustomClass "movement-none"
-                 Fa.Size Fa.FaExtraSmall
-                 Fa.Solid.Minus ] [] ]
-
-    Table.table [ Table.IsHoverable; Table.IsFullWidth ] [
-      thead [] [
-        tr [] [
-          th [] []
-          th [] []
-          th [] []
-          th [ Class CustomClasses.TextRight ] [
-            str "CR"
-          ]
-          th [ Class CustomClasses.TextRight ] [
-            str "CS"
-          ]
-          th [ Class CustomClasses.TextRight ] [
-            str "Pts"
-          ]
-        ]
-      ]
-      tbody
-        []
-        (league.Members
-         |> List.map
-              (fun (pId, m) ->
-                let (p, cr, cs) = toShortPoints m.Points
-
-                tr [ ClassName(
-                       if activePlayerId = pId then
-                         "is-selected"
-                       else
-                         ""
-                     ) ] [
-                  td [ Class CustomClasses.TextRight ] [
-                    str (string m.Position)
-                  ]
-                  td [ Class CustomClasses.TextCenter ] (movementIcon m.Movement)
-                  td [] [ playerLink pId m ]
-                  td [ Class CustomClasses.TextRight ] [
-                    str (string cr)
-                  ]
-                  td [ Class CustomClasses.TextRight ] [
-                    str (string cs)
-                  ]
-                  td [ Class CustomClasses.TextRight ] [
-                    str (string p)
-                  ]
-                ]))
     ]
 
   let smallIconWithText iconName text =
@@ -428,4 +373,59 @@ module Components =
           str awayTeam
         ]
       ]
+    ]
+
+  let toShortPoints (m: PredictionPointsMonoid) =
+    m.Points, m.CorrectResults, m.CorrectScores
+
+  let table nav (league: LeagueTableDoc) activePlayerId =
+    let playerLink (PlayerId pId) (m: LeagueTableMember) =
+      let (PlayerName name) = m.PlayerName
+      a (anchorNavProps nav (PlayerRoute pId |> PlayersRoute)) [ str name ]
+
+    let movementIcon m =
+      if m > 0 then
+        [ Fa.i [ Fa.CustomClass "movement-up"
+                 Fa.Size Fa.FaSmall
+                 Fa.Solid.AngleUp ] [] ]
+      elif m < 0 then
+        [ Fa.i [ Fa.CustomClass "movement-down"
+                 Fa.Size Fa.FaSmall
+                 Fa.Solid.AngleDown ] [] ]
+      else
+        [ Fa.i [ Fa.CustomClass "movement-none"
+                 Fa.Size Fa.FaExtraSmall
+                 Fa.Solid.Minus ] [] ]
+
+    Table.table [ Table.IsHoverable; Table.IsFullWidth ] [
+      thead [] [
+        tr [] [
+          th [] []
+          th [] []
+          th [] []
+          th [ Class CustomClasses.TextRight ] [
+            str "CR"
+          ]
+          th [ Class CustomClasses.TextRight ] [
+            str "CS"
+          ]
+          th [ Class CustomClasses.TextRight ] [
+            str "Pts"
+          ]
+        ]
+      ]
+      tbody
+        []
+        (league.Members
+         |> List.map
+              (fun (pId, m) ->
+                let (p, cr, cs) = toShortPoints m.Points
+                tr [ ClassName( if activePlayerId = pId then "is-selected" else "") ] [
+                  td [ Class CustomClasses.TextRight ] [ str (string m.Position) ]
+                  td [ Class CustomClasses.TextCenter ] (movementIcon m.Movement)
+                  td [] [ playerLink pId m ]
+                  td [ Class CustomClasses.TextRight ] [ str (string cr) ]
+                  td [ Class CustomClasses.TextRight ] [ str (string cs) ]
+                  td [ Class CustomClasses.TextRight ] [ str (string p) ]
+                ]))
     ]

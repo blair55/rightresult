@@ -44,20 +44,6 @@ module FixtureSubscribersAssistance =
     repo.Read (FormGuideDocument team)
     |> Option.defaultValue []
     |> List.sortByDescending (fun f -> f.KickOff)
-  // let buildColumn (deps:Dependencies) team =
-  //   let getFormGuide team : FormFixture list =
-  //     let repo = Documents.repo deps.ElasticSearch
-  //     repo.Read (FormGuideDocument team)
-  //     |> Option.defaultValue []
-  //     |> List.sortByDescending (fun f -> f.KickOff)
-  //   let getPremTableRow team =
-  //     let repo = Documents.repo deps.ElasticSearch
-  //     repo.Read RealPremTable
-  //     |> Option.bind (fun (table:PremTable) -> Map.tryFind team table.Rows)
-  //     |> Option.defaultValue PremTableRow.Init
-  //   { FixtureDetailsColumn.Team = team
-  //     PremTableRow = getPremTableRow team
-  //     FormGuide = getFormGuide team }
 
   let makeListsOfEqualLength a b =
     [ 1 .. System.Math.Max (List.length a, List.length b) ]
@@ -270,14 +256,6 @@ module FixtureClassifiedSubscribers =
       Points.getPointsForPrediction result pred vectors |> fst)
     |> Option.defaultValue PredictionPointsMonoid.Init
 
-  // let fixturePredictionToPoints (f:FixtureRecord, p:PredictionRecord) =
-  //   FixtureState.classifiedScoreLine f.State
-  //   |> Option.map (fun result ->
-  //     Some (p.ScoreLine, p.IsDoubleDown)
-  //     |> Points.getPointsForPrediction result
-  //     |> fst)
-  //   |> Option.defaultValue PredictionPointsMonoid.Init
-
   type PositionNumber = PositionNumber of int
   type PositionCollection = PositionCollection of (PlayerId * LeagueTableMember) list
 
@@ -304,6 +282,13 @@ module FixtureClassifiedSubscribers =
       |> Option.map (fun prev -> { m with Movement = prev.Position - m.Position })
       |> fun updatedMember -> playerId, Option.defaultValue m updatedMember)
 
+  let avergagePointsWithAtLeastOnePrediction =
+    List.filter (snd >> List.isEmpty >> not)
+    >> List.map (snd >> List.map fixturePredictionToPoints >> List.fold (+) PredictionPointsMonoid.Init)
+    >> function | [] -> [ PredictionPointsMonoid.Init ] | m -> m
+    >> List.averageBy (fun m -> double m.Points)
+    >> int
+
   let updateAllLeagueTables (deps:Dependencies) _ (FixtureSetId fsId, _, _) =
 
     let q =
@@ -327,6 +312,12 @@ module FixtureClassifiedSubscribers =
       Documents.repo deps.ElasticSearch
       |> fun repo -> repo.Read (LeagueTableDocument (leagueId, window))
 
+    let maximumPoints =
+      List.map (snd >> fun (ltm:LeagueTableMember) -> ltm.Points)
+      >> function | [] -> [ PredictionPointsMonoid.Init ] | m -> m
+      >> List.map (fun m -> m.Points)
+      >> List.max
+
     let buildLeagueTable
       (leagueName, document, previousTable:LeagueTableDoc option,
         (playerPredictions:Map<PlayerId, (FixtureRecord * PredictionRecord) list>)) =
@@ -334,8 +325,8 @@ module FixtureClassifiedSubscribers =
       let previousTableMap =
         previousTable |> Option.map (fun t -> t.Members |> Map.ofList)
 
-      Documents.repo deps.ElasticSearch
-      |> fun repo ->
+      let repo = Documents.repo deps.ElasticSearch
+
       playerPredictions
       |> Map.map (fun playerId fixturePredictions ->
         fixturePredictions
@@ -349,13 +340,14 @@ module FixtureClassifiedSubscribers =
                PlayerName = playerName
                Points = m }))
       |> Map.toList
-      |> List.filter (snd >> Option.isSome)
-      |> List.map (fun (p, o) -> p, o.Value)
+      |> List.choose (fun (p, ltm) -> ltm |> Option.map (fun m -> p, m))
       |> standingAlgo
       |> movementAlgo previousTableMap
       |> fun members ->
         { LeagueTableDoc.LeagueName = leagueName
-          Members = members }
+          Members = members
+          MaximumPoints = maximumPoints members
+          AvergagePointsWithAtLeastOnePrediction = avergagePointsWithAtLeastOnePrediction (Map.toList playerPredictions) }
       |> repo.Insert document
 
     let membersToPredictionMap f =
@@ -510,38 +502,26 @@ module FixtureClassifiedSubscribers =
 
   let updateFormGuideDoc deps _ (_, fId, _) =
     let repo = Documents.repo deps.ElasticSearch
-    let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } = deps.Queries.getFixtureRecord fId
 
     let rebuildFormGuide team =
       deps.Queries.getFixturesForTeam team
       |> List.ofSeq
       |> List.sortBy (fun f -> f.KickOff)
       |> List.choose (fun f -> FixtureState.classifiedScoreLine f.State |> Option.map (fun sl -> f, sl))
-      // |> List.map (fun ({ TeamLine = TeamLine (homeTeam, _); KickOff = ko }, ScoreLine (homeScore, awayScore)) ->
-      |> List.map (fun ({ TeamLine = tl; KickOff = ko }, scoreline) ->
-        let scoreResult = getScoreResult scoreline
-        if team = homeTeam then
-          { FormFixture.KickOff = ko
-            TeamLine = tl
-            Venue = FormVenue.H
-            Result =
-              match scoreResult with
-              | HomeWin -> FormResult.W
-              | AwayWin -> FormResult.L
-              | Draw -> FormResult.D
-            Scoreline = scoreline }
-        else
+      |> List.truncate 5
+      |> List.map (fun ({ TeamLine = (TeamLine(h, a) as tl); KickOff = ko }, scoreline) ->
         { FormFixture.KickOff = ko
           TeamLine = tl
-          Venue = FormVenue.A
           Result =
-            match scoreResult with
-            | HomeWin -> FormResult.L
-            | AwayWin -> FormResult.W
+            match getScoreResult scoreline with
+            | HomeWin when team = h -> FormResult.W
+            | AwayWin when team = a -> FormResult.W
             | Draw -> FormResult.D
+            | _ -> FormResult.L
           Scoreline = scoreline })
         |> fun (f:FormFixture list) -> repo.Insert (FormGuideDocument team) f
 
+    let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } = deps.Queries.getFixtureRecord fId
     rebuildFormGuide homeTeam
     rebuildFormGuide awayTeam
 
@@ -556,8 +536,6 @@ module FixtureClassifiedSubscribers =
         repo.Upsert
           (FixtureDetailsDocument fId)
           FixtureDetails.Init
-          // ({ KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
-          // (fun fd -> { fd with Home = buildColumn deps home; Away = buildColumn deps away }))
           (fun fd ->
             { fd with
                   Home = getPremTableRow deps home

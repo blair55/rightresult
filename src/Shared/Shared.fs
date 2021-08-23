@@ -366,11 +366,8 @@ type FixtureDetails =
 and FormFixture =
   { KickOff : KickOff
     TeamLine : TeamLine
-    Venue : FormVenue
     Result : FormResult
     Scoreline : ScoreLine }
-and [<RequireQualifiedAccess>] FormVenue =
-  | H | A
 and [<RequireQualifiedAccess>] FormResult =
   | W | L | D
 
@@ -395,6 +392,10 @@ and [<RequireQualifiedAccess>] BigUpState =
   | Available
   | Expanded
   | Set
+and GlobalGameweekStats =
+  { AveragePoints : int
+    HighestPoints : int
+    Player : (int * int * string) option }
 
 and NewFixtureSetViewModel =
   { GameweekNo : GameweekNo
@@ -405,10 +406,14 @@ and PlayerLeagueViewModel =
     LeagueName : LeagueName }
 and [<CLIMutable>] LeagueTableDoc =
   { LeagueName : LeagueName
-    Members : (PlayerId * LeagueTableMember) list }
+    Members : (PlayerId * LeagueTableMember) list
+    MaximumPoints : int
+    AvergagePointsWithAtLeastOnePrediction : int }
   static member Init name =
     { LeagueName = name
-      Members = [] }
+      Members = []
+      MaximumPoints = 0
+      AvergagePointsWithAtLeastOnePrediction = 0 }
 and LeagueTableMember =
   { Position : int
     Movement : int
@@ -518,9 +523,7 @@ type GameweekFixturesViewModel =
     Fixtures: Map<FixtureId, FixturePredictionViewModel>
     IsDoubleDownAvailable: bool
     Neighbours: GameweekNo option * GameweekNo option
-    TotalPoints: int
-    AveragePoints: decimal
-    Rank: int
+    GlobalGameweekStats : GlobalGameweekStats option
   }
 
 [<RequireQualifiedAccess>]
@@ -675,7 +678,7 @@ module Global =
 /// - felizify
 /// + detect fixture ko change
 /// - fix push!
-/// - gw fixtures header: top score - avg score - my score
+/// + gw fixtures header: top score - avg score - my score
 /// - homepage gw global leaderboard
 /// - only run bg tasks when web available & tasks not running
 /// - swipabe fixture page
