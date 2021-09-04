@@ -43,6 +43,7 @@ type Msg =
   | GameweekMsg of GameweekArea.Msg
   | LeaguesMsg of LeaguesArea.Msg
   | PlayersMsg of PlayersArea.Msg
+  | Noop
 
 let api: IProtocol =
   Remoting.createApi ()
@@ -57,9 +58,9 @@ let isIosStandalone: bool = jsNative
 let update msg (model: Model) : Model * Cmd<Msg> =
   // printfn "m %A" model
   // printfn "msg %A" msg
-// printfn "p %A" model.Player
+  // printfn "p %A" model.Player
   match model.Player, model.Area, msg with
-  | _, _, NavTo r -> model, navTo r
+  | _, _, NavTo r -> model, Cmd.batch [ navTo r; Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop)  ]
 
   | Some _, PlayersArea _, PlayersMsg (PlayersArea.Msg.MyProfileMsg (MyProfile.Msg.Logout))
   | Some _, HomeArea _, HomeMsg (HomeArea.Msg.Logout) ->
@@ -82,7 +83,7 @@ let update msg (model: Model) : Model * Cmd<Msg> =
     let m, cmd = PlayersArea.update api p msg m
     { model with Area = PlayersArea m }, Cmd.map PlayersMsg cmd
 
-  | _ -> model, alert (LoginProblem "No user found")
+  | _ -> model, []
 
 let footabs model dispatch : ReactElement option =
   let desc s =
@@ -220,9 +221,7 @@ open Elmish.Debug
 open Elmish.HMR
 #endif
 
-// open Elmish.Browser.UrlParser
 open Elmish.UrlParser
-// open Elmish.Browser.Navigation
 open Elmish.Navigation
 open Thoth.Json
 
