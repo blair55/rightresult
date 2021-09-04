@@ -683,7 +683,7 @@ module Global =
 /// - swipabe fixture page
 /// - capture score in big up event
 /// - scrolling preset boxes
-
+/// - matrix: full screen, show bigups, points scored shading
 
 
 /// + landing page

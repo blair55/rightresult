@@ -319,6 +319,12 @@ module FixtureClassifiedSubscribers =
       >> List.map (fun m -> m.Points)
       >> List.max
 
+    let timeIt (LeagueName leagueName) (doc:Document) desc f g =
+      let sw = System.Diagnostics.Stopwatch.StartNew()
+      let x = f g
+      printfn "%s %A %s : %f" leagueName doc desc sw.Elapsed.TotalSeconds
+      x
+
     let buildLeagueTable
       (leagueName, document, previousTable:LeagueTableDoc option,
         (playerPredictions:Map<PlayerId, (FixtureRecord * PredictionRecord) list>)) =
@@ -342,8 +348,8 @@ module FixtureClassifiedSubscribers =
                Points = m }))
       |> Map.toList
       |> List.choose (fun (p, ltm) -> ltm |> Option.map (fun m -> p, m))
-      |> standingAlgo
-      |> movementAlgo previousTableMap
+      |> timeIt leagueName document "standingAlgo" standingAlgo
+      |> timeIt leagueName document "movementAlgo" (movementAlgo previousTableMap)
       |> fun members ->
         { LeagueTableDoc.LeagueName = leagueName
           Members = members

@@ -556,7 +556,7 @@ module GameweekFixtures =
         div [] [ str (badgeAbbrv away) ]
       ] ]
 
-  let modalTitle ({ TeamLine = TeamLine (Team home, Team away) } as fp: FixturePredictionViewModel) =
+  let modalTitle dispatch ({ TeamLine = TeamLine (Team home, Team away) } as fp: FixturePredictionViewModel) =
     let clockOrScore =
       match fp.State with
       | FixtureState.Open ko -> [ kickOffClockTime ko ]
@@ -578,6 +578,9 @@ module GameweekFixtures =
         str (away)
       ]
       div [ Class "gw-fixture-modal-title-minutes" ] minsOrClassified
+      div [ Class "gw-fixture-modal-close"; OnClick(fun _ -> dispatch HideModal) ]
+        [ Fa.i [ Fa.Solid.TimesCircle ] []
+        ]
     ]
 
   let rowOf2 left right =
@@ -651,13 +654,11 @@ module GameweekFixtures =
 
       Modal.modal [ Modal.IsActive true ] [
         Modal.background [ Props [ OnClick(fun _ -> dispatch HideModal) ] ] []
-        Modal.close [ Modal.Close.Size IsLarge
-                      Modal.Close.OnClick(fun _ -> dispatch HideModal) ] []
         Modal.Card.card [] [
           Modal.Card.body [ Props [ Id "fixture-modal-card" ] ] [
             div [ Class "gw-fixture-modal-container" ] [
               div [ Class "gw-fixture-modal-title-container" ] [
-                modalTitle fp
+                modalTitle dispatch fp
                 formGuide fp
               ]
               div [ Class "gw-fixture-modal-content" ] [
