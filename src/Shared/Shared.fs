@@ -659,7 +659,6 @@ module Global =
 
 /// TODO:
 
-/// - add team to form guide
 /// - league history multiple winners
 /// - league history paging
 /// - protect add fixtures
@@ -683,15 +682,8 @@ module Global =
 /// - only run bg tasks when web available & tasks not running
 /// - swipabe fixture page
 /// - capture score in big up event
-/// - prevent double fixture classification event?
 /// - scrolling preset boxes
-/// - my predicted table should only update on classify?
 
-/// FIXTURE - PRED
-/// open    - none
-/// open    - some
-/// inplay  - some
-/// inplay  - none
 
 
 /// + landing page

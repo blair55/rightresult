@@ -276,19 +276,19 @@ module HomeArea =
       ]
     ]
 
-  let cashLeague () =
-    div [ Class "is-clearfix"
-          Style [ MarginBottom "1em" ] ] [
-      Message.message [ Message.Color IsWarning ] [
-        Message.body [] [
-          p [] [
-            a [ Href Routes.contactPath ] [
-              str "Get in touch to play for cash!"
-            ]
-          ]
-        ]
-      ]
-    ]
+  // let cashLeague () =
+  //   div [ Class "is-clearfix"
+  //         Style [ MarginBottom "1em" ] ] [
+  //     Message.message [ Message.Color IsWarning ] [
+  //       Message.body [] [
+  //         p [] [
+  //           a [ Href Routes.contactPath ] [
+  //             str "Get in touch to play for cash!"
+  //           ]
+  //         ]
+  //       ]
+  //     ]
+  //   ]
 
   let globalLeaderBoard () =
     div []
@@ -326,7 +326,7 @@ module HomeArea =
       fixtureReel ()
       bigUpsBar dispatch bigups
       // globalLeaderBoard ()
-      cashLeague ()
+      // cashLeague ()
       homeMenu dispatch ]
 
   [<Emit("isSubscribableToPush()")>]
