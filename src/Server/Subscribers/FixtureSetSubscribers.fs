@@ -113,8 +113,10 @@ module FixtureSetCreatedSubscribers =
     |> List.iter (fun { FixtureRecord.Id = fId; TeamLine = TeamLine (home, away) } ->
       let repo = Documents.repo deps.ElasticSearch
       repo.Insert (FixtureDetailsDocument fId)
-        // { Id = fId; KickOff = ko; BigUps = []; Home = buildColumn deps home; Away = buildColumn deps away })
-        { BigUps = []; Home = getPremTableRow deps home; Away = getPremTableRow deps away; FormGuide = [] })
+        { BigUps = []
+          Home = getPremTableRow deps home
+          Away = getPremTableRow deps away
+          FormGuide = buildFormGuide deps home away })
 
   let all =
     [ createFixtureSet
@@ -135,14 +137,13 @@ module FixtureSetConcludedSubscribers =
     |> repo.Read
     |> Option.bind (fun table -> table.Members |> List.tryHead)
     |> Option.map (fun (playerId, m) ->
-      Documents.repo deps.ElasticSearch
-      |> fun repo ->
-        repo.Insert
-          GlobalGameweekWinner
-          { GlobalGameweekWinner.PlayerId = playerId
-            GameweekNo = GameweekNo gwno
-            Member = m })
-    |> ignore
+      let repo = Documents.repo deps.ElasticSearch
+      repo.Insert
+        GlobalGameweekWinner
+        { GlobalGameweekWinner.PlayerId = playerId
+          GameweekNo = GameweekNo gwno
+          Member = m })
+    |> ignore<Unit option>
 
   let all =
     [ concludeFixtureSet
@@ -562,13 +563,12 @@ module FixtureAppendedSubscribers =
   let createFixtureDetails (deps:Dependencies) _ (_, fixture) =
     fixture
     |> (fun { FixtureRecord.Id = fId; TeamLine = TeamLine (home, away) } ->
-      Documents.repo deps.ElasticSearch
-      |> fun repo ->
-        repo.Insert (FixtureDetailsDocument fId)
-          { BigUps = []
-            Home = getPremTableRow deps home
-            Away = getPremTableRow deps away
-            FormGuide = buildFormGuide deps home away })
+      let repo = Documents.repo deps.ElasticSearch
+      repo.Insert (FixtureDetailsDocument fId)
+        { BigUps = []
+          Home = getPremTableRow deps home
+          Away = getPremTableRow deps away
+          FormGuide = buildFormGuide deps home away })
 
   let createFixture (deps:Dependencies) created (FixtureSetId fsId, fixture) =
 
