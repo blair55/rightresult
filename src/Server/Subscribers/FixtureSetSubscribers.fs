@@ -348,8 +348,8 @@ module FixtureClassifiedSubscribers =
                Points = m }))
       |> Map.toList
       |> List.choose (fun (p, ltm) -> ltm |> Option.map (fun m -> p, m))
-      |> timeIt leagueName document "standingAlgo" standingAlgo
-      |> timeIt leagueName document "movementAlgo" (movementAlgo previousTableMap)
+      |> standingAlgo
+      |> movementAlgo previousTableMap
       |> fun members ->
         { LeagueTableDoc.LeagueName = leagueName
           Members = members
