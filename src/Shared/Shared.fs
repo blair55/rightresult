@@ -382,6 +382,7 @@ type FixturePredictionViewModel =
     TeamLine : TeamLine
     State : FixtureState
     Prediction : (ScoreLine * PredictionModifier) option
+    PredictionGrid : ScoreLine list list
     BigUpState : BigUpState
     Points : int * PointVector list
     FixtureDetails : FixtureDetails option
@@ -529,10 +530,9 @@ type GameweekFixturesViewModel =
 [<RequireQualifiedAccess>]
 type PredictionAction =
   | SetScoreline of FixtureSetId * FixtureId * ScoreLine
-  | IncrementScore of FixtureSetId * FixtureId * PredictTeam //* PredictVector
-  | DecrementScore of FixtureSetId * FixtureId * PredictTeam //* PredictVector
+  | IncrementScore of FixtureSetId * FixtureId * PredictTeam
+  | DecrementScore of FixtureSetId * FixtureId * PredictTeam
 and PredictTeam = Home | Away
-// and PredictVector = Inc | Dec
 
 type LeagueWindow =
   | Full
@@ -656,6 +656,81 @@ module Global =
 
   let leagueName = LeagueName "Global League"
   let identifier = "global"
+
+
+module PredictionGrid =
+
+  type Dims = Dims of width:int * height:int
+
+  type private Coords = Coords of x:int * y:int
+
+  module private Coords =
+
+    let incX (Coords (x, y)) = Coords (x + 1, y)
+    let decX (Coords (x, y)) = Coords (x - 1, y)
+    let incY (Coords (x, y)) = Coords (x, y + 1)
+    let decY (Coords (x, y)) = Coords (x, y - 1)
+    let unwrap (Coords (x, y)) = x, y
+
+    let max c =
+      let x, y = List.map unwrap c |> List.unzip
+      Coords (List.max x, List.max y)
+
+    let min c =
+      let x, y = List.map unwrap c |> List.unzip
+      Coords (List.min x, List.min y)
+
+    let toScoreLine (Coords (x, y)) =
+      if x > 0 then ScoreLine(Score (x + y), Score y)
+      elif x < 0 then ScoreLine(Score y, Score(Math.Abs(x) + y))
+      else ScoreLine(Score y, Score y)
+
+    let fromScoreLine (ScoreLine (Score h, Score a)) =
+      Coords (h - a, if h < a then h else a)
+
+  type private BoundingArea = BoundingArea of max:Coords * min:Coords
+
+  module private BoundingArea =
+
+    let fromCoords (Dims (width, height)) (Coords (x, y)) =
+      let dmxX, dmnX = width / 2, 0 - (width / 2)
+      let dmxY, dmnY = height - 1, 0
+      let mxX, mnX =
+        if x > dmxX then x, x - (width - 1)
+        elif x < dmnX then x + (width - 1), x
+        else dmxX, dmnX
+      let mxY, mnY =
+        if y > dmxY then y, y - dmxY
+        else dmxY, dmnY
+      BoundingArea (Coords(mxX, mxY), Coords(mnX, mnY))
+
+    let toGrid (BoundingArea (Coords(mxX, mxY), Coords(mnX, mnY))) =
+      seq { for y in [ mnY..mxY ] ->
+            seq { for x in [ mxX .. -1 .. mnX ] ->
+                  Coords(x, y) |> Coords.toScoreLine
+            } |> Seq.toList
+      } |> Seq.toList
+
+    let fromGrid grid =
+      let c = List.collect (List.map (Coords.fromScoreLine)) grid
+      BoundingArea (Coords.max c, Coords.min c)
+
+  let private grid dims =
+    Coords.fromScoreLine >> BoundingArea.fromCoords dims >> BoundingArea.toGrid
+
+  let init dims =
+    Option.map (grid dims) >> Option.defaultWith (fun () -> grid dims ScoreLine.Init)
+
+  let redraw s grid =
+    let (BoundingArea (Coords(mxX, mxY), Coords(mnX, mnY))) = BoundingArea.fromGrid grid
+    let (Coords (x, y)) = Coords.fromScoreLine s
+    let nudge f = List.map (List.map (Coords.fromScoreLine >> f >> Coords.toScoreLine))
+    if x > mxX then nudge Coords.incX grid
+    elif x < mnX then nudge Coords.decX grid
+    elif y > mxY then nudge Coords.incY grid
+    elif y < mnY then nudge Coords.decY grid
+    else grid
+
 
 /// TODO:
 

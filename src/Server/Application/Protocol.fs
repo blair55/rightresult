@@ -110,9 +110,12 @@ module Protocol =
               Player = pointsAndPosition })
         fixturesAndPredictions
         |> List.map (fun (f, pred) ->
-          Documents.repo deps.ElasticSearch
-          |> fun repo -> repo.Read (FixtureDetailsDocument f.Id)
-          |> fun fixtureDetails ->
+          let repo = Documents.repo deps.ElasticSearch
+          let fixtureDetails = repo.Read (FixtureDetailsDocument f.Id)
+          let grid =
+            pred
+            |> Option.map (fun p -> p.ScoreLine)
+            |> PredictionGrid.init (PredictionGrid.Dims (5, 3))
           f.Id,
           { FixturePredictionViewModel.Id = f.Id
             FixtureSetId = f.FixtureSetId
@@ -125,6 +128,7 @@ module Protocol =
             FixtureDetails = fixtureDetails
             State = fixtureStateFirstMinuteHack now f
             Prediction = pred |> Option.map (fun p -> p.ScoreLine, p.Modifier)
+            PredictionGrid = grid
             Points = getPoints f pred |> fun (_, {PredictionPointsMonoid.Points = p}, v) -> p, v
             BigUpState = bigUpState f pred
             InProgress = false

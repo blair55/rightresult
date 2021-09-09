@@ -372,9 +372,7 @@ module GameweekFixtures =
     let awayScore =
       Option.map (fun (ScoreLine (_, Score a), _) -> a) fp.Prediction
 
-    let presetScoreButton homeScore awayScore =
-      let sl =
-        ScoreLine(Score homeScore, Score awayScore)
+    let presetScoreButton (sl:ScoreLine) =
 
       let highlightAttribute =
         match fp.Prediction with
@@ -392,30 +390,7 @@ module GameweekFixtures =
                                 dispatch (Prediction(fp.Id, PredictionAction.SetScoreline(fp.FixtureSetId, fp.Id, sl)))) ] ])
         [ Components.simpleScore sl ]
 
-    [ div [ Class "" ] [
-        div [ Class "gw-fixture-preset-score-row" ] [
-          presetScoreButton 2 0
-          presetScoreButton 1 0
-          presetScoreButton 0 0
-          presetScoreButton 0 1
-          presetScoreButton 0 2
-        ]
-
-        div [ Class "gw-fixture-preset-score-row" ] [
-          presetScoreButton 3 1
-          presetScoreButton 2 1
-          presetScoreButton 1 1
-          presetScoreButton 1 2
-          presetScoreButton 1 3
-        ]
-        div [ Class "gw-fixture-preset-score-row" ] [
-          presetScoreButton 4 2
-          presetScoreButton 3 2
-          presetScoreButton 2 2
-          presetScoreButton 2 3
-          presetScoreButton 2 4
-        ]
-      ]
+    [ div [] (fp.PredictionGrid |> List.map (fun x -> div [ Class "gw-fixture-preset-score-row" ] (List.map presetScoreButton x)))
       div [ Class "block" ] [
         div [ Class "gw-fixture-preset-score-row gw-fixture-incdec-dscore-row" ] [
           scoreIncButton dispatch (fp, PredictTeam.Home)
@@ -751,22 +726,19 @@ module GameweekFixtures =
       model
       fId
       (fun f ->
+        let p =
+          f.Prediction
+          |> Option.defaultValue (ScoreLine.Init, PredictionModifier.None)
+          |> slfunc
         { f with
-            Prediction =
-              f.Prediction
-              |> Option.defaultValue (ScoreLine.Init, PredictionModifier.None)
-              // |> fun (sl, modifier) -> slfunc sl, modifier
-              |> slfunc
-              |> Some
+            Prediction = Some p
+            PredictionGrid = PredictionGrid.redraw (fst p) f.PredictionGrid
             InProgress = false })
 
   let update api player msg model : Model * Cmd<Msg> =
     (match msg with
      | Init _ -> model, []
-     | GameweekFixturesReceived r ->
-       { model with
-           GameweekFixtures = resultToWebData r },
-       []
+     | GameweekFixturesReceived r -> { model with GameweekFixtures = resultToWebData r }, []
      | ShowModal fId ->
        let m =
          updateSingleModelGwf
