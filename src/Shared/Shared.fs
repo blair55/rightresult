@@ -43,6 +43,9 @@ type TeamLine = TeamLine of home:Team * away:Team
 
 type KickOffGroup = KickOffGroup of string
 
+module GameweekNo =
+  let toGWString (GameweekNo gwno) = "GW" + string gwno
+
 module Ko =
   type KickOff =
     private | KickOff of DateTime
@@ -365,11 +368,15 @@ type FixtureDetails =
     { BigUps = []; Home = PremTableRow.Init; Away = PremTableRow.Init; FormGuide = [] }
 and FormFixture =
   { KickOff : KickOff
-    TeamLine : TeamLine
-    Result : FormResult
-    Scoreline : ScoreLine }
+    GameweekNo : GameweekNo
+    Opponent : Team
+    Scoreline : ScoreLine
+    Venue : FormVenue
+    Result : FormResult }
 and [<RequireQualifiedAccess>] FormResult =
   | W | L | D
+and [<RequireQualifiedAccess>] FormVenue =
+  | H | A
 
 type FixturePredictionViewModel =
   { Id : FixtureId

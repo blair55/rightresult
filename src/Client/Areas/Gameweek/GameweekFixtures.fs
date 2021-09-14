@@ -372,7 +372,7 @@ module GameweekFixtures =
     let awayScore =
       Option.map (fun (ScoreLine (_, Score a), _) -> a) fp.Prediction
 
-    let presetScoreButton (sl:ScoreLine) =
+    let presetScoreButton (sl: ScoreLine) =
 
       let highlightAttribute =
         match fp.Prediction with
@@ -390,7 +390,10 @@ module GameweekFixtures =
                                 dispatch (Prediction(fp.Id, PredictionAction.SetScoreline(fp.FixtureSetId, fp.Id, sl)))) ] ])
         [ Components.simpleScore sl ]
 
-    [ div [] (fp.PredictionGrid |> List.map (fun x -> div [ Class "gw-fixture-preset-score-row" ] (List.map presetScoreButton x)))
+    [ div
+        []
+        (fp.PredictionGrid
+         |> List.map (fun x -> div [ Class "gw-fixture-preset-score-row" ] (List.map presetScoreButton x)))
       div [ Class "block" ] [
         div [ Class "gw-fixture-preset-score-row gw-fixture-incdec-dscore-row" ] [
           scoreIncButton dispatch (fp, PredictTeam.Home)
@@ -515,7 +518,12 @@ module GameweekFixtures =
     | FormResult.D -> span [] [ str "D" ]
     | FormResult.L -> span [] [ str "L" ]
 
-  let formGuideElements venueClass ({ TeamLine = TeamLine (home, away) } as f: FormFixture) =
+  let formGuideVenue =
+    function
+    | FormVenue.H -> b [] [ str "H" ]
+    | FormVenue.A -> b [] [ str "A" ]
+
+  let formGuideElements venueClass (f: FormFixture) =
     let formGuideResultClass =
       match f.Result with
       | FormResult.W -> "formguide-result-w"
@@ -523,12 +531,16 @@ module GameweekFixtures =
       | FormResult.L -> "formguide-result-l"
 
     [ div [ Class $"formguide-team {formGuideResultClass} {venueClass}" ] [
-        formGuideResult f.Result
-        div [] [ str (badgeAbbrv home) ]
+        formGuideVenue f.Venue
+        span [] [ str (badgeAbbrv f.Opponent) ]
         div [ Class "formguide-scoreline" ] [
           simpleScore f.Scoreline
         ]
-        div [] [ str (badgeAbbrv away) ]
+        div [ Class "formguide-gwno" ] [
+          span [] [
+            str (GameweekNo.toGWString f.GameweekNo)
+          ]
+        ]
       ] ]
 
   let modalTitle dispatch ({ TeamLine = TeamLine (Team home, Team away) } as fp: FixturePredictionViewModel) =
@@ -553,9 +565,10 @@ module GameweekFixtures =
         str (away)
       ]
       div [ Class "gw-fixture-modal-title-minutes" ] minsOrClassified
-      div [ Class "gw-fixture-modal-close"; OnClick(fun _ -> dispatch HideModal) ]
-        [ Fa.i [ Fa.Solid.TimesCircle ] []
-        ]
+      div [ Class "gw-fixture-modal-close"
+            OnClick(fun _ -> dispatch HideModal) ] [
+        Fa.i [ Fa.Solid.TimesCircle ] []
+      ]
     ]
 
   let rowOf2 left right =
@@ -730,6 +743,7 @@ module GameweekFixtures =
           f.Prediction
           |> Option.defaultValue (ScoreLine.Init, PredictionModifier.None)
           |> slfunc
+
         { f with
             Prediction = Some p
             PredictionGrid = PredictionGrid.redraw (fst p) f.PredictionGrid
@@ -738,7 +752,10 @@ module GameweekFixtures =
   let update api player msg model : Model * Cmd<Msg> =
     (match msg with
      | Init _ -> model, []
-     | GameweekFixturesReceived r -> { model with GameweekFixtures = resultToWebData r }, []
+     | GameweekFixturesReceived r ->
+       { model with
+           GameweekFixtures = resultToWebData r },
+       []
      | ShowModal fId ->
        let m =
          updateSingleModelGwf

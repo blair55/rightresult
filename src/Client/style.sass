@@ -451,21 +451,24 @@ table.table th.text-left
       clip-path: polygon(4% 0%,100% 0%,100% 100%,0% 100%)
       margin-left: 3px
     .formguide-team
+      position: relative
       display: flex
       flex-grow: 1
       padding: 9px 17px
       white-space: nowrap
       text-transform: uppercase
-      // color: $primary
       font-size: $size-small
-      // font-weight: bold
       .formguide-scoreline
-        font-weight: bold
-        margin: 0 4px
-        white-space: nowrap
-      span
         margin-right: 4px
+        white-space: nowrap
         font-weight: bold
+      span, b
+        margin-right: 4px
+        // font-weight: bold
+    .formguide-gwno
+      color: $grey-light
+      position: absolute
+      right: 1em
 
 // $formguideHeight: 10em
 .gw-fixture-modal-container

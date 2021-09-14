@@ -43,7 +43,7 @@ module FixtureSubscribersAssistance =
     let repo = Documents.repo deps.ElasticSearch
     repo.Read (FormGuideDocument team)
     |> Option.defaultValue []
-    |> List.sortByDescending (fun f -> f.KickOff)
+    |> List.sortBy (fun f -> f.KickOff)
 
   let makeListsOfEqualLength a b =
     [ 1 .. System.Math.Max (List.length a, List.length b) ]
@@ -513,19 +513,21 @@ module FixtureClassifiedSubscribers =
     let rebuildFormGuide team =
       deps.Queries.getFixturesForTeam team
       |> List.ofSeq
-      |> List.sortBy (fun f -> f.KickOff)
+      |> List.sortByDescending (fun f -> f.KickOff)
       |> List.choose (fun f -> FixtureState.classifiedScoreLine f.State |> Option.map (fun sl -> f, sl))
       |> List.truncate 5
-      |> List.map (fun ({ TeamLine = (TeamLine(h, a) as tl); KickOff = ko }, scoreline) ->
-        { FormFixture.KickOff = ko
-          TeamLine = tl
+      |> List.map (fun ({ TeamLine = (TeamLine(h, a) as tl) } as p, scoreline) ->
+        { FormFixture.KickOff = p.KickOff
+          Scoreline = scoreline
+          GameweekNo = p.GameweekNo
+          Venue = if h = team then FormVenue.H else FormVenue.A
+          Opponent = if h = team then a else h
           Result =
             match getScoreResult scoreline with
             | HomeWin when team = h -> FormResult.W
             | AwayWin when team = a -> FormResult.W
             | Draw -> FormResult.D
-            | _ -> FormResult.L
-          Scoreline = scoreline })
+            | _ -> FormResult.L })
         |> fun (f:FormFixture list) -> repo.Insert (FormGuideDocument team) f
 
     let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } = deps.Queries.getFixtureRecord fId
