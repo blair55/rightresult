@@ -160,8 +160,7 @@ module PredictionSetOverwrittenSubscribers =
     deps.NonQueries.deletePredictionSet (destinationPlayerId, fsId)
     deps.Queries.getPlayerFixtureSet sourcePlayerId fsId
     |> List.ofSeq
-    |> List.map snd
-    |> List.choose id
+    |> List.choose snd
     |> List.map (fun p -> { p with PlayerId = destinationPlayerId })
     |> List.iter deps.NonQueries.createPrediction
 

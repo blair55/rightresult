@@ -14,8 +14,13 @@ module EventHandling =
       | { GameweekNo = GameweekNo 1; TeamLine = TeamLine (Team home, Team Teams.Leicester) } as f -> { f with TeamLine = TeamLine(Team home, Team Teams.Leeds) }
       | f -> f)
 
+  let (|MapPredictionSetEventPlayerIdId|) (PlayerId playerId) : PlayerId =
+    if "fb-735238821018" = playerId
+    then PlayerId "tw-458540585"
+    else PlayerId playerId
+
   let onEvent deps (DatedEvent (event, created)) =
-    printfn "handling event: %A" event
+    // printfn "handling event: %A" event
 
     match event with
     // players
@@ -93,46 +98,46 @@ module EventHandling =
       PredictionSetOverwrittenSubscribers.all
       |> List.iter (fun f -> f deps created (sourcePlayerId, destinationPlayerId, fsId))
 
-    | PredictionCreated (playerId, fsId, fId, sl) ->
+    | PredictionCreated (MapPredictionSetEventPlayerIdId playerId, fsId, fId, sl) ->
       PredictionCreatedSubscribers.all
       |> List.iter (fun f -> f deps created (playerId, fsId, fId, sl))
 
-    | PredictionHomeIncd (playerId, fsId, fId) ->
+    | PredictionHomeIncd (MapPredictionSetEventPlayerIdId playerId, fsId, fId) ->
       PredictionIncHomeScoreSubscribers.all
       |> List.iter (fun f -> f deps created (playerId, fsId, fId))
 
-    | PredictionHomeDecd (playerId, fsId, fId) ->
+    | PredictionHomeDecd (MapPredictionSetEventPlayerIdId playerId, fsId, fId) ->
       PredictionDecHomeScoreSubscribers.all
       |> List.iter (fun f -> f deps created (playerId, fsId, fId))
 
-    | PredictionAwayIncd (playerId, fsId, fId) ->
+    | PredictionAwayIncd (MapPredictionSetEventPlayerIdId playerId, fsId, fId) ->
       PredictionIncAwayScoreSubscribers.all
       |> List.iter (fun f -> f deps created (playerId, fsId, fId))
 
-    | PredictionAwayDecd (playerId, fsId, fId) ->
+    | PredictionAwayDecd (MapPredictionSetEventPlayerIdId playerId, fsId, fId) ->
       PredictionDecAwayScoreSubscribers.all
       |> List.iter (fun f -> f deps created (playerId, fsId, fId))
 
-    | PredictionBigUpApplied (playerId, _, fId) ->
+    | PredictionBigUpApplied (MapPredictionSetEventPlayerIdId playerId, _, fId) ->
       PredictionBigUpAppliedSubscribers.all
       |> List.iter (fun f -> f deps (playerId, fId))
 
-    | PredictionDoubleDownApplied (playerId, _, fId) ->
+    | PredictionDoubleDownApplied (MapPredictionSetEventPlayerIdId playerId, _, fId) ->
       PredictionDoubleDownAppliedSubscribers.all
       |> List.iter (fun f -> f deps (playerId, fId))
 
-    | PredictionDoubleDownRemoved (playerId, _, fId) ->
+    | PredictionDoubleDownRemoved (MapPredictionSetEventPlayerIdId playerId, _, fId) ->
       PredictionDoubleDownRemovedSubscribers.all
       |> List.iter (fun f -> f deps (playerId, fId))
 
-    | PredictionHomeScoreSet (playerId, fsId, fId, score) ->
+    | PredictionHomeScoreSet (MapPredictionSetEventPlayerIdId playerId, fsId, fId, score) ->
       PredictionSetHomeScoreSubscribers.all
       |> List.iter (fun f -> f deps playerId fId score)
 
-    | PredictionAwayScoreSet (playerId, fsId, fId, score) ->
+    | PredictionAwayScoreSet (MapPredictionSetEventPlayerIdId playerId, fsId, fId, score) ->
       PredictionSetAwayScoreSubscribers.all
       |> List.iter (fun f -> f deps playerId fId score)
 
-    | PredictionScoreLineSet (playerId, fsId, fId, scoreline) ->
+    | PredictionScoreLineSet (MapPredictionSetEventPlayerIdId playerId, fsId, fId, scoreline) ->
       PredictionSetScoreSubscribers.all
       |> List.iter (fun f -> f deps playerId fId scoreline)

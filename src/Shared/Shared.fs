@@ -757,7 +757,8 @@ module PredictionGrid =
 /// - only run bg tasks when web available & tasks not running
 /// - swipabe fixture page
 /// - capture score in big up event
-/// - scrolling preset boxes
+/// - remove `correctGwno1Fixtures` func
+/// + scrolling preset boxes
 /// - matrix: full screen, show bigups, points scored shading
 
 
