@@ -57,7 +57,13 @@ module AddGameweek =
       ]
     ]
 
-  let fixtureViewFlex (kickoff, _, TeamLine (home, away)) =
+  let kickOffTime (ko:KickOffComponents) =
+    Text.span [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is2) ]
+                Props [ Class "kick-off-time" ] ] [
+      str ko.ClockTime
+    ]
+
+  let fixtureViewFlex (ko, TeamLine (home, away)) =
     rowOf3
       [ Text.div
           [ Modifiers
@@ -73,7 +79,7 @@ module AddGameweek =
             Components.shortTeamName home
           ]
       ]
-      [ Components.kickOffTime kickoff ]
+      [ kickOffTime ko ]
       [ Text.div
           [ Modifiers
               [ Modifier.FlexDirection FlexDirection.Row
@@ -90,7 +96,7 @@ module AddGameweek =
 
     div [ Style [ MarginBottom "1.5em" ] ] [ // Heading.h5 [ Heading.IsSubtitle ] [ str koStr ]
       div [ Style [ MarginBottom "1em" ] ] [
-        Components.gameweekDate koStr
+        Components.subHeading koStr
       ]
       div [] (fixtures |> List.map fixtureViewFlex)
     ]
@@ -99,7 +105,7 @@ module AddGameweek =
     function
     | Success (f: NewFixtureSetViewModel) ->
       f.Fixtures
-      |> List.groupBy (fun (_, koStr, _) -> koStr)
+      |> List.groupBy (fun (ko, _) -> ko.Group)
       |> List.map fixtureGroup
       |> div []
     | _ -> div [] []

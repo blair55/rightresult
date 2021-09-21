@@ -9,6 +9,10 @@
     <None Include="paket.references" />
     <Compile Include="Routes.fs" />
     <Compile Include="Areas\Components.fs" />
+    <Compile Include="Areas/Components/GameweekStats.fs" />
+    <Compile Include="Areas/Components/PredictionScore.fs" />
+    <Compile Include="Areas/Components/PointVectors.fs" />
+    <Compile Include="Areas/Components/GameweekItemTitle.fs" />
     <Compile Include="Areas\Login.fs" />
     <Compile Include="Areas\Home.fs" />
     <Compile Include="Areas\HowItWorks.fs" />
@@ -34,7 +38,7 @@
     <Compile Include="Areas\Players\AllPlayers.fs" />
     <Compile Include="Areas\Players\Player.fs" />
     <Compile Include="Areas\Players\MyProfile.fs" />
-    <Compile Include="Areas\Players\PlayerFixtureSet.fs" />
+    <Compile Include="Areas\Players\PlayerGameweek.fs" />
     <Compile Include="Areas\Players\PlayersArea.fs" />
 
     <Compile Include="Decoders.fs" />

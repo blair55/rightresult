@@ -41,10 +41,9 @@ type FixtureId = FixtureId of Guid
 type Team = Team of string
 type TeamLine = TeamLine of home:Team * away:Team
 
-type KickOffGroup = KickOffGroup of string
-
 module GameweekNo =
-  let toGWString (GameweekNo gwno) = "GW" + string gwno
+  let toGWString (GameweekNo gwno) = sprintf "GW%i" gwno
+  let toGWStringLong (GameweekNo gwno) = sprintf "Gameweek %i" gwno
 
 module Ko =
   type KickOff =
@@ -54,12 +53,6 @@ module Ko =
         ko
 
   let create d = DateTimeOffset(d).DateTime |> KickOff
-
-  let groupFormat (KickOff ko) =
-    KickOffGroup (ko.ToString("ddd d MMM yyyy"))
-
-  let shortDay (KickOff ko) =
-    ko.ToString("ddd")
 
   let hasKickedOff now (KickOff ko) =
     now > ko
@@ -378,14 +371,18 @@ and [<RequireQualifiedAccess>] FormResult =
 and [<RequireQualifiedAccess>] FormVenue =
   | H | A
 
+type KickOffComponents =
+  { KickOff : KickOff
+    Group : string
+    ShortDay : string
+    ClockTime : string }
+
 type FixturePredictionViewModel =
   { Id : FixtureId
     FixtureSetId : FixtureSetId
     GameweekNo : GameweekNo
     SortOrder : int
-    KickOff : KickOff
-    KickOffGroup : KickOffGroup
-    KickOffShortDay : string
+    KickOff : KickOffComponents
     TeamLine : TeamLine
     State : FixtureState
     Prediction : (ScoreLine * PredictionModifier) option
@@ -401,13 +398,15 @@ and [<RequireQualifiedAccess>] BigUpState =
   | Expanded
   | Set
 and GlobalGameweekStats =
-  { AveragePoints : int
-    HighestPoints : int
+  { GameweekNo : GameweekNo
+    PlayerId : PlayerId
+    AveragePoints : int
+    MaximumPoints : (PlayerId * int) option
     Player : (int * int * string) option }
 
 and NewFixtureSetViewModel =
   { GameweekNo : GameweekNo
-    Fixtures : (KickOff * KickOffGroup * TeamLine) list }
+    Fixtures : (KickOffComponents * TeamLine) list }
 and PlayerLeagueViewModel =
   { Position : int
     Movement : int
@@ -415,12 +414,12 @@ and PlayerLeagueViewModel =
 and [<CLIMutable>] LeagueTableDoc =
   { LeagueName : LeagueName
     Members : (PlayerId * LeagueTableMember) list
-    MaximumPoints : int
+    MaximumPoints : (PlayerId * int) option
     AvergagePointsWithAtLeastOnePrediction : int }
   static member Init name =
     { LeagueName = name
       Members = []
-      MaximumPoints = 0
+      MaximumPoints = None
       AvergagePointsWithAtLeastOnePrediction = 0 }
 and LeagueTableMember =
   { Position : int
@@ -505,24 +504,24 @@ and PlayerFixtureSetsDocRow =
       PlayerPoints = PredictionPointsMonoid.Init
     }
 
-type PlayerFixtureSetViewModel =
+type PlayerGameweekViewModel =
   { PlayerId : PlayerId
-    FixtureSetId : FixtureSetId
     PlayerName : PlayerName
     GameweekNo : GameweekNo
-    AveragePoints : int
-    TotalPoints : PredictionPointsMonoid
-    Rows : PlayerFixtureSetKickedOffViewModelRow list
+    Neighbours: GameweekNo option * GameweekNo option
+    Fixtures : Map<FixtureId, PlayerGameweekViewModelRow>
+    GlobalGameweekStats : GlobalGameweekStats option
   }
-and PlayerFixtureSetKickedOffViewModelRow =
+and PlayerGameweekViewModelRow =
   { FixtureId : FixtureId
+    FixtureSetId : FixtureSetId
     TeamLine : TeamLine
-    KickOff : KickOff
-    KickOffGroup : KickOffGroup
+    KickOff : KickOffComponents
     SortOrder : int
-    Points : PredictionPointsMonoid
-    ResultAndPoints : (ScoreLine * PointsCategory) option
+    Points : int * PointVector list
+    State : FixtureState
     Prediction : (ScoreLine * PredictionModifier) option
+    IsExpanded : Boolean
   }
 
 type GameweekFixturesViewModel =
@@ -625,7 +624,7 @@ type IProtocol =
     getMyPointsTotal : AppToken -> Ars<PredictionPointsMonoid>
     getAllPlayers : AppToken -> Ars<PlayerViewModel list>
     getPlayerInfo : PlayerId -> AppToken -> Ars<PlayerViewModel>
-    getPlayerFixtureSet : PlayerId -> FixtureSetId -> AppToken -> Ars<PlayerFixtureSetViewModel>
+    getPlayerGameweek : PlayerId -> GameweekNo -> AppToken -> Ars<PlayerGameweekViewModel>
     getNewFixtureSet : AppToken -> Ars<NewFixtureSetViewModel>
     getLeagueHistoryFixtureSets : LeagueId -> AppToken -> Ars<LeagueHistoryDoc>
     getLeagueHistoryMonths : LeagueId -> AppToken -> Ars<LeagueHistoryDoc>
@@ -752,23 +751,26 @@ module PredictionGrid =
 /// - new awards added to hp ?
 /// - xss ?
 /// - undo allowing multiple league join events per player / revert 6250be3
-/// X asyncify
-/// X reader monad dependencies
 /// - SSRify
 /// - femtoify
 /// - felizify
-/// + detect fixture ko change
+/// - deploy fixture ko change
 /// - fix push!
-/// + gw fixtures header: top score - avg score - my score
-/// - homepage gw global leaderboard
+/// - homepage gw global leaderboard / player photo
 /// - only run bg tasks when web available & tasks not running
 /// - swipabe fixture page
 /// - capture score in big up event
 /// - remove `correctGwno1Fixtures` func
-/// + scrolling preset boxes
 /// - matrix: full screen, show bigups, points scored shading
+/// - add live match data & refresh button?
+/// - scorebreakdown on player gw page
+/// - BADGES
+/// - move fixture node module etc from shared into server
+/// - ^ then move points into FixtureState.Classified
 
 
+/// + gw fixtures header: top score - avg score - my score
+/// + scrolling preset boxes
 /// + landing page
 /// + points
 /// + server side tidy

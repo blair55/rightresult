@@ -20,6 +20,7 @@ module GameweekFixtures =
 
   type Model =
     { GameweekFixtures: GameweekFixturesViewModel WebData
+      Player: ClientSafePlayer
       ModalState: ModalState }
 
   type Msg =
@@ -42,86 +43,10 @@ module GameweekFixtures =
 
   let init api p gwno =
     { GameweekFixtures = Fetching
+      Player = p
       ModalState = ModalClosed },
     Cmd.OfAsync.either (api.getGameweekFixtures p.Token) gwno GameweekFixturesReceived (Error >> Init)
 
-
-  let gwStats (stats: GlobalGameweekStats) =
-    div [ Class "gw-stats" ] [
-      Level.level [ Level.Level.Option.IsMobile ] [
-        Level.item [ Level.Item.HasTextCentered ] [
-          div [] [
-            Level.heading [] [ str "my points" ]
-            Level.title [] [
-              str (
-                match stats.Player with
-                | Some (p, _, _) -> string p
-                | _ -> "-"
-              )
-            ]
-          ]
-        ]
-        Level.item [ Level.Item.HasTextCentered ] [
-          div [] [
-            Level.heading [] [ str "avg" ]
-            Level.title [] [
-              str (string (stats.AveragePoints))
-            ]
-          ]
-        ]
-        Level.item [ Level.Item.HasTextCentered ] [
-          div [] [
-            Level.heading [] [ str "highest" ]
-            Level.title [] [
-              str (string (stats.HighestPoints))
-            ]
-          ]
-        ]
-        Level.item [ Level.Item.HasTextCentered ] [
-          div [] [
-            Level.heading [] [ str " pos" ]
-            Level.title
-              []
-              (match stats.Player with
-               | Some (_, p, ord) ->
-                 [ span [] [ str (string p) ]
-                   span [ Class "ordinal" ] [ str (ord) ] ]
-               | _ -> [ span [] [ str "-" ] ])
-          ]
-        ]
-      ]
-    ]
-
-  let predScoreEmpty =
-    div [ Class "pred-score-empty" ] [
-      str ""
-    ]
-
-  let predScore (s: string) = div [ Class "pred-score" ] [ str s ]
-
-  let predScoreline (ScoreLine (Score h, Score a)) =
-    [ predScore (string<int> h)
-      predScore (string<int> a) ]
-
-  let predDoubleDown =
-    div [ Class "pred-dd" ] [
-      Fa.i [ Fa.Solid.AngleDoubleDown
-             Fa.Size Fa.FaExtraSmall ] []
-    ]
-
-  let predBigUp =
-    div [ Class "pred-bigup" ] [
-      Fa.i [ Fa.Solid.AngleDoubleUp
-             Fa.Size Fa.FaExtraSmall ] []
-    ]
-
-  let predScoreContainer pred =
-    match pred with
-    | Some (sl, PredictionModifier.BigUp) -> predScoreline sl @ [ predBigUp ]
-    | Some (sl, PredictionModifier.DoubleDown) -> predScoreline sl @ [ predDoubleDown ]
-    | Some (sl, PredictionModifier.None) -> predScoreline sl
-    | None -> [ predScoreEmpty; predScoreEmpty ]
-    |> div [ Class "pred-score-container" ]
 
   let xLargeTeamBadge = Components.badge Components.BadgeSize.XL
 
@@ -138,24 +63,7 @@ module GameweekFixtures =
       pluralPoints p
     ]
 
-  let resultContainer (fp: FixturePredictionViewModel) =
-    div
-      [ Class "pred-score-container" ]
-      (match fp.State with
-       | FixtureState.Open _ -> [ predScore "_"; predScore "_" ]
-       | FixtureState.InPlay (sl, _)
-       | FixtureState.Classified sl -> predScoreline sl)
-
-  let predictionModifierClass =
-    Option.map (fun (_: ScoreLine, modifier) -> PredictionModifier.isModified modifier)
-    >> Option.defaultValue false
-    >> function
-      | true -> "gw-item-ismodified"
-      | _ -> ""
-
-  let kickOffClockTime (ko: KickOff) = str (ko.Raw.ToString("HH:mm"))
-
-  let gameweekItem dispatch ({ TeamLine = TeamLine (h, a) } as fp: FixturePredictionViewModel) =
+  let gameweekItem dispatch ({ TeamLine = TeamLine (h, a) as tl } as fp: FixturePredictionViewModel) =
 
     let inplayClass =
       match fp.State with
@@ -163,30 +71,17 @@ module GameweekFixtures =
       | _ -> ""
 
     div [ Class "gw-item" ] [
-      div [ Class "gw-item-title" ] [
-        div [ Class "gw-item-gameday" ] [
-          str (fp.KickOffShortDay)
-        ]
-        div [ Class "gw-item-team" ] [
-          teamName h
-        ]
-        div [ Class "gw-item-ko" ] [
-          kickOffClockTime fp.KickOff
-        ]
-        div [ Class "gw-item-team" ] [
-          teamName a
-        ]
-      ]
+      Components.GameweekItemTitle.element (fp.KickOff, tl)
       div [ Class $"gw-item-space {inplayClass}" ] []
       div [ Class "gw-item-body"
             OnClick(fun _ -> dispatch (ShowModal fp.Id)) ] [
-        div [ Class $"gw-item-prediction {predictionModifierClass fp.Prediction}" ] [
+        div [ Class $"gw-item-prediction {Components.predictionModifierClass fp.Prediction}" ] [
           div [ Class "gw-item-badges" ] [
             largeTeamBadge h
             largeTeamBadge a
           ]
           div [ Class "gw-item-score-polygon" ] [
-            predScoreContainer fp.Prediction
+            Components.PredictionScore.element fp.Prediction
           ]
           div [ Class "gw-item-pointer" ] [
             Fa.i [ Fa.Solid.ChevronRight ] []
@@ -198,7 +93,7 @@ module GameweekFixtures =
             largeTeamBadge a
           ]
           div [ Class "gw-item-score-polygon" ] [
-            resultContainer fp
+            Components.PredictionScore.ResultScore.element fp.State
           ]
           div
             []
@@ -212,11 +107,8 @@ module GameweekFixtures =
       ]
     ]
 
-  let fixtureGroup dispatch (koStr, fixtures) =
+  let fixtureGroup dispatch (_, fixtures) =
     div [ Class "gw-fixture-group" ] [
-      // div [ Style [ MarginBottom "2em" ] ] [
-      //   Components.gameweekDate koStr
-      // ]
       div [ Class "gw-fixture-list" ] (fixtures |> List.map (gameweekItem dispatch))
     ]
 
@@ -425,79 +317,8 @@ module GameweekFixtures =
         ]
       ] ]
 
-  let vectorRow left right =
-    div [ Class "point-vector-row" ] [
-      Columns.columns [ Columns.IsMobile
-                        Columns.IsGapless
-                        Columns.Props [ Props.Style [ MarginBottom "0" ] ] ] [
-        Column.column
-          [ Column.Modifiers [ Modifier.FlexDirection FlexDirection.RowReverse ]
-            Column.Width(Screen.All, Column.IsHalf) ]
-          left
-        Column.column
-          [ Column.Modifiers [ Modifier.FlexJustifyContent FlexJustifyContent.Left ]
-            Column.Width(Screen.All, Column.IsHalf) ]
-          right
-      ]
-    ]
-
-  let (|VectorDesc|DoubleDownDesc|) =
-    function
-    | PointVector.Result -> VectorDesc(str "Right Result", pluralPoints 2)
-    | PointVector.HomeScore -> VectorDesc(str "Home Score", pluralPoints 1)
-    | PointVector.AwayScore -> VectorDesc(str "Away Score", pluralPoints 1)
-    | PointVector.GoalDifference -> VectorDesc(str "Goal Difference", pluralPoints 1)
-    | PointVector.BigUp b -> VectorDesc(str "Big Up", pluralPoints b)
-    | PointVector.DoubleDown -> DoubleDownDesc(str "Double Down")
-
-  let vector =
-    function
-    | VectorDesc (desc, p) ->
-      vectorRow [ div [ Class "point-vector-row-left" ] [
-                    desc
-                  ] ] [
-        div [ Class "point-vector-row-right" ] [
-          str "+ "
-          p
-        ]
-      ]
-    | DoubleDownDesc desc ->
-      vectorRow [ div [ Class "point-vector-row-left" ] [
-                    desc
-                  ] ] [
-        div [ Class "point-vector-row-right" ] [
-          str "× 2"
-        ]
-      ]
-
-  let totalPoints p =
-    div [ Class "point-vector-row-total" ] [
-      vectorRow [] [
-        div [ Class "point-vector-row-right" ] [
-          pluralPoints p
-        ]
-      ]
-    ]
-
-  let classifiedFixtureModalContent dispatch ({ Points = (p, vts) } as fp: FixturePredictionViewModel) =
-    let rows =
-      vts
-      |> List.map (vector)
-      |> fun v -> v @ [ totalPoints p ]
-
-    [ div [] rows ]
-
-  let pageGwButton dispatch icon =
-    function
-    | Some (GameweekNo gwno) ->
-      Button.button [ Button.Color IsLight
-                      Button.Props [ OnClick(fun _ -> dispatch (NavTo(GameweekRoute(GameweekFixturesRoute gwno)))) ] ] [
-        Fa.i [ icon ] []
-      ]
-    | None ->
-      Button.button [ Button.Disabled true ] [
-        Fa.i [ icon ] []
-      ]
+  let classifiedFixtureModalContent (fp: FixturePredictionViewModel) =
+    [ Components.PointVectors.element fp.Points ]
 
   let pageFixtureButton dispatch icon fixtures =
     Option.bind (fun fId -> Map.tryFind fId fixtures)
@@ -546,7 +367,7 @@ module GameweekFixtures =
   let modalTitle dispatch ({ TeamLine = TeamLine (Team home, Team away) } as fp: FixturePredictionViewModel) =
     let clockOrScore =
       match fp.State with
-      | FixtureState.Open ko -> [ kickOffClockTime ko ]
+      | FixtureState.Open _ -> [ str fp.KickOff.ClockTime ]
       | FixtureState.InPlay (sl, _) -> [ Components.simpleScore sl ]
       | FixtureState.Classified sl -> [ Components.simpleScore sl ]
 
@@ -595,7 +416,7 @@ module GameweekFixtures =
                  xLargeTeamBadge away
                ] ] [
         div [ Class "gw-fixture-modal-prediction" ] [
-          predScoreContainer fp.Prediction
+          Components.PredictionScore.element fp.Prediction
         ]
       ]
     ]
@@ -625,7 +446,7 @@ module GameweekFixtures =
         match fp.State with
         | FixtureState.Open _ -> openFixtureModalContent dispatch model fp
         | FixtureState.InPlay (sl, mp) -> inplayFixtureModalContent dispatch model.GameweekNo (sl, mp)
-        | FixtureState.Classified _ -> classifiedFixtureModalContent dispatch fp
+        | FixtureState.Classified _ -> classifiedFixtureModalContent fp
         |> Text.div [ Props [ Class "" ] ]
 
       let formGuide (fp: FixturePredictionViewModel) =
@@ -669,35 +490,33 @@ module GameweekFixtures =
   let fullView
     dispatch
     ({ GameweekNo = GameweekNo gwno
-       Neighbours = prev, next } as gwfs: GameweekFixturesViewModel)
+       Neighbours = neighbours } as gwfs: GameweekFixturesViewModel)
+    player
     modalState
     =
     div [ Class "gw-fixture" ] [
       Components.pageTitle (sprintf "Gameweek %i" gwno)
 
       gwfs.GlobalGameweekStats
-      |> Option.mapF gwStats (div [] [])
+      |> Option.mapF (Components.GameweekStats.element (NavTo >> dispatch) player) (div [] [])
 
       div
         []
         (Map.toList gwfs.Fixtures
          |> List.map snd
          |> List.sortBy (fun f -> f.SortOrder)
-         |> List.groupBy (fun f -> f.KickOffGroup)
+         |> List.groupBy (fun f -> f.KickOff.Group)
          |> List.map (fixtureGroup dispatch))
 
       div [ Class "gw-fixture-page-row" ] [
-        Box.box' [] [
-          pageGwButton dispatch Fa.Solid.AngleDoubleLeft prev
-          pageGwButton dispatch Fa.Solid.AngleDoubleRight next
-        ]
+        Components.pageGwButtonRow (fun (GameweekNo gwno) -> NavTo(GameweekRoute(GameweekFixturesRoute gwno)) |> dispatch) neighbours
       ]
       fixtureModal dispatch gwfs modalState
     ]
 
   let view (model: Model) dispatch =
     match model.GameweekFixtures with
-    | Success gwfs -> fullView dispatch gwfs model.ModalState
+    | Success gwfs -> fullView dispatch gwfs model.Player model.ModalState
     | WebError e -> div [] [ str "error" ]
     | _ -> div [] []
 

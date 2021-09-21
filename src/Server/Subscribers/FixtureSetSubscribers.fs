@@ -313,11 +313,13 @@ module FixtureClassifiedSubscribers =
       Documents.repo deps.ElasticSearch
       |> fun repo -> repo.Read (LeagueTableDocument (leagueId, window))
 
-    let maximumPoints =
-      List.map (snd >> fun (ltm:LeagueTableMember) -> ltm.Points)
-      >> function | [] -> [ PredictionPointsMonoid.Init ] | m -> m
-      >> List.map (fun m -> m.Points)
-      >> List.max
+    let maximumPoints = function
+      | [] -> None
+      | _ as members ->
+        members
+        |> List.maxBy (fun (_, ltm:LeagueTableMember) -> ltm.Points)
+        |> fun (playerId:PlayerId, ltm) ->
+          Some (playerId, ltm.Points.Points)
 
     let timeIt (LeagueName leagueName) (doc:Document) desc f g =
       let sw = System.Diagnostics.Stopwatch.StartNew()

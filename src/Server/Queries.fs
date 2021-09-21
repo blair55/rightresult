@@ -30,7 +30,7 @@ module Queries =
       getPrivateLeaguesAndMembers : unit -> (LeagueRecord * (PlayerRecord seq)) seq
       getFixturesLength : unit -> int
       getLeaguesPlayerIsIn : PlayerId -> LeagueRecord seq
-      getPlayerFixtureSet : PlayerId -> FixtureSetId -> (FixtureRecord * PredictionRecord option) seq
+      getPlayerFixtureSet : PlayerId -> GameweekNo -> (FixtureRecord * PredictionRecord option) seq
       getPlayer : PlayerId -> PlayerRecord option
       getPrivateLeague : PrivateLeagueId -> LeagueRecord option
       getFixtureByTeams : Team -> Team -> FixtureRecord

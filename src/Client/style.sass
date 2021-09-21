@@ -242,16 +242,6 @@ table.table th.text-left
     bottom: 1px
     border: none
 
-.player-fixtureset
-  .player-fixtureset-team
-    line-height: 2em
-  .badge
-    margin: 0.2em 0.5em
-  .home .badge
-    float: right
-  .away .badge
-    float: left
-
 .card.card-footer-only
   .card-footer
     border-top: none
@@ -366,6 +356,32 @@ table.table th.text-left
     position: relative
     z-index: 20
 
+.player-gw-fixture
+
+  .gw-item
+
+    // .gw-item-body
+    //   *
+    //     cursor: unset
+
+    .gw-item-body
+      margin-top: 0px
+
+    .gw-item-score-polygon
+      padding: 1em 0
+      margin-top: 0px
+
+    .gw-item-prediction
+      .gw-item-score-polygon
+        clip-path: polygon(0% 0%,100% 0%,90% 101%,0% 101%)
+
+    .gw-item-result
+      .gw-item-score-polygon
+        clip-path: polygon(10% 0%,100% 0%,100% 101%,0% 101%)
+
+    .pred-score-container
+      margin: 0 5px
+
 .pred-score-container
   display: flex
   justify-content: center
@@ -421,6 +437,8 @@ table.table th.text-left
         text-transform: uppercase
         color: $secondary
         font-weight: normal
+      a
+        border-bottom: solid 1px
 
 .formguide
   background-color: $background-alt
@@ -559,6 +577,18 @@ table.table th.text-left
   .message.is-info .message-body
     background-color: $info-light
 
+.gw-fixture-page-row
+  .box
+    display: flex
+    justify-content: center
+    .button
+      background-color: $secondary
+      border: none
+      color: $white-ter
+      flex-grow: 1
+    .button:not(:last-child)
+      margin-right: 2px
+
 .gw-fixture
   .modal-card
     max-height: unset
@@ -577,19 +607,7 @@ table.table th.text-left
   .modal-card-foot .button:not(:last-child)
     margin-right: 2px
 
-  .gw-fixture-page-row
-    .box
-      display: flex
-      justify-content: center
-      .button
-        background-color: $secondary
-        border: none
-        color: $white-ter
-        flex-grow: 1
-      .button:not(:last-child)
-        margin-right: 2px
-
-.point-vector-row
+.point-vector-row, .point-vector-row-total
   .point-vector-row-left, .point-vector-row-right
     padding: 5px
     margin-bottom: 5px
@@ -610,9 +628,62 @@ table.table th.text-left
       background-color: $white
       color: $grey
 .point-vector-row-total
-  .point-vector-row
-    .point-vector-row-right
-      font-size: $size-medium
+  .point-vector-row-right
+    font-size: $size-medium
+
+.point-vector-row:last-child
+  .point-vector-row-left, .point-vector-row-right
+    margin-bottom: 0
+
+.player-gw-fixture
+  .gw-item
+    cursor: pointer
+    .gw-item-body
+      z-index: 2
+    .point-vectors
+      .point-vectors-body
+        padding: 38px 0 5px
+        background-color: $background-alt
+        margin-top: -30px
+        min-height: 48px
+        position: relative
+        z-index: 1
+      .point-vector-row, .point-vector-row-total
+        .point-vector-row-left
+          font-weight: normal
+          background-color: unset
+        .point-vector-row-right
+          color: $primary
+        .point-vector-row-left, .point-vector-row-right
+          margin-bottom: 0
+      .point-vector-row-total
+        display: none
+
+    .player-gw-fixture-expandcollapse
+      color: $grey-light
+      padding: 10px 0 0
+      font-size: $size-small
+      span
+        text-transform: uppercase
+        display: none
+      i
+        margin: 0 5px
+      .player-gw-total-points
+        font-weight: bold
+        color: $primary
+      .player-gw-fixture-expandcollapse-all
+        margin-right: 2px
+
+  .gw-fixture-group:first-child
+    .gw-item:first-child
+      .player-gw-fixture-expandcollapse
+        span
+          display: unset
+
+  .gw-item.gw-item-collapsed
+    .point-vectors-body
+      .point-vector-row
+        display: none
 
 .kick-off-time
   background-color: $info

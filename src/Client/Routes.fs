@@ -8,14 +8,10 @@ type Route =
   | HomeRoute
   | HowItWorksRoute
   | ContactRoute
-  // | FixtureRoute of FixtureRoute
   | GameweekRoute of GameweekRoute
   | LeaguesRoute of LeaguesRoute
   | LoggedInRoute
   | PlayersRoute of PlayersRoute
-// and FixtureRoute =
-  // | OmniFixturesRoute
-  // | AddFixtureSetRoute
 and GameweekRoute =
   | GameweekInitRoute
   | GameweekFixturesRoute of int
@@ -37,15 +33,13 @@ and PlayersRoute =
   | MyProfileRoute
   | AllPlayersRoute
   | PlayerRoute of string
-  | PlayerFixtureSetRoute of string * string
+  | PlayerGameweekRoute of playerId:string * gwno:int
 
 let homePath          = ""
 let loginPath         = "login"
 let loggedInPath      = "logged-in"
 let howItWorksPath    = "how-it-works"
 let contactPath       = "get-in-touch"
-// let fixturesPath      = "fixtures"
-// let addFixtureSetPath = "fixtures/add"
 let gwPath            = "gameweek"
 let gwFixturesPath    = sprintf "gameweek/%i"
 let addGameweekPath   = "gameweek/add"
@@ -64,7 +58,7 @@ let leaguePremTablePath = sprintf "leagues/premtable/%s"
 let playerProfilePath = "me"
 let playersPath       = "players"
 let playerPath        = sprintf "players/%s"
-let playerFixtureSetPath = sprintf "players/%s/gameweek/%s"
+let playerGameweekPath = sprintf "players/%s/gameweek/%i"
 
 let curry2 f x y = f (x, y) // convert tupled form function of two arguments into curried form
 let curry3 f x y z = f (x, y, z) // convert tupled form function of two arguments into curried form
@@ -76,8 +70,6 @@ let route : Parser<Route -> Route, _> =
     map LoggedInRoute      (s loggedInPath)
     map HowItWorksRoute    (s howItWorksPath)
     map ContactRoute       (s contactPath)
-    // map (OmniFixturesRoute  |> FixtureRoute) (s fixturesPath)
-    // map (AddFixtureSetRoute |> FixtureRoute) (s fixturesPath </> s "add")
     map (GameweekInitRoute  |> GameweekRoute) (s gwPath)
     map (AddGameweekRoute   |> GameweekRoute) (s gwPath </> s "add")
     map (GameweekFixturesRoute >> GameweekRoute) (s gwPath </> i32)
@@ -96,7 +88,7 @@ let route : Parser<Route -> Route, _> =
     map (MyProfileRoute     |> PlayersRoute) (s playerProfilePath)
     map (AllPlayersRoute    |> PlayersRoute) (s playersPath)
     map (PlayerRoute        >> PlayersRoute) (s playersPath </> str)
-    map (curry2 (PlayerFixtureSetRoute >> PlayersRoute)) (s playersPath </> str </> s "gameweek" </> str)
+    map (curry2 (PlayerGameweekRoute >> PlayersRoute)) (s playersPath </> str </> s "gameweek" </> i32)
   ]
 
 let private routeToPath = function
@@ -105,10 +97,6 @@ let private routeToPath = function
   | LoggedInRoute      -> loggedInPath
   | HowItWorksRoute    -> howItWorksPath
   | ContactRoute       -> contactPath
-  // | FixtureRoute r ->
-    // match r with
-    // | OmniFixturesRoute      -> fixturesPath
-    // | AddFixtureSetRoute     -> addFixtureSetPath
   | GameweekRoute r ->
     match r with
     | GameweekInitRoute         -> gwPath
@@ -133,7 +121,7 @@ let private routeToPath = function
     | MyProfileRoute           -> playerProfilePath
     | AllPlayersRoute          -> playersPath
     | PlayerRoute playerId     -> playerPath playerId
-    | PlayerFixtureSetRoute (pId, fsId) -> playerFixtureSetPath pId fsId
+    | PlayerGameweekRoute (pId, gwno) -> playerGameweekPath pId gwno
 
 let navTo r =
   (routeToPath >> sprintf "/%s" >> Navigation.newUrl) r

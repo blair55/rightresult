@@ -68,12 +68,12 @@ module Player =
           fixtureSets.FixtureSets
           |> Map.toList
           |> List.sortBy (fun (_, { GameweekNo = GameweekNo gwno }) -> gwno)
-          |> List.map (fun (FixtureSetId fsId, m) ->
+          |> List.map (fun (_, m) ->
             let (p, cr, cs) = Components.toShortPoints m.PlayerPoints
             let (GameweekNo gwno) = m.GameweekNo
             tr []
                [ td []
-                    [ a [ OnClick (fun _ -> PlayerFixtureSetRoute (playerId, string fsId) |> PlayersRoute |> NavTo |> dispatch) ] [ str <| sprintf "Gameweek %i" gwno ]
+                    [ a [ OnClick (fun _ -> PlayerGameweekRoute (playerId, gwno) |> PlayersRoute |> NavTo |> dispatch) ] [ str <| sprintf "Gameweek %i" gwno ]
                     ]
                  td [ Class CustomClasses.TextRight ] [ str (string cr) ]
                  td [ Class CustomClasses.TextRight ] [ str (string cs) ]

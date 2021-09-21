@@ -260,14 +260,6 @@ module Components =
       ]
     ]
 
-  let kickOffTime (ko: KickOff) =
-    Text.span [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is2) ]
-                Props [ Class "kick-off-time" ] ] [
-      str (ko.Raw.ToString("HH:mm"))
-    ]
-
-  let gameweekDate (KickOffGroup s) = subHeading s
-
   module ScoreBox =
 
     let private boxes clas' h a modifier =
@@ -429,3 +421,27 @@ module Components =
                   td [ Class CustomClasses.TextRight ] [ str (string p) ]
                 ]))
     ]
+
+  let pageGwButtonRow navTo (prev, next) =
+    let button icon =
+      function
+      | Some gwno ->
+        Button.button [ Button.Color IsLight
+                        Button.Props [ OnClick(fun _ -> navTo gwno) ] ] [
+          Fa.i [ icon ] []
+        ]
+      | None ->
+        Button.button [ Button.Disabled true ] [
+          Fa.i [ icon ] []
+        ]
+    Box.box' [] [
+      button Fa.Solid.AngleDoubleLeft prev
+      button Fa.Solid.AngleDoubleRight next
+    ]
+
+  let predictionModifierClass =
+    Option.map (fun (_: ScoreLine, modifier) -> PredictionModifier.isModified modifier)
+    >> Option.defaultValue false
+    >> function
+      | true -> "gw-item-ismodified"
+      | _ -> ""

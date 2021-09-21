@@ -158,7 +158,8 @@ module PredictionSetOverwrittenSubscribers =
     Documents.repo deps.ElasticSearch
     |> fun repo -> repo.Delete (PlayerFixtureSetsDocument destinationPlayerId)
     deps.NonQueries.deletePredictionSet (destinationPlayerId, fsId)
-    deps.Queries.getPlayerFixtureSet sourcePlayerId fsId
+    deps.Queries.getFixtureSetGameweekNo fsId
+    |> deps.Queries.getPlayerFixtureSet sourcePlayerId
     |> List.ofSeq
     |> List.choose snd
     |> List.map (fun p -> { p with PlayerId = destinationPlayerId })

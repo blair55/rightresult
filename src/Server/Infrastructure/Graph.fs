@@ -268,21 +268,16 @@ let queries (gc:GraphClient) : Queries =
         .ResultsAsync.Result
       |> Seq.map buildLeagueRecord
 
-    getPlayerFixtureSet = fun (PlayerId playerId) (FixtureSetId fsId) ->
+    getPlayerFixtureSet = fun (PlayerId playerId) (GameweekNo gwno) ->
       gc.Cypher
-        .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet {Id:$fsId})")
+        .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet {GameweekNo:$gwno})")
         .OptionalMatch("(player:Player {Id:$playerId})-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(f)-[:IN_FIXTURESET]->(fs)")
-        .WithParam("fsId", fsId)
+        .WithParam("gwno", gwno)
         .WithParam("playerId", playerId)
-        // .Where(fun (player:PlayerNode) -> player.Id = playerId)
         .Return(fun f pred -> f.As<FixtureNode>(), pred.As<PredictionNode>())
         .ResultsAsync.Result
       |> Seq.map(fun (f, p) ->
         buildFixtureRecord f, if box p |> isNull then None else buildPredictionRecord p |> Some)
-
-        // f |> Json.dsrlzStrngAtPath<FixtureNode> "data" |> buildFixtureRecord,
-        // ((if isNull pred then "{'data':null}" else pred) |> Json.dsrlzStrngAtPath<PredictionNode option> "data"
-        //   |> Option.map buildPredictionRecord))
 
     getPlayer = fun (PlayerId playerId) ->
       gc.Cypher
