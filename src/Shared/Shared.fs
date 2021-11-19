@@ -362,6 +362,7 @@ type FixtureDetails =
 and FormFixture =
   { KickOff : KickOff
     GameweekNo : GameweekNo
+    TeamLine : TeamLine
     Opponent : Team
     Scoreline : ScoreLine
     Venue : FormVenue
@@ -758,17 +759,17 @@ module PredictionGrid =
 /// - fix push!
 /// - homepage gw global leaderboard / player photo
 /// - only run bg tasks when web available & tasks not running
-/// - swipabe fixture page
+/// - swipable fixture page
 /// - capture score in big up event
 /// - remove `correctGwno1Fixtures` func
 /// - matrix: full screen, show bigups, points scored shading
 /// - add live match data & refresh button?
-/// - scorebreakdown on player gw page
 /// - BADGES
 /// - move fixture node module etc from shared into server
 /// - ^ then move points into FixtureState.Classified
 
 
+/// + scorebreakdown on player gw page
 /// + gw fixtures header: top score - avg score - my score
 /// + scrolling preset boxes
 /// + landing page

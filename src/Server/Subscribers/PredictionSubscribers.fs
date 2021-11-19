@@ -131,7 +131,7 @@ module PredictionBigUpAppliedSubscribers =
         let repo = Documents.repo deps.ElasticSearch
         repo.Edit
           (FixtureDetailsDocument fId)
-          (fun fd -> { fd with BigUps = {PlayerName=pl.Name; PlayerId= pl.Id; TeamLine=teamline; ScoreLine=pr.ScoreLine}::fd.BigUps })
+          (fun fd -> { fd with BigUps = {PlayerName=pl.Name; PlayerId=pl.Id; TeamLine=teamline; ScoreLine=pr.ScoreLine}::fd.BigUps })
         |> ignore<Rresult<Unit>>
     | _ -> ()
 

@@ -173,11 +173,10 @@ module Protocol =
                 SortOrder = f.SortOrder
                 Prediction =
                   pred
-                  |> Option.bind (
-                    function
-                    | { Modifier = PredictionModifier.BigUp } as p
-                    | p -> Some (p.ScoreLine, p.Modifier)
-                    | p when Ko.hasKickedOff (now()) f.KickOff -> Some (p.ScoreLine, p.Modifier)
+                  |> Option.bind (fun p ->
+                    match p.Modifier, Ko.hasKickedOff (now()) f.KickOff with
+                    | PredictionModifier.BigUp, _
+                    | _, true -> Some (p.ScoreLine, p.Modifier)
                     | _ -> None)
                 Points = getPoints f pred
                 State = fixtureStateFirstMinuteHack now f })

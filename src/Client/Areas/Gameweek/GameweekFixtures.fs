@@ -335,16 +335,16 @@ module GameweekFixtures =
 
   let formGuideResult =
     function
-    | FormResult.W -> span [] [ str "W" ]
-    | FormResult.D -> span [] [ str "D" ]
-    | FormResult.L -> span [] [ str "L" ]
+    | FormResult.W -> b [] [ str "W" ]
+    | FormResult.D -> b [] [ str "D" ]
+    | FormResult.L -> b [] [ str "L" ]
 
   let formGuideVenue =
     function
     | FormVenue.H -> b [] [ str "H" ]
     | FormVenue.A -> b [] [ str "A" ]
 
-  let formGuideElements venueClass (f: FormFixture) =
+  let formGuideElements venueClass ({ TeamLine = (TeamLine(h, a) as tl) } as f: FormFixture) =
     let formGuideResultClass =
       match f.Result with
       | FormResult.W -> "formguide-result-w"
@@ -352,11 +352,12 @@ module GameweekFixtures =
       | FormResult.L -> "formguide-result-l"
 
     [ div [ Class $"formguide-team {formGuideResultClass} {venueClass}" ] [
-        formGuideVenue f.Venue
-        span [] [ str (badgeAbbrv f.Opponent) ]
+        formGuideResult f.Result
+        span [] [ str (badgeAbbrv h) ]
         div [ Class "formguide-scoreline" ] [
           simpleScore f.Scoreline
         ]
+        span [] [ str (badgeAbbrv a) ]
         div [ Class "formguide-gwno" ] [
           span [] [
             str (GameweekNo.toGWString f.GameweekNo)

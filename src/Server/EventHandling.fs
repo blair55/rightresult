@@ -20,7 +20,7 @@ module EventHandling =
     else PlayerId playerId
 
   let onEvent deps (DatedEvent (event, created)) =
-    // printfn "handling event: %A" event
+    printfn "handling event: %A" event
 
     match event with
     // players

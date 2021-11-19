@@ -521,6 +521,7 @@ module FixtureClassifiedSubscribers =
       |> List.map (fun ({ TeamLine = (TeamLine(h, a) as tl) } as p, scoreline) ->
         { FormFixture.KickOff = p.KickOff
           Scoreline = scoreline
+          TeamLine = tl
           GameweekNo = p.GameweekNo
           Venue = if h = team then FormVenue.H else FormVenue.A
           Opponent = if h = team then a else h
