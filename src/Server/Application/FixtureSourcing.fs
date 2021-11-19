@@ -12,6 +12,7 @@ module KickoffComponents =
   let build (ko:KickOff) =
     { KickOff = ko
       Group = ko.Raw.ToString("ddd d MMM yyyy")
+      DateAndShortMonth = ko.Raw.ToString("dd MMM")
       ShortDay = ko.Raw.ToString("ddd")
       ClockTime = ko.Raw.ToString("HH:mm") }
 

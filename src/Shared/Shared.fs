@@ -374,6 +374,7 @@ and [<RequireQualifiedAccess>] FormVenue =
 
 type KickOffComponents =
   { KickOff : KickOff
+    DateAndShortMonth : string
     Group : string
     ShortDay : string
     ClockTime : string }

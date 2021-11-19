@@ -276,19 +276,22 @@ table.table th.text-left
 
   .gw-item-title
     display: flex
+    justify-content: stretch
     text-transform: uppercase
     padding: 6px 8px
     color: $primary
     font-size: $size-small
     .gw-item-team
       white-space: nowrap
+      .gw-item-v
+        text-transform: lowercase
     .gw-item-gameday
       font-weight: bold
       margin-right: 0.5em
-    .gw-item-ko
-      font-weight: bold
-      margin: 0 0.5em
-      white-space: nowrap
+    .gw-item-date
+      flex-grow: 1
+      text-align: right
+      color: $grey-light
 
   .gw-item-pointer, .gw-item-clock, .gw-item-points
     position: absolute
