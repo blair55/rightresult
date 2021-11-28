@@ -759,6 +759,8 @@ module PredictionGrid =
 /// - deploy fixture ko change
 /// - fix push!
 /// - homepage gw global leaderboard / player photo
+/// - dynamic h1
+/// - gw stats by month (pts/avg/max/pos)
 /// - only run bg tasks when web available & tasks not running
 /// - swipable fixture page
 /// - capture score in big up event

@@ -11,10 +11,11 @@ open Routes
 module GameweekStats =
 
   let private pointsHeading (player: ClientSafePlayer) (stats: GlobalGameweekStats) =
-    if player.Id = stats.PlayerId then
-      str "my points"
-    else
-      str "points"
+    // if player.Id = stats.PlayerId then
+    //   str "my points"
+    // else
+    //   str "points"
+    str "pts"
 
   let private maxPointsPlayerGwRoute (PlayerId playerId) (GameweekNo gwno) =
     PlayerGameweekRoute(playerId, gwno)

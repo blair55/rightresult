@@ -135,6 +135,9 @@ module PredictionBigUpAppliedSubscribers =
         |> ignore<Rresult<Unit>>
     | _ -> ()
 
+  let updateFixtureMatrix (deps:Dependencies) (pId, fId) =
+    ()
+
   let all =
     [ UpdatePredictionModifier.setModifier PredictionModifier.Consts.BigUp
       updateFixtureDetails
