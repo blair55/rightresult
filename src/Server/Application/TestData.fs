@@ -50,8 +50,8 @@ module TestData =
     let url =
       Environment.GetEnvironmentVariable "CLIENTHOST"
 
-    let playerName, playerPrefix = "tester", "test"
-    printfn $"{url}/api/testlogin/{playerPrefix}/{pIdStr}/tester"
+    let playerName, playerPrefix = $"tester-{pIdStr}", "tst"
+    printfn $"{url}/api/testlogin/{playerPrefix}/{pIdStr}/{playerName}"
 
     let pId =
       PlayerId(sprintf $"{playerPrefix}-{pIdStr}")

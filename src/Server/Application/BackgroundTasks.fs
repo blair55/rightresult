@@ -56,6 +56,20 @@ module Classifier =
        |> Seq.filter (fun { GameweekNo = GameweekNo g } -> g > gwno)
        |> List.ofSeq)
 
+  let reclassifyFixturesAfterGameweek (handle: Command -> Ars<Unit>) (deps: Dependencies) (GameweekNo gwno) =
+    deps.Queries.getAllFixtures()
+    |> Seq.choose (fun { FixtureSetId = fsId; Id = fId; State = state; GameweekNo = GameweekNo g } ->
+        match state with
+        | FixtureState.Classified _ when g > gwno -> Some (fsId, fId)
+        | _ -> None)
+    |> Seq.iter (fun (fsId, fId) ->
+        FixtureSetCommand(fsId, ReclassifyFixture fId)
+        |> handle
+        |> Async.RunSynchronously
+        |> function
+        | Ok _ -> printfn "Fixture Reclassified\n%A" fId
+        | Error e -> printfn "ERROR RECLASSIFYING\n%A" e)
+
   let concludeGameweek (handle: Command -> Ars<Unit>) (deps: Dependencies) =
     deps.Queries.getUnconcludedFixtureSets ()
     |> Seq.iter

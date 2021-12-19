@@ -125,4 +125,9 @@ module PredictionSet =
     | _, _, OverwritePredictionSet sourcePlayerId ->
       Ok [ PredictionSetOverwritten (sourcePlayerId, playerId, fsId) ]
 
+    | _, _, PutPredictions predictions ->
+      predictions
+      |> List.collect (fun (fId, sl) -> fixtureCreatedEvent fId @ [ PredictionScoreLineSet (playerId, fsId, fId, sl)])
+      |> Ok
+
     | _ -> HandlerHelper.cmdErr cmd state.Predictions

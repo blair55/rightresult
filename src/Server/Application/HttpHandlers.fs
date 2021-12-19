@@ -30,11 +30,11 @@ module HttpHandlers =
       Away : string
       KickOff : DateTime }
 
+  let toHttpFuncResult next ctx = function
+    | Ok () -> Successful.OK "Ok" next ctx
+    | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
+
   let createFixtureSet handleCommand next (ctx:HttpContext) =
-    let respond next ctx (result:Rresult<Unit>) =
-      match result with
-      | Ok () -> Successful.CREATED "Created" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
     let getFixtureSetFromRequest (ctx:HttpContext) =
       ctx.BindModelAsync<FixtureSetHttp>()
     let createFixtureSetCmd (fs:FixtureSetHttp) =
@@ -58,7 +58,7 @@ module HttpHandlers =
     >> Task.toAsync
     >> Async.map createFixtureSetCmd
     >> Async.toTask (Async.bind handleCommand)
-    >> Task.bind (respond next ctx))
+    >> Task.bind (toHttpFuncResult next ctx))
 
   [<CLIMutable>]
   type EditFixtureKoHttp =
@@ -67,10 +67,6 @@ module HttpHandlers =
       KickOff : DateTime }
 
   let editFixtureKo handleCommand next (ctx:HttpContext) =
-    let respond next ctx (result:Rresult<Unit>) =
-      match result with
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
     let editFixtureKoCmd (e:EditFixtureKoHttp) =
       (FixtureId e.FixtureId, Ko.create e.KickOff)
       |> EditFixtureKickOff
@@ -80,7 +76,7 @@ module HttpHandlers =
     >> Task.toAsync
     >> Async.map editFixtureKoCmd
     >> Async.toTask (Async.bind handleCommand)
-    >> Task.bind (respond next ctx))
+    >> Task.bind (toHttpFuncResult next ctx))
 
   [<CLIMutable>]
   type AppendFixtureHttp =
@@ -90,9 +86,6 @@ module HttpHandlers =
       KickOff : DateTime }
 
   let appendFixtureToGameweek handleCommand next (ctx:HttpContext) =
-    let respond next ctx = function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
     ctx
     |> (fun ctx -> ctx.BindModelAsync<AppendFixtureHttp>()
     >> Task.toAsync
@@ -108,7 +101,7 @@ module HttpHandlers =
       |> AppendFixture
       |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd))
     >> Async.toTask (Async.bind handleCommand)
-    >> Task.bind (respond next ctx))
+    >> Task.bind (toHttpFuncResult next ctx))
 
   [<CLIMutable>]
   type RemoveOpenFixtureHttp =
@@ -116,9 +109,6 @@ module HttpHandlers =
       FixtureSetId : Guid }
 
   let removeOpenFixture handleCommand next (ctx:HttpContext) =
-    let respond next ctx = function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
     ctx
     |> (fun ctx -> ctx.BindModelAsync<RemoveOpenFixtureHttp>()
     >> Task.toAsync
@@ -127,7 +117,7 @@ module HttpHandlers =
       |> RemoveOpenFixture
       |> fun fscmd -> FixtureSetCommand (FixtureSetId e.FixtureSetId, fscmd))
     >> Async.toTask (Async.bind handleCommand)
-    >> Task.bind (respond next ctx))
+    >> Task.bind (toHttpFuncResult next ctx))
 
   [<CLIMutable>]
   type FixtureClassificationHttp =
@@ -137,10 +127,6 @@ module HttpHandlers =
       AwayScore : int }
 
   let classifyFixture (deps:Dependencies) handleCommand next (ctx:HttpContext) =
-    let respond next ctx (result:Rresult<Unit>) =
-      match result with
-      | Ok () -> Successful.CREATED "Created" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
     let getClassificationFromRequest (ctx:HttpContext) =
       ctx.BindModelAsync<FixtureClassificationHttp>()
     let getFixtureFromRequest (fc:FixtureClassificationHttp) =
@@ -153,7 +139,7 @@ module HttpHandlers =
     >> Task.toAsync
     >> Async.map (fun fc -> (fc, getFixtureFromRequest fc) |> createClassifyFixtureCmd)
     >> Async.toTask (Async.bind handleCommand)
-    >> Task.bind (respond next ctx))
+    >> Task.bind (toHttpFuncResult next ctx))
 
   let classifyAllFixtures (deps:Dependencies) handleCommand =
     BackgroundTasks.Classifier.classifyAllFixtures handleCommand deps
@@ -161,6 +147,10 @@ module HttpHandlers =
 
   let classifyFixturesAfterGameweek (deps:Dependencies) handleCommand gwno =
     BackgroundTasks.Classifier.classifyFixturesAfterGameweek handleCommand deps (GameweekNo gwno)
+    Successful.OK "Ok"
+
+  let reclassifyFixturesAfterGameweek (deps:Dependencies) handleCommand gwno =
+    BackgroundTasks.Classifier.reclassifyFixturesAfterGameweek handleCommand deps (GameweekNo gwno)
     Successful.OK "Ok"
 
   [<CLIMutable>]
@@ -172,9 +162,7 @@ module HttpHandlers =
       ctx.BindModelAsync<RemovePlayerHttp>()
       |> Task.map (fun p -> (PlayerId p.PlayerId, Remove) |> PlayerCommand)
       |> Task.bind (Async.toTask handleCommand)
-      |> Task.bind (function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
+      |> Task.bind (toHttpFuncResult next ctx)
 
   [<CLIMutable>]
   type AddPlayerToLeagueHttp =
@@ -186,9 +174,7 @@ module HttpHandlers =
       ctx.BindModelAsync<AddPlayerToLeagueHttp>()
       |> Task.map (fun p -> (PrivateLeagueId p.LeagueId, PlayerId p.PlayerId |> JoinLeague) |> PrivateLeagueCommand)
       |> Task.bind (Async.toTask handleCommand)
-      |> Task.bind (function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
+      |> Task.bind (toHttpFuncResult next ctx)
 
   [<CLIMutable>]
   type RemovePlayerFromLeagueHttp =
@@ -200,10 +186,7 @@ module HttpHandlers =
       ctx.BindModelAsync<RemovePlayerFromLeagueHttp>()
       |> Task.map (fun p -> (PrivateLeagueId p.LeagueId, PlayerId p.PlayerId |> LeaveLeague) |> PrivateLeagueCommand)
       |> Task.bind (Async.toTask handleCommand)
-      |> Task.bind (function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
-
+      |> Task.bind (toHttpFuncResult next ctx)
 
   [<CLIMutable>]
   type RenameLeagueHttp =
@@ -215,10 +198,7 @@ module HttpHandlers =
       ctx.BindModelAsync<RenameLeagueHttp>()
       |> Task.map (fun r -> PrivateLeagueCommand(PrivateLeagueId r.LeagueId, RenameLeague (LeagueName r.LeagueName)))
       |> Task.bind (Async.toTask handleCommand)
-      |> Task.bind (function
-        | Ok () -> Successful.OK "Ok" next ctx
-        | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
-
+      |> Task.bind (toHttpFuncResult next ctx)
 
   [<CLIMutable>]
   type OverwritePredictionSetHttp =
@@ -234,9 +214,18 @@ module HttpHandlers =
         |> OverwritePredictionSet
         |> fun cmd -> PredictionSetCommand (PlayerId m.DestinationPlayerId, FixtureSetId m.FixtureSetId, cmd))
       |> Task.bind (Async.toTask handleCommand)
-      |> Task.bind (function
-      | Ok () -> Successful.OK "Ok" next ctx
-      | Error s -> ServerErrors.INTERNAL_ERROR s next ctx)
+      |> Task.bind (toHttpFuncResult next ctx)
+
+  let putPredictions handleCommand =
+    fun next (ctx:HttpContext) ->
+      ctx.BindModelAsync<{| PlayerId: string; FixtureSetId: Guid; Predictions: {| FixtureId: Guid; HomeScore: int; AwayScore: int |} list |}>()
+      |> Task.map (fun m ->
+          m.Predictions
+          |> List.map (fun p -> FixtureId p.FixtureId, ScoreLine (Score p.HomeScore, Score p.AwayScore))
+          |> PutPredictions
+          |> fun cmd -> PredictionSetCommand (PlayerId m.PlayerId, FixtureSetId m.FixtureSetId, cmd))
+      |> Task.bind (Async.toTask handleCommand)
+      |> Task.bind (toHttpFuncResult next ctx)
 
   [<CLIMutable>]
   type KickOffFixtureHttp =
@@ -319,8 +308,7 @@ module HttpHandlers =
         let respond (result:Rresult<string>) : HttpFuncResult =
           match result with
           | Ok s -> redirectTo false s next ctx
-          | Error s ->
-          ServerErrors.INTERNAL_ERROR s next ctx
+          | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
         let buildRedirectUrl = sprintf "%s/logged-in#player=%s" appConfig.clientHost
         let appendRedirectPath url = sprintf "%s&%s=%s" url redirectPathKey redirectPath
         (sprintf "%s-%s" idPrefix ext.id |> PlayerId, PlayerName ext.name, ext.email)
@@ -375,6 +363,8 @@ module HttpHandlers =
       POST >=> route  "/api/classifyFixture" >=> classifyFixture deps handleCommand
       POST >=> route  "/api/classifyAllFixtures" >=> classifyAllFixtures deps handleCommand
       POST >=> routef "/api/classifyFixturesAfterGameweek/%i" (classifyFixturesAfterGameweek deps handleCommand)
+      POST >=> routef "/api/reclassifyFixturesAfterGameweek/%i" (reclassifyFixturesAfterGameweek deps handleCommand)
+      POST >=> route  "/api/putPredictions" >=> putPredictions handleCommand
       POST >=> route  "/api/addPlayerToLeague" >=> addPlayerToLeague handleCommand
       POST >=> route  "/api/removePlayerFromLeague" >=> removePlayerFromLeague handleCommand
       POST >=> route  "/api/renameLeague" >=> renameLeague handleCommand

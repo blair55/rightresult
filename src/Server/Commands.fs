@@ -25,12 +25,14 @@ module Commands =
     | EditFixtureKickOff of FixtureId * KickOff
     | KickOffFixture of FixtureId
     | ClassifyFixture of FixtureId * ScoreLine
+    | ReclassifyFixture of FixtureId
     | AppendFixture of FixtureRecord
     | RemoveOpenFixture of FixtureId
   and PredictionSetCommand =
     | RemoveDoubleDown of PredictionEditDate
     | DatedPredictionCommand of PredictionCommand * FixtureId * PredictionEditDate
     | OverwritePredictionSet of sourcePlayer:PlayerId
+    | PutPredictions of (FixtureId * ScoreLine) list
   and PredictionCommand =
     | DoubleDown
     | BigUp

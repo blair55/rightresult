@@ -23,12 +23,14 @@ module FixtureSet =
       fixtures.[fId]
       |> fun f -> fixtures.Add (fId, { f with KickOff = ko }) |> Ok
 
-    | FixtureKickedOff _ ->
-      Ok fixtures
+    | FixtureKickedOff (_, fId) ->
+      fixtures
+      |> Map.change fId (Option.map (fun f -> { f with State = FixtureState.InPlay (ScoreLine.Init, MinutesPlayed.init) })) |> Ok
 
+    | FixtureReclassified (_, fId, sl)
     | FixtureClassified (_, fId, sl) ->
-      fixtures.[fId]
-      |> fun f -> fixtures.Add (fId, { f with State = FixtureState.Classified sl }) |> Ok
+      fixtures
+      |> Map.change fId (Option.map (fun f -> { f with State = FixtureState.Classified sl })) |> Ok
 
     | FixtureAppended (_, f) ->
       fixtures.Add (f.Id, f) |> Ok
@@ -41,10 +43,23 @@ module FixtureSet =
   let folder =
     fold, Map.empty
 
+
   let makeSureFixtureIsOpen { FixtureRecord.State = state } =
+    printfn "Fixture state is %A" state
     match state with
-    | FixtureState.Open _ -> Ok ()
+    | FixtureState.Open _ ->
+      Ok ()
     | _ -> ValidationError "Fixture not open" |> Error
+
+  let makeSureFixtureIsInPlay { FixtureRecord.State = state; Id = fId; GameweekNo = gwno } =
+    match state with
+    | FixtureState.InPlay _ -> Ok ()
+    | _ -> ValidationError $"Fixture not in play {gwno} {fId}" |> Error
+
+  let makeSureFixtureIsClassified { FixtureRecord.State = state } =
+    match state with
+    | FixtureState.Classified sl -> Ok sl
+    | _ -> ValidationError "Fixture not classified" |> Error
 
   let apply (fsId, cmd) (fixtures:FixtureSetState) : Rresult<Event list> =
     match cmd with
@@ -56,13 +71,16 @@ module FixtureSet =
       [ FixtureSetConcluded (fsId, gwno) ] |> Ok
 
     | EditFixtureKickOff (fId, ko) ->
-      fixtures.[fId] |> (makeSureFixtureIsOpen >> Result.map (fun () -> [ FixtureKoEdited (fsId, fId, ko) ]))
+      fixtures.[fId] |> makeSureFixtureIsOpen |> Result.map (fun () -> [ FixtureKoEdited (fsId, fId, ko) ])
 
     | KickOffFixture fId ->
-      [ FixtureKickedOff (fsId, fId) ] |> Ok
+      fixtures.[fId] |> makeSureFixtureIsOpen |> Result.map (fun () -> [ FixtureKickedOff (fsId, fId) ])
 
     | ClassifyFixture (fId, sl) ->
-      [ FixtureClassified (fsId, fId, sl) ] |> Ok
+      fixtures.[fId] |> makeSureFixtureIsInPlay |> Result.map (fun () -> [ FixtureClassified (fsId, fId, sl) ])
+
+    | ReclassifyFixture (fId) ->
+      fixtures.[fId] |> makeSureFixtureIsClassified |> Result.map (fun sl -> [ FixtureReclassified (fsId, fId, sl) ])
 
     | AppendFixture fixture ->
       [ FixtureAppended (fsId, fixture) ] |> Ok
