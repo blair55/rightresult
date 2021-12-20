@@ -175,57 +175,41 @@ module FixtureKickedOffSubscribers =
 
   let updateMatrix (deps:Dependencies) _ (fsId, fId) =
 
-    let q =
-      deps.Queries
-
-    let allPlayers =
-      q.getAllPlayers ()
+    let q = deps.Queries
+    let allPlayers = q.getAllPlayers ()
+    let gwno = q.getFixtureSetGameweekNo fsId
+    let repo = Documents.repo deps.ElasticSearch
 
     let playerNameMap =
       allPlayers
       |> List.map (fun p -> p.Id, p.Name)
       |> Map.ofList
 
-    Documents.repo deps.ElasticSearch
-    |> fun repo ->
-    q.getFixtureSetGameweekNo fsId
-    |> fun gwno ->
+    let getPredictionForPlayer pId =
+      q.getPlayerPredictionForFixture pId fId
+      |> Option.map (fun p ->
+        { MatrixPrediction.Prediction = p.ScoreLine
+          Modifier = p.Modifier
+          Points = None })
+
+    let buildRow (m:MatrixDoc) fId pId =
+      match m.Rows.TryFind pId, getPredictionForPlayer pId with
+      | Some pl, Some pr -> pId, { pl with Predictions = pl.Predictions.Add(fId, pr) }
+      | Some pl, None -> pId, pl
+      | None, Some pr -> pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = Map.ofList [ fId, pr ]; TotalPoints = 0 }
+      | _ -> pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = Map.empty; TotalPoints = 0 }
+
     FixtureSubscribersAssistance.allLeaguesAndMembers deps allPlayers
     |> List.iter (fun (leagueId, _, members) ->
-      (fun (m:MatrixDoc) ->
-        { m with
-            Columns =
-              m.Columns.Add(fId, { m.Columns.[fId] with State = MatrixFixtureState.KickedOff })
-            Rows =
-              members
-              |> List.map (fun pId ->
-                q.getPlayerPredictionForFixture pId fId
-                |> Option.map (fun p ->
-                  { MatrixPrediction.Prediction = p.ScoreLine
-                    Modifier = p.Modifier
-                    Points = None })
-                |> fun mPrediction ->
-                m.Rows.TryFind pId
-                |> fun mPlayer ->
-                match mPlayer, mPrediction with
-                | Some pl, Some pr ->
-                  pId, { pl with Predictions = pl.Predictions.Add(fId, pr) }
-                | Some pl, None ->
-                  pId, pl
-                | None, Some pr ->
-                  pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = [ fId, pr ] |> Map.ofList; TotalPoints = 0 }
-                | _ ->
-                  pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = Map.empty; TotalPoints = 0 }
-                )
-                |> Map.ofList
-          })
-        |> repo.Edit (Matrix (leagueId, gwno))
-        |> ignore
-      )
+      repo.Edit (Matrix (leagueId, gwno))
+        (fun (m:MatrixDoc) ->
+          { m with
+              Columns = m.Columns.Add(fId, { m.Columns.[fId] with State = MatrixFixtureState.KickedOff })
+              Rows = List.map (buildRow m fId) members |> Map.ofList })
+      |> ignore<Rresult<unit>>)
 
   let updatePredictedPremTableForAllPlayers deps _ (_, _) =
-    Documents.repo deps.ElasticSearch
-    |> fun repo ->
+    let repo = Documents.repo deps.ElasticSearch
     deps.Queries.getAllPlayers ()
     |> List.ofSeq
     |> List.map (fun player ->
@@ -404,6 +388,9 @@ module FixtureClassifiedSubscribers =
               (PlayerFixtureSetsDoc.Init player.Id)
               (fun pfsd -> { pfsd with FixtureSets = pfsd.FixtureSets.Add (fsId, docRow) }))
 
+  let (|LeagueTableDocWinner|_|) (table:LeagueTableDoc) =
+    List.tryHead table.Members
+
   let updateLeagueHistoryWindowDoc (deps:Dependencies) (docF, window, description) =
 
     let getLeagueTable (leagueId, window) : LeagueTableDoc option =
@@ -419,22 +406,17 @@ module FixtureClassifiedSubscribers =
     leagueIds
     |> List.iter (fun leagueId ->
       match getLeagueTable (leagueId, window) with
-      | Some table ->
-        table.Members
-        |> List.tryHead // TODO: everyone in position 1
-        |> function
-        | Some (_, m) ->
-          Documents.repo deps.ElasticSearch
-          |> (fun repo ->
-            repo.Upsert (docF leagueId)
-              Map.empty
-              (fun d ->
-                d.Add(window,
-                  { LeagueHistoryUnitWinner.PlayerName = m.PlayerName
-                    Description = description
-                    Points = m.Points })))
-        | None -> ()
-      | None -> ())
+      // TODO: everyone in position 1
+      | Some (LeagueTableDocWinner (_, m)) ->
+          let repo = Documents.repo deps.ElasticSearch
+          repo.Upsert (docF leagueId)
+            Map.empty
+            (fun d ->
+              d.Add(window,
+                { LeagueHistoryUnitWinner.PlayerName = m.PlayerName
+                  Description = description
+                  Points = m.Points }))
+      | _ -> ())
 
   let updateLeagueHistoryFixtureSetDoc deps _ (FixtureSetId fsId, _, _) =
     deps.Queries.getFixtureSetGameweekNo (FixtureSetId fsId)
@@ -450,55 +432,46 @@ module FixtureClassifiedSubscribers =
 
   let updateMatrixDoc deps _ (fsId, fId, resultScoreLine) =
 
-    let q =
-      deps.Queries
-
-    let allPlayers =
-      q.getAllPlayers ()
+    let q = deps.Queries
+    let allPlayers = q.getAllPlayers ()
+    let gwno = q.getFixtureSetGameweekNo fsId
+    let repo = Documents.repo deps.ElasticSearch
 
     let playerNameMap =
       allPlayers
       |> List.map (fun p -> p.Id, p.Name)
       |> Map.ofList
 
-    Documents.repo deps.ElasticSearch
-    |> fun repo ->
-    q.getFixtureSetGameweekNo fsId
-    |> fun gwno ->
+    let getPredictionForPlayer pId =
+      q.getPlayerPredictionForFixture pId fId
+      |> Option.map (fun p ->
+        Points.getPointVectors resultScoreLine p.ScoreLine p.Modifier
+        |> Points.getPointsForPrediction resultScoreLine p.ScoreLine
+        |> fun (ppm, cat) ->
+        { MatrixPrediction.Prediction = p.ScoreLine
+          Modifier = p.Modifier
+          Points = Some (ppm.Points, cat) })
+
+    let buildRow (m:MatrixDoc) fId pId =
+      match m.Rows.TryFind pId, getPredictionForPlayer pId with
+      | Some mPlayer, Some mPrediction ->
+          let predictions = mPlayer.Predictions.Add(fId, mPrediction)
+          let totalPoints =
+            Map.toList predictions
+            |> List.sumBy (fun (_, p) -> match p.Points with | Some (points, _) -> points | None -> 0)
+          pId, { mPlayer with Predictions = predictions; TotalPoints = totalPoints }
+      | Some mPlayer, None -> pId, mPlayer
+      | None, Some mPrediction -> pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = Map.ofList [ fId, mPrediction ]; TotalPoints = 0 }
+      | _ -> pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = Map.empty; TotalPoints = 0 }
+
     FixtureSubscribersAssistance.allLeaguesAndMembers deps allPlayers
     |> List.iter (fun (leagueId, _, members) ->
-      (fun (m:MatrixDoc) ->
-        { m with
-            Columns =
-              m.Columns.Add(fId, { m.Columns.[fId] with State = MatrixFixtureState.Classified resultScoreLine })
-            Rows =
-              members
-              |> List.map (fun pId ->
-                match m.Rows.TryFind pId with
-                | Some mPlayer ->
-                  match mPlayer.Predictions.TryFind fId with
-                  | Some mPrediction ->
-                    let vectors = Points.getPointVectors resultScoreLine mPrediction.Prediction mPrediction.Modifier
-                    Points.getPointsForPrediction resultScoreLine mPrediction.Prediction vectors
-                    |> fun (m, cat) ->
-                      mPlayer.Predictions.Add(fId, { mPrediction with Points = Some (m.Points, cat) })
-                      |> fun predictions ->
-                        predictions
-                        |> Map.toList
-                        |> List.sumBy (fun (_, p) ->
-                          match p.Points with
-                          | Some (points, _) -> points
-                          | None -> 0)
-                        |> fun totalPoints ->
-                          pId, { mPlayer with Predictions = predictions; TotalPoints = totalPoints }
-                  | None ->
-                    pId, mPlayer
-                | None ->
-                  pId, { MatrixPlayer.PlayerName = playerNameMap.[pId]; Predictions = Map.empty; TotalPoints = 0 })
-              |> Map.ofList
-          })
-        |> repo.Edit (Matrix (leagueId, gwno))
-        |> ignore)
+      repo.Edit (Matrix (leagueId, gwno))
+        (fun (m:MatrixDoc) ->
+          { m with
+              Columns = m.Columns.Add(fId, { m.Columns.[fId] with State = MatrixFixtureState.Classified resultScoreLine })
+              Rows = List.map (buildRow m fId) members |> Map.ofList })
+      |> ignore<Rresult<unit>>)
 
   let updateRealPremTable deps _ _ =
     Documents.repo deps.ElasticSearch
@@ -512,26 +485,28 @@ module FixtureClassifiedSubscribers =
   let updateFormGuideDoc deps _ (_, fId, _) =
     let repo = Documents.repo deps.ElasticSearch
 
+    let buildFormFixture team ({ TeamLine = (TeamLine(h, a) as tl) } as p:FixtureRecord, scoreline) =
+      { FormFixture.KickOff = p.KickOff
+        Scoreline = scoreline
+        TeamLine = tl
+        GameweekNo = p.GameweekNo
+        Venue = if h = team then FormVenue.H else FormVenue.A
+        Opponent = if h = team then a else h
+        Result =
+          match getScoreResult scoreline with
+          | HomeWin when team = h -> FormResult.W
+          | AwayWin when team = a -> FormResult.W
+          | Draw -> FormResult.D
+          | _ -> FormResult.L }
+
     let rebuildFormGuide team =
       deps.Queries.getFixturesForTeam team
       |> List.ofSeq
       |> List.sortByDescending (fun f -> f.KickOff)
       |> List.choose (fun f -> FixtureState.classifiedScoreLine f.State |> Option.map (fun sl -> f, sl))
       |> List.truncate 5
-      |> List.map (fun ({ TeamLine = (TeamLine(h, a) as tl) } as p, scoreline) ->
-        { FormFixture.KickOff = p.KickOff
-          Scoreline = scoreline
-          TeamLine = tl
-          GameweekNo = p.GameweekNo
-          Venue = if h = team then FormVenue.H else FormVenue.A
-          Opponent = if h = team then a else h
-          Result =
-            match getScoreResult scoreline with
-            | HomeWin when team = h -> FormResult.W
-            | AwayWin when team = a -> FormResult.W
-            | Draw -> FormResult.D
-            | _ -> FormResult.L })
-        |> fun (f:FormFixture list) -> repo.Insert (FormGuideDocument team) f
+      |> List.map (buildFormFixture team)
+      |> repo.Insert (FormGuideDocument team)
 
     let { FixtureRecord.TeamLine = TeamLine (homeTeam, awayTeam) } = deps.Queries.getFixtureRecord fId
     rebuildFormGuide homeTeam
