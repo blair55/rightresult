@@ -157,7 +157,7 @@ module LeagueHistory =
     match model.LeagueName, model.FixtureSets, model.Months with
     | Success leagueName, Success fs, Success months -> leagueView dispatch model leagueName fs months
     | Success leagueName, WebError _, WebError _ -> leagueView dispatch model leagueName Map.empty Map.empty
-    | _ -> div [] [ ]
+    | _ -> div [] []
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with

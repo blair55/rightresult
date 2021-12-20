@@ -403,7 +403,7 @@ module Protocol =
         getRealPremTable = vt >> Result.map (fun _ -> getRealPremTable ()) >> Async.retn
         getPredictedPremTable = vt >> Result.map getPredictedPremTable >> Async.retn
         getFixtureDetails = fun t fId -> t |> (vt >> fun _ -> getFixtureDetails fId |> Async.retn)
-        getEarliestOpenGwno = vt >> Result.map (fun _ -> q.getEarliestOpenGwno() |> Option.defaultValue (GameweekNo 1)) >> Async.retn
+        getEarliestOpenGwno = vt >> Result.map (fun _ -> q.getEarliestOpenGwno() |> Option.orElse (q.getMaxGameweekNo()) |> Option.defaultValue (GameweekNo 1)) >> Async.retn
         getGameweekFixtures = fun t gwno -> t |> (vt >> Result.bind (getGameweekFixtures gwno) >> Async.retn)
         getHomePageBigUps = vt >> Result.map (fun _ -> getHomePageBigUps ()) >> Async.retn
 

@@ -320,11 +320,14 @@ let queries (gc:GraphClient) : Queries =
       gc.Cypher
         .Match("(f1:Fixture)")
         .Where(fun (f1:FixtureNode) -> f1.State <> FixtureState.ClassifiedStr)
-        .Match("(f2:Fixture)")
-        .Return(fun () -> Return.As<Nullable<int>>("coalesce(min(f1.GameweekNo), max(f2.GameweekNo))"))
+        .Return<FixtureNode>("f1")
+        // .Match("(f2:Fixture)")
+        // .Return(fun () -> Return.As<Nullable<int>>("coalesce(min(f1.GameweekNo), max(f2.GameweekNo))"))
         .ResultsAsync.Result
+      |> Seq.map (fun f -> f.GameweekNo)
+      |> Seq.sort
       |> Seq.tryHead
-      |> Option.bind Option.ofNullable
+      // |> Option.bind Option.ofNullable
       |> Option.map GameweekNo
 
     getPredictionsAggregate = fun (FixtureId fId) ->
