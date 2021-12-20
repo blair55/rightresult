@@ -39,22 +39,14 @@ module Html =
     >> fun e -> e.classList.remove (CustomClasses.IsClipped)
 
   let private elemById elemId =
-    Browser
-      .Dom
-      .document
-      .getElementById(elemId)
+    Browser.Dom.document.getElementById (elemId)
 
-  let resetScrollTop =
-    elemById
-    >> fun e -> e.scrollTop <- 0.
+  let resetScrollTop = elemById >> fun e -> e.scrollTop <- 0.
 
   let resetScrollToBottom =
-    elemById
-    >> fun e -> e.scrollTop <- e.scrollHeight
+    elemById >> fun e -> e.scrollTop <- e.scrollHeight
 
-  let resetScrollLeft =
-    elemById
-    >> fun e -> e.scrollLeft <- 0.
+  let resetScrollLeft = elemById >> fun e -> e.scrollLeft <- 0.
 
 module Components =
 
@@ -412,13 +404,27 @@ module Components =
          |> List.map
               (fun (pId, m) ->
                 let (p, cr, cs) = toShortPoints m.Points
-                tr [ ClassName( if activePlayerId = pId then "is-selected" else "") ] [
-                  td [ Class CustomClasses.TextRight ] [ str (string m.Position) ]
+
+                tr [ ClassName(
+                       if activePlayerId = pId then
+                         "is-selected"
+                       else
+                         ""
+                     ) ] [
+                  td [ Class CustomClasses.TextRight ] [
+                    str (string m.Position)
+                  ]
                   td [ Class CustomClasses.TextCenter ] (movementIcon m.Movement)
                   td [] [ playerLink pId m ]
-                  td [ Class CustomClasses.TextRight ] [ str (string cr) ]
-                  td [ Class CustomClasses.TextRight ] [ str (string cs) ]
-                  td [ Class CustomClasses.TextRight ] [ str (string p) ]
+                  td [ Class CustomClasses.TextRight ] [
+                    str (string cr)
+                  ]
+                  td [ Class CustomClasses.TextRight ] [
+                    str (string cs)
+                  ]
+                  td [ Class CustomClasses.TextRight ] [
+                    str (string p)
+                  ]
                 ]))
     ]
 
@@ -434,6 +440,7 @@ module Components =
         Button.button [ Button.Disabled true ] [
           Fa.i [ icon ] []
         ]
+
     Box.box' [] [
       button Fa.Solid.AngleDoubleLeft prev
       button Fa.Solid.AngleDoubleRight next

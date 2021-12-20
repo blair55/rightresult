@@ -14,8 +14,7 @@ open Areas
 module AllPlayers =
 
   type Model =
-    { Players : (PlayerViewModel list) WebData
-    }
+    { Players: (PlayerViewModel list) WebData }
 
   type Msg =
     | Init of Result<string, exn>
@@ -23,40 +22,38 @@ module AllPlayers =
     | NavTo of Route
 
   let init api p =
-    { Players = Fetching
-    },
-      Cmd.OfAsync.either
-        api.getAllPlayers
-        p.Token
-        PlayersReceived
-        (Error >> Init)
+    { Players = Fetching }, Cmd.OfAsync.either api.getAllPlayers p.Token PlayersReceived (Error >> Init)
 
-  let playerBlock dispatch { PlayerViewModel.Id = (PlayerId playerId); Name = (PlayerName name) } =
-    Card.card []
-      [ Card.content [ Props [ Style [ Padding "0.6em 1em" ] ] ]
-          [ a [ OnClick (fun _ -> PlayerRoute playerId |> PlayersRoute |> NavTo |> dispatch) ]
-                [ str name ]
-          ]
+  let playerBlock
+    dispatch
+    { PlayerViewModel.Id = (PlayerId playerId)
+      Name = (PlayerName name) }
+    =
+    Card.card [] [
+      Card.content [ Props [ Style [ Padding "0.6em 1em" ] ] ] [
+        a (Components.anchorNavProps (NavTo >> dispatch) (PlayersRoute(PlayerRoute playerId))) [ str name ]
       ]
+    ]
 
-  let playersView (players:PlayerViewModel list) dispatch =
-    div []
-      (players |> List.map (playerBlock dispatch))
+  let playersView (players: PlayerViewModel list) dispatch =
+    div [] (players |> List.map (playerBlock dispatch))
 
-  let fullView dispatch (players:PlayerViewModel list) =
-    div []
-      [ Components.pageTitle "Player Index"
-        playersView players dispatch
-      ]
+  let fullView dispatch (players: PlayerViewModel list) =
+    div [] [
+      Components.pageTitle "Player Index"
+      playersView players dispatch
+    ]
 
-  let view (model:Model) dispatch =
+  let view (model: Model) dispatch =
     match model.Players with
     | Success players -> fullView dispatch players
-    | _ ->
-      div [] []
+    | _ -> div [] []
 
   let update api player msg model : Model * Cmd<Msg> =
     match msg with
     | Init _ -> model, []
-    | PlayersReceived r -> { model with Players = resultToWebData r }, []
+    | PlayersReceived r ->
+      { model with
+          Players = resultToWebData r },
+      []
     | NavTo r -> model, (Routes.navTo r)

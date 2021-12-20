@@ -29,19 +29,10 @@ module LeagueMatrix =
       Matrix = Fetching },
     Cmd.OfAsync.either (api.getLeagueMatrix leagueId gwno) player.Token LeagueMatrixReceived (Error >> Init)
 
-  let matrixComponent
-    (mCols: Map<FixtureId, MatrixFixture>)
-    (mRows: Map<PlayerId, MatrixPlayer>)
-    (playerClick: PlayerId -> Unit)
-    (GameweekNo gwno)
-    leagueId
-    dispatch
-    =
+  let matrixComponent (mCols: Map<FixtureId, MatrixFixture>) (mRows: Map<PlayerId, MatrixPlayer>) dispatch =
 
-    let playerLink pId (PlayerName playerName) =
-      a [ OnClick(fun _ -> playerClick pId) ] [
-        str playerName
-      ]
+    let playerLink (PlayerId pId) (PlayerName playerName) =
+      a (Components.anchorNavProps (NavTo >> dispatch) (PlayersRoute(PlayerRoute pId))) [ str playerName ]
 
     let sortedMatrixCols =
       mCols
@@ -141,14 +132,9 @@ module LeagueMatrix =
        Message.message [ Message.Color IsWarning ] [
          Message.body [ Modifiers [ Modifier.TextAlignment(Screen.Mobile, TextAlignment.Left) ] ] [
            str (sprintf "Gameweek %i fixtures have not kicked off yet! View past matrices in " gwno)
-           a [ OnClick
-                 (fun _ ->
-                   LeagueHistoryRoute leagueIdStr
-                   |> LeaguesRoute
-                   |> NavTo
-                   |> dispatch) ] [
-             str "League History"
-           ]
+           a
+             (Components.anchorNavProps (NavTo >> dispatch) (LeaguesRoute(LeagueHistoryRoute leagueIdStr)))
+             [ str "League History" ]
            str "."
          ]
        ]
@@ -156,25 +142,20 @@ module LeagueMatrix =
        div [] [])
 
   let matrixView
-    { FixtureSetId = fixtureSetId
-      LeagueId = leagueId
-      LeagueName = (LeagueName leagueName)
+    { LeagueName = (LeagueName leagueName)
       GameweekNo = (GameweekNo gwno)
       Columns = mCols
       Rows = mRows }
     (model: Model)
     dispatch
     =
-    let playerClick (PlayerId pId) =
-      pId
-      |> (PlayerRoute >> PlayersRoute >> NavTo >> dispatch)
 
     div [ Class "matrix-container" ] [
       Components.pageTitle leagueName
       Components.subHeading
       <| sprintf "Gameweek %i Matrix" gwno
       Card.card [ Props [ Style [ MarginBottom "1em" ] ] ] [
-        matrixComponent mCols mRows playerClick (GameweekNo gwno) model.LeagueId dispatch
+        matrixComponent mCols mRows dispatch
       ]
       emptyMatrixMsg dispatch (GameweekNo gwno) model.LeagueId (mRows |> Map.toList)
     ]
