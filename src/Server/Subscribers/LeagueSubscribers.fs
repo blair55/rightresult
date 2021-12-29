@@ -20,7 +20,7 @@ module CreateLeagueSubscribers =
     |> fun repo ->
       repo.Insert
         (LeagueTableDocument (PrivateLeague leagueId, Full))
-        (LeagueTableDoc.Init leagueName)
+        (LeagueTableDoc.Init (PrivateLeague leagueId) leagueName)
 
   let private createLeagueMatrixDoc (deps:Dependencies) created (leagueId, leagueName, _) =
     deps.Queries.getAllFixtureSetsAndFixtures ()

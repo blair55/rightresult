@@ -105,7 +105,6 @@ module League =
 
     div [ ClassName "block" ] [
       Components.pageTitle name
-
       Components.subHeading "Standings"
       Card.card [ CustomClass "card-footer-only"
                   Props [ Style [ MarginBottom "1em" ] ] ] [

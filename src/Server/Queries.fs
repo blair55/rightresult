@@ -8,22 +8,20 @@ module Queries =
   type Queries =
     { getKickedOffFixtures : DateTime -> FixtureRecord seq
       getAllFixtures : unit -> FixtureRecord seq
-      getFixturesInFixtureSet : FixtureSetId -> FixtureRecord seq
+      getFixturesInFixtureSet : FixtureSetId -> FixtureRecord list
       getAllFixtureSetsAndFixtures : unit -> (FixtureSetId * GameweekNo * (FixtureRecord list)) list
       getFixturesInPlay : unit -> FixtureRecord seq
       getOpenFixtures : unit -> FixtureRecord seq
       getPlayerPredictionsByFixture : PlayerId -> (FixtureRecord * PredictionRecord option) seq
       getPlayerPredictionForFixture : PlayerId -> FixtureId -> PredictionRecord option
-      getFixtureSetEarliestKickOff : FixtureSetId -> KickOff
       getPredictionsForPlayer : PlayerId -> (FixtureRecord * PredictionRecord) list
       getPredictionsForPlayerInFixtureSet : FixtureSetId -> PlayerId -> (FixtureRecord * PredictionRecord) list
-      getPredictionsForPlayerInMonth : (int * int) -> PlayerId -> (FixtureRecord * PredictionRecord) list
+      getPredictionsForPlayerInMonth : YearMonth -> PlayerId -> (FixtureRecord * PredictionRecord) list
       getPlayersInPrivateLeague : PrivateLeagueId -> PlayerRecord list
       getAllPlayers : unit -> PlayerRecord list
       getFixtureSetGameweekNo : FixtureSetId -> GameweekNo
       getGameweekNoFixtureSet : GameweekNo -> FixtureSetId option
       getGameweekNos : unit -> GameweekNo list
-      getFixtureSetYearAndMonth : FixtureSetId -> int * int
       getFixtureRecord : FixtureId -> FixtureRecord
       getUnconcludedFixtureSets : unit -> (FixtureSetId * GameweekNo * FixtureRecord list) seq
       getPrivateLeagues : unit -> LeagueRecord seq

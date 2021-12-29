@@ -74,7 +74,7 @@ module Protocol =
           | 3 -> "rd"
           | _ -> "th"
 
-    let gwTable playerId ((GameweekNo gwno) as gameweekno) =
+    let gwTable playerId gwno =
       let repo = Documents.repo deps.ElasticSearch
       let table = repo.Read (LeagueTableDocument (GlobalLeague, Week gwno))
       let pointsAndPosition =
@@ -83,7 +83,7 @@ module Protocol =
         |> Option.map (fun t -> t.Points.Points, t.Position, ordinal t.Position)
       table
       |> Option.map (fun t ->
-        { GameweekNo = gameweekno
+        { GameweekNo = gwno
           PlayerId = playerId
           AveragePoints = t.AvergagePointsWithAtLeastOnePrediction
           MaximumPoints = t.MaximumPoints

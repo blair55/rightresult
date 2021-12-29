@@ -41,6 +41,11 @@ $shadow: none
 $body-line-height: 1
 // $modal-card-foot-border-top: 0
 
+$dropdown-content-background-color: $dark
+$dropdown-divider-background-color: $grey
+$dropdown-item-color: $grey-light
+$dropdown-content-offset: 1px
+
 // Bulma
 @import "~bulma/bulma"
 @import "~bulma-quickview/dist/css/bulma-quickview.sass"
@@ -62,6 +67,19 @@ $body-line-height: 1
     text-transform: uppercase
     font-weight: bold
     font-size: 0.75em
+
+#submenu
+  position: fixed
+  left: 0
+  right: 0
+  bottom: 40px
+  transition: bottom 0.3s
+
+#submenu.hide-submenu
+  bottom: 0px !important
+  .dropdown-menu
+    display: none
+
 
 .box
   border-radius: 0

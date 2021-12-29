@@ -9,6 +9,7 @@ open Areas
 open Shared
 open Fulma
 open Routes
+open Fable.FontAwesome
 
 module LeagueTable =
 
@@ -34,6 +35,11 @@ module LeagueTable =
         LeagueReceived
         (Error >> Init)
 
+  let menuLinks
+    ({ LeagueTableDoc.LeagueId = leagueId }) =
+    [ Fa.Solid.History, "History", LeaguesRoute(LeagueHistoryRoute(Components.leagueIdStr leagueId))
+      Fa.Solid.Trophy, "League", LeaguesRoute(LeagueRoute(Components.leagueIdStr leagueId)) ]
+
   let leagueView dispatch (league:LeagueTableDoc) (model:Model) =
     let (LeagueName name) = league.LeagueName
     div [ ClassName "block" ]
@@ -41,6 +47,7 @@ module LeagueTable =
         Card.card []
           [ Components.table (NavTo >> dispatch) league model.Player.Id
           ]
+        Components.SubMenu.element (NavTo >> dispatch) (menuLinks league)
       ]
 
   let view (model:Model) dispatch =

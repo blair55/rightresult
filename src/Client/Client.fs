@@ -228,11 +228,14 @@ open Thoth.Json
 let clearFragment () = Browser.Dom.window.location.hash <- ""
 
 let loadPlayerFromBrowserStorage () =
-  Browser.WebStorage.localStorage.getItem playerStorageKey
-  |> Decode.fromString Decoders.decodeClientSafePlayer
-  |> function
-    | Ok p -> Some p
-    | _ -> None
+  try
+    Browser.WebStorage.localStorage.getItem playerStorageKey
+    |> Decode.fromString Decoders.decodeClientSafePlayer
+    |> function
+      | Ok p -> Some p
+      | _ -> None
+  with
+  | _ -> None
 
 let urlUpdate route model =
   match model.Player, route with
@@ -276,11 +279,7 @@ let urlUpdate route model =
     (model, Navigation.modifyUrl (sprintf "/%s?%s=%s" Routes.loginPath redirectPathKey redirectPath))
 
 let init route =
-  let player =
-    try
-      loadPlayerFromBrowserStorage ()
-    with
-    | _ -> None
+  let player = loadPlayerFromBrowserStorage ()
 
   if Option.isNone player then
     Browser.WebStorage.localStorage.removeItem playerStorageKey

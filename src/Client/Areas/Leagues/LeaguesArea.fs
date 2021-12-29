@@ -74,14 +74,14 @@ module LeaguesArea =
     | LeagueHistoryRoute leagueId when leagueId = Global.identifier ->
       GlobalLeague |> LeagueHistory.init api p |> fun (m, cmd) -> LeagueHistoryModel m, Cmd.map LeagueHistoryMsg cmd
     | LeagueHistoryFixtureSetRoute (leagueId, gw) when isValidGuid leagueId ->
-      toGuid leagueId |> PrivateLeagueId |> PrivateLeague |> LeagueHistoryTable.init api p (Week gw) |> fun (m, cmd) -> LeagueHistoryTableModel m, Cmd.map LeagueHistoryTableMsg cmd
+      toGuid leagueId |> PrivateLeagueId |> PrivateLeague |> LeagueHistoryTable.init api p (Week (GameweekNo gw)) |> fun (m, cmd) -> LeagueHistoryTableModel m, Cmd.map LeagueHistoryTableMsg cmd
     | LeagueHistoryFixtureSetRoute (leagueId, gw) when leagueId = Global.identifier ->
-      GlobalLeague |> LeagueHistoryTable.init api p (Week gw) |> fun (m, cmd) -> LeagueHistoryTableModel m, Cmd.map LeagueHistoryTableMsg cmd
+      GlobalLeague |> LeagueHistoryTable.init api p (Week (GameweekNo gw)) |> fun (m, cmd) -> LeagueHistoryTableModel m, Cmd.map LeagueHistoryTableMsg cmd
 
     | LeagueHistoryMonthRoute (leagueId, year, month) when isValidGuid leagueId ->
-      toGuid leagueId |> PrivateLeagueId |> PrivateLeague |> LeagueHistoryTable.init api p (Month (year, month)) |> fun (m, cmd) -> LeagueHistoryTableModel m, Cmd.map LeagueHistoryTableMsg cmd
+      toGuid leagueId |> PrivateLeagueId |> PrivateLeague |> LeagueHistoryTable.init api p (Month (YearMonth (year, month))) |> fun (m, cmd) -> LeagueHistoryTableModel m, Cmd.map LeagueHistoryTableMsg cmd
     | LeagueHistoryMonthRoute (leagueId, year, month) when leagueId = Global.identifier ->
-      GlobalLeague |> LeagueHistoryTable.init api p (Month (year, month)) |> fun (m, cmd) -> LeagueHistoryTableModel m, Cmd.map LeagueHistoryTableMsg cmd
+      GlobalLeague |> LeagueHistoryTable.init api p (Month (YearMonth (year, month))) |> fun (m, cmd) -> LeagueHistoryTableModel m, Cmd.map LeagueHistoryTableMsg cmd
 
     | LeagueMatrixRoute (leagueId, gwno) when isValidGuid leagueId ->
       toGuid leagueId |> PrivateLeagueId |> PrivateLeague |> LeagueMatrix.init api p (GameweekNo gwno) |> fun (m, cmd) -> LeagueMatrixModel m, Cmd.map LeagueMatrixMsg cmd

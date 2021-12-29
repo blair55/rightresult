@@ -44,6 +44,10 @@ type TeamLine = TeamLine of home:Team * away:Team
 module GameweekNo =
   let toGWString (GameweekNo gwno) = sprintf "GW%i" gwno
   let toGWStringLong (GameweekNo gwno) = sprintf "Gameweek %i" gwno
+  let previous (GameweekNo gwno) = GameweekNo (gwno - 1)
+
+
+type YearMonth = YearMonth of year:int * month:int
 
 module Ko =
   type KickOff =
@@ -59,6 +63,9 @@ module Ko =
 
   let isLessThanOneHourBeforeKickOff now (KickOff ko) =
     now > ko.AddHours -1.
+
+  let yearMonth (KickOff ko) =
+    YearMonth (ko.Year, ko.Month)
 
 type KickOff = Ko.KickOff
 
@@ -415,14 +422,21 @@ and PlayerLeagueViewModel =
     LeagueName : LeagueName }
 and [<CLIMutable>] LeagueTableDoc =
   { LeagueName : LeagueName
+    LeagueId : LeagueId
     Members : (PlayerId * LeagueTableMember) list
     MaximumPoints : (PlayerId * int) option
-    AvergagePointsWithAtLeastOnePrediction : int }
-  static member Init name =
-    { LeagueName = name
+    AvergagePointsWithAtLeastOnePrediction : int
+    LeagueTableScope : LeagueTableScope option }
+  static member Init leagueId name =
+    { LeagueId = leagueId
+      LeagueName = name
       Members = []
       MaximumPoints = None
-      AvergagePointsWithAtLeastOnePrediction = 0 }
+      AvergagePointsWithAtLeastOnePrediction = 0
+      LeagueTableScope = None }
+and LeagueTableScope =
+  | OfMonth of monthDate:DateTime * desc:string
+  | IncludesGameweeks of GameweekNo list
 and LeagueTableMember =
   { Position : int
     Movement : int
@@ -544,9 +558,9 @@ and PredictTeam = Home | Away
 
 type LeagueWindow =
   | Full
-  | Week of int
-  | Month of int * int
-  | WeekInclusive of int
+  | Week of GameweekNo
+  | Month of YearMonth
+  | WeekInclusive of GameweekNo
 
 type LeagueHistoryDoc =
   Map<LeagueWindow, LeagueHistoryUnitWinner>

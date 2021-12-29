@@ -4,6 +4,7 @@ open Elmish
 
 open Fable.React
 open Fable.React.Props
+open Fable.FontAwesome
 
 open Areas
 open Shared
@@ -63,8 +64,6 @@ module LeagueMatrix =
            ])
     |> fun cols -> ((th [] []) :: cols) @ [ th [] [] ]
     |> fun cols ->
-
-
          let buildPlayerColumns (predictions: Map<FixtureId, MatrixPrediction>) =
            sortedMatrixCols
            |> List.map
@@ -111,7 +110,6 @@ module LeagueMatrix =
                          str <| sprintf "%i pts" totalPoints
                        ] ]))
          |> fun rws ->
-
               div [] [
                 Table.table [ Table.IsHoverable
                               Table.IsFullWidth
@@ -141,23 +139,29 @@ module LeagueMatrix =
      else
        div [] [])
 
+  let menuLinks
+    ({ MatrixDoc.LeagueId = leagueId
+       GameweekNo = GameweekNo gwno }) =
+    [ Fa.Solid.ThList, $"Gameweek {gwno} Table", LeaguesRoute(LeagueHistoryFixtureSetRoute(Components.leagueIdStr leagueId, gwno))
+      Fa.Solid.History, "History", LeaguesRoute(LeagueHistoryRoute(Components.leagueIdStr leagueId))
+      Fa.Solid.Trophy, "League", LeaguesRoute(LeagueRoute(Components.leagueIdStr leagueId)) ]
+
   let matrixView
-    { LeagueName = (LeagueName leagueName)
-      GameweekNo = (GameweekNo gwno)
-      Columns = mCols
-      Rows = mRows }
+    ({ LeagueName = LeagueName leagueName
+       GameweekNo = GameweekNo gwno
+       Columns = mCols
+       Rows = mRows } as mdoc)
     (model: Model)
     dispatch
     =
-
     div [ Class "matrix-container" ] [
       Components.pageTitle leagueName
-      Components.subHeading
-      <| sprintf "Gameweek %i Matrix" gwno
+      Components.subHeading <| sprintf "Gameweek %i Matrix" gwno
       Card.card [ Props [ Style [ MarginBottom "1em" ] ] ] [
         matrixComponent mCols mRows dispatch
       ]
-      emptyMatrixMsg dispatch (GameweekNo gwno) model.LeagueId (mRows |> Map.toList)
+      emptyMatrixMsg dispatch (GameweekNo gwno) model.LeagueId (Map.toList mRows)
+      Components.SubMenu.element (NavTo >> dispatch) (menuLinks mdoc)
     ]
 
   let view (model: Model) dispatch =

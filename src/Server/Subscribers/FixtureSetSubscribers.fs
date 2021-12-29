@@ -2,6 +2,7 @@
 
 open FSharp.Core
 open Shared
+open System
 open Server
 open Server.Infrastructure
 
@@ -46,12 +47,26 @@ module FixtureSubscribersAssistance =
     |> List.sortBy (fun f -> f.KickOff)
 
   let makeListsOfEqualLength a b =
-    [ 1 .. System.Math.Max (List.length a, List.length b) ]
+    [ 1 .. Math.Max (List.length a, List.length b) ]
     |> List.mapi (fun i _ -> List.tryItem i a, List.tryItem i b)
 
   let buildFormGuide (deps:Dependencies) home away =
     makeListsOfEqualLength (getFormGuide deps home) (getFormGuide deps away)
 
+  let getAttributableYearMonthForFixtureSet =
+    List.minBy(fun (f:FixtureRecord) -> f.KickOff)
+    >> fun f -> Ko.yearMonth f.KickOff
+
+  let getYearMonthGameweekMap =
+    List.groupBy (fun (_, fixtures) -> getAttributableYearMonthForFixtureSet fixtures)
+    >> List.map (fun (k, fxs) -> k, fxs |> List.map (fun (gwno:GameweekNo, _) -> gwno))
+    >> Map.ofList
+
+module YearMonth =
+  let toDateTime (YearMonth (y, m)) = DateTime(y, m, 1)
+  let desc = toDateTime >> fun d -> d.ToString("MMMM yyyy")
+  // let (|YearMonthDateTime|) =
+    // toDateTime
 
 module FixtureSetCreatedSubscribers =
 
@@ -130,7 +145,7 @@ module FixtureSetConcludedSubscribers =
   let concludeFixtureSet (deps:Dependencies) _ (fsId, _) =
     deps.NonQueries.concludeFixtureSet fsId
 
-  let calculateGlobalGameweekWinner (deps:Dependencies) created (fsId, GameweekNo gwno) =
+  let calculateGlobalGameweekWinner (deps:Dependencies) created (fsId, gwno) =
     Documents.repo deps.ElasticSearch
     |> fun repo ->
     LeagueTableDocument (GlobalLeague, Week gwno)
@@ -141,7 +156,7 @@ module FixtureSetConcludedSubscribers =
       repo.Insert
         GlobalGameweekWinner
         { GlobalGameweekWinner.PlayerId = playerId
-          GameweekNo = GameweekNo gwno
+          GameweekNo = gwno
           Member = m })
     |> ignore<Unit option>
 
@@ -274,19 +289,17 @@ module FixtureClassifiedSubscribers =
     >> List.averageBy (fun m -> double m.Points)
     >> int
 
-  let updateAllLeagueTables (deps:Dependencies) _ (FixtureSetId fsId, _, _) =
-
-    let q =
-      deps.Queries
-
-    let (GameweekNo gwno) =
-      q.getFixtureSetGameweekNo (FixtureSetId fsId)
-
-    let (year, month) =
-      q.getFixtureSetYearAndMonth (FixtureSetId fsId)
-
-    let allPlayers =
-      q.getAllPlayers ()
+  let updateAllLeagueTables (deps:Dependencies) _ (fsId, _, _) =
+    let q = deps.Queries
+    let gwno = q.getFixtureSetGameweekNo fsId
+    let yearMonth =
+      deps.Queries.getFixturesInFixtureSet fsId
+      |> getAttributableYearMonthForFixtureSet
+    let allPlayers = q.getAllPlayers ()
+    let allFixtures =
+      deps.Queries.getAllFixtureSetsAndFixtures()
+      |> List.map (fun (_, gwno, fixtures) -> gwno, fixtures)
+    let yearMonthGroups = getYearMonthGameweekMap allFixtures
 
     let playerNameMap =
       allPlayers
@@ -312,7 +325,7 @@ module FixtureClassifiedSubscribers =
       x
 
     let buildLeagueTable
-      (leagueName, document, previousTable:LeagueTableDoc option,
+      (leagueName, leagueId, document, previousTable:LeagueTableDoc option, scope,
         (playerPredictions:Map<PlayerId, (FixtureRecord * PredictionRecord) list>)) =
 
       let previousTableMap =
@@ -338,8 +351,10 @@ module FixtureClassifiedSubscribers =
       |> movementAlgo previousTableMap
       |> fun members ->
         { LeagueTableDoc.LeagueName = leagueName
+          LeagueId = leagueId
           Members = members
           MaximumPoints = maximumPoints members
+          LeagueTableScope = scope
           AvergagePointsWithAtLeastOnePrediction = avergagePointsWithAtLeastOnePrediction (Map.toList playerPredictions) }
       |> repo.Insert document
 
@@ -348,45 +363,53 @@ module FixtureClassifiedSubscribers =
 
     allLeaguesAndMembers deps allPlayers
     |> List.iter (fun (leagueId, leagueName, members) ->
-      [ leagueName, LeagueTableDocument (leagueId, Full),
-          (getTable (leagueId, WeekInclusive (gwno - 1))),
-          members |> membersToPredictionMap q.getPredictionsForPlayer
+      List.iter buildLeagueTable
+        [ leagueName, leagueId,
+            LeagueTableDocument (leagueId, Full),
+            (getTable (leagueId, WeekInclusive (GameweekNo.previous gwno))),
+            None,
+            membersToPredictionMap q.getPredictionsForPlayer members
 
-        leagueName, LeagueTableDocument (leagueId, WeekInclusive gwno),
-          None, members |> membersToPredictionMap q.getPredictionsForPlayer
+          leagueName, leagueId,
+            LeagueTableDocument (leagueId, WeekInclusive gwno),
+            None,
+            Some (IncludesGameweeks (allFixtures |> List.map fst |> List.takeWhile (fun g -> g <= gwno))),
+            membersToPredictionMap q.getPredictionsForPlayer members
 
-        leagueName, LeagueTableDocument (leagueId, Week gwno),
-          None, members |> membersToPredictionMap (q.getPredictionsForPlayerInFixtureSet (FixtureSetId fsId))
+          leagueName, leagueId,
+            LeagueTableDocument (leagueId, Week gwno),
+            None,
+            Some (OfMonth (YearMonth.toDateTime yearMonth, YearMonth.desc yearMonth)),
+            membersToPredictionMap (q.getPredictionsForPlayerInFixtureSet fsId) members
 
-        leagueName, LeagueTableDocument (leagueId, Month (year, month)),
-          None, members |> membersToPredictionMap (q.getPredictionsForPlayerInMonth (year, month))
-      ]
-      |> List.iter buildLeagueTable)
+          leagueName, leagueId,
+            LeagueTableDocument (leagueId, Month yearMonth),
+            None,
+            yearMonthGroups.TryFind yearMonth |> Option.map IncludesGameweeks,
+            membersToPredictionMap (q.getPredictionsForPlayerInMonth yearMonth) members
+        ])
 
   let updateFixtureGraph (deps:Dependencies) _ (_, fId, scoreLine) =
     deps.NonQueries.classifyFixture (fId, scoreLine)
 
   let updatePlayerFixtureSetsDoc (deps:Dependencies) _ (fsId, _, _) =
-    let q =
-      deps.Queries
-    let gwno =
-      q.getFixtureSetGameweekNo fsId
+    let q = deps.Queries
+    let gwno = q.getFixtureSetGameweekNo fsId
+    let repo = Documents.repo deps.ElasticSearch
     q.getAllPlayers ()
     |> List.iter (fun player ->
-        q.getPredictionsForPlayerInFixtureSet fsId player.Id
-        |> List.map fixturePredictionToPoints
-        |> List.fold (+) PredictionPointsMonoid.Init
-        |> fun m ->
-          { GameweekNo = gwno
-            AveragePoints = 0.
-            PlayerPoints = m }
-        |> fun docRow ->
-          Documents.repo deps.ElasticSearch
-          |> fun repo ->
-            repo.Upsert
-              (PlayerFixtureSetsDocument player.Id)
-              (PlayerFixtureSetsDoc.Init player.Id)
-              (fun pfsd -> { pfsd with FixtureSets = pfsd.FixtureSets.Add (fsId, docRow) }))
+        let docRow =
+          q.getPredictionsForPlayerInFixtureSet fsId player.Id
+          |> List.map fixturePredictionToPoints
+          |> List.fold (+) PredictionPointsMonoid.Init
+          |> fun m ->
+            { GameweekNo = gwno
+              AveragePoints = 0.
+              PlayerPoints = m }
+        repo.Upsert
+          (PlayerFixtureSetsDocument player.Id)
+          (PlayerFixtureSetsDoc.Init player.Id)
+          (fun pfsd -> { pfsd with FixtureSets = pfsd.FixtureSets.Add (fsId, docRow) }))
 
   let (|LeagueTableDocWinner|_|) (table:LeagueTableDoc) =
     List.tryHead table.Members
@@ -407,6 +430,7 @@ module FixtureClassifiedSubscribers =
     |> List.iter (fun leagueId ->
       match getLeagueTable (leagueId, window) with
       // TODO: everyone in position 1
+      // TODO: add league table doc scope
       | Some (LeagueTableDocWinner (_, m)) ->
           let repo = Documents.repo deps.ElasticSearch
           repo.Upsert (docF leagueId)
@@ -418,16 +442,14 @@ module FixtureClassifiedSubscribers =
                   Points = m.Points }))
       | _ -> ())
 
-  let updateLeagueHistoryFixtureSetDoc deps _ (FixtureSetId fsId, _, _) =
-    deps.Queries.getFixtureSetGameweekNo (FixtureSetId fsId)
-    |> fun (GameweekNo gwno) ->
-    (LeagueAllFixtureSetHistory, Week gwno, sprintf "Gameweek %i" gwno)
+  let updateLeagueHistoryFixtureSetDoc deps _ (fsId, _, _) =
+    let (GameweekNo gwnoi as gwno) = deps.Queries.getFixtureSetGameweekNo fsId
+    (LeagueAllFixtureSetHistory, Week gwno, sprintf "Gameweek %i" gwnoi)
     |> updateLeagueHistoryWindowDoc deps
 
-  let updateLeagueHistoryMonthSetDoc deps _ (FixtureSetId fsId, _, _) =
-    deps.Queries.getFixtureSetEarliestKickOff (FixtureSetId fsId)
-    |> fun (ko:KickOff) ->
-    (LeagueAllMonthHistory, Month (ko.Raw.Year, ko.Raw.Month), (ko.Raw.ToString("MMMM yyyy")))
+  let updateLeagueHistoryMonthSetDoc deps _ (fsId, _, _) =
+    let ym = deps.Queries.getFixturesInFixtureSet fsId |> getAttributableYearMonthForFixtureSet
+    (LeagueAllMonthHistory, Month ym, (YearMonth.toDateTime ym).ToString("MMMM yyyy"))
     |> updateLeagueHistoryWindowDoc deps
 
   let updateMatrixDoc deps _ (fsId, fId, resultScoreLine) =
@@ -560,7 +582,6 @@ module FixtureAppendedSubscribers =
 
     let fixtures =
       deps.Queries.getFixturesInFixtureSet (FixtureSetId fsId)
-      |> List.ofSeq
 
     let (GameweekNo gwno) =
       fixtures
@@ -574,7 +595,6 @@ module FixtureAppendedSubscribers =
 
     let fixtures =
       deps.Queries.getFixturesInFixtureSet (FixtureSetId fsId)
-      |> List.ofSeq
 
     let (GameweekNo gwno) =
       fixtures

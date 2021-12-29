@@ -10,6 +10,8 @@ open Shared
 open Fulma
 open Routes
 open Areas
+open Components
+open Fable.FontAwesome
 
 module LeagueHistory =
 
@@ -54,12 +56,11 @@ module LeagueHistory =
                (Error >> Init) ])
     )
 
-  let leagueView dispatch model (LeagueName leagueName) (fs: LeagueHistoryDoc) (months: LeagueHistoryDoc) =
-    let leagueIdStr =
-      match model.LeagueId with
-      | GlobalLeague -> Global.identifier
-      | PrivateLeague (PrivateLeagueId id) -> string id
+  let menuLinks
+    ({ Model.LeagueId = leagueId }) =
+    [ Fa.Solid.Trophy, "League", LeaguesRoute(LeagueRoute(Components.leagueIdStr leagueId)) ]
 
+  let leagueView dispatch model (LeagueName leagueName) (fs: LeagueHistoryDoc) (months: LeagueHistoryDoc) =
     let gwTab =
       [ a [ OnClick(fun _ -> ChangeViewMode FixtureSets |> dispatch) ] [
           str "Gameweeks"
@@ -72,27 +73,22 @@ module LeagueHistory =
 
     let getWindowInt =
       function
-      | Week w -> bigint w
-      | Month (y, m) -> (DateTime(y, m, 1)).Ticks |> bigint
+      | Week (GameweekNo w) -> bigint w
+      | Month (YearMonth(y, m)) -> (DateTime(y, m, 1)).Ticks |> bigint
       | _ -> bigint 0
 
     let historyRoute =
       function
-      | Week w -> LeagueHistoryFixtureSetRoute(leagueIdStr, w)
-      | Month (y, m) -> LeagueHistoryMonthRoute(leagueIdStr, y, m)
+      | Week (GameweekNo w) -> LeagueHistoryFixtureSetRoute(leagueIdStr model.LeagueId, w)
+      | Month (YearMonth(y, m)) -> LeagueHistoryMonthRoute(leagueIdStr model.LeagueId, y, m)
       | _ -> PlayerLeaguesRoute
 
     let matrixRoute =
       function
-      | Week w -> LeagueMatrixRoute(leagueIdStr, w)
+      | Week (GameweekNo w) -> LeagueMatrixRoute(leagueIdStr model.LeagueId, w)
       | _ -> PlayerLeaguesRoute
 
-    let matrixDesc =
-      function
-      | Week w -> sprintf "Mx %i" w
-      | _ -> ""
-
-    let trWithMx
+    let gameweekTr
       (
         window,
         { PlayerName = PlayerName name
@@ -103,16 +99,12 @@ module LeagueHistory =
         td [] [
           a (Components.anchorNavProps (NavTo >> dispatch) (LeaguesRoute(historyRoute window))) [ str d ]
         ]
-        td [] [
-          a
-            (Components.anchorNavProps (NavTo >> dispatch) (LeaguesRoute(matrixRoute window)))
-            [ str <| matrixDesc window ]
-        ]
+        // td [] [ str "" ] /// todo month
         td [] [ str name ]
         td [] [ str (string points.Points) ]
       ]
 
-    let trNoMx
+    let monthTr
       (
         window,
         { PlayerName = PlayerName name
@@ -144,7 +136,7 @@ module LeagueHistory =
           Message.body [ Modifiers [ Modifier.TextAlignment(Screen.Mobile, TextAlignment.Left) ] ] [
             str (sprintf "There is no history for this league yet. ")
             a
-              (Components.anchorNavProps (NavTo >> dispatch) (LeaguesRoute(LeagueRoute leagueIdStr)))
+              (Components.anchorNavProps (NavTo >> dispatch) (LeaguesRoute(LeagueRoute(leagueIdStr model.LeagueId))))
               [ str "League home" ]
             str "."
           ]
@@ -158,13 +150,14 @@ module LeagueHistory =
                  Tabs.tab [ Tabs.Tab.IsActive true ] gwTab
                  Tabs.tab [ Tabs.Tab.IsActive false ] mnTab
                ]
-               tableBody trWithMx fs ]
+               tableBody gameweekTr fs ]
            | Months ->
              [ Tabs.tabs [] [
                  Tabs.tab [ Tabs.Tab.IsActive false ] gwTab
                  Tabs.tab [ Tabs.Tab.IsActive true ] mnTab
                ]
-               tableBody trNoMx months ])
+               tableBody monthTr months ])
+        Components.SubMenu.element (NavTo >> dispatch) (menuLinks model)
     ]
 
   let view (model: Model) dispatch =

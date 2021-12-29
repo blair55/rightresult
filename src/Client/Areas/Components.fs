@@ -38,8 +38,13 @@ module Html =
     elem
     >> fun e -> e.classList.remove (CustomClasses.IsClipped)
 
-  let private elemById elemId =
-    Browser.Dom.document.getElementById (elemId)
+  let elemById elemId =
+    Browser.Dom.document.getElementById elemId
+
+  let tryElemById elemId =
+    match elemById elemId with
+    | null -> None
+    | e -> Some e
 
   let resetScrollTop = elemById >> fun e -> e.scrollTop <- 0.
 
@@ -171,6 +176,11 @@ module Components =
         str text
       ]
     ]
+
+  let leagueIdStr =
+    function
+    | GlobalLeague -> Global.identifier
+    | PrivateLeague (PrivateLeagueId id) -> string id
 
   module Social =
 
@@ -319,10 +329,10 @@ module Components =
 
   let leagueMenu leagueId gwno nav =
     Panel.panel [ Panel.Color IsPrimary ] [
-      panelAnchor Fa.Solid.Trophy "Table" nav (LeaguesRoute(LeagueTableRoute leagueId))
       panelAnchor Fa.Solid.History "History" nav (LeaguesRoute(LeagueHistoryRoute leagueId))
+      panelAnchor Fa.Solid.ThList "Current Table" nav (LeaguesRoute(LeagueTableRoute leagueId))
       panelAnchor
-        Fa.Solid.Table
+        Fa.Solid.Th
         (sprintf "Gameweek %i Matrix" gwno)
         nav
         (LeaguesRoute(LeagueMatrixRoute(leagueId, gwno)))
@@ -341,10 +351,10 @@ module Components =
           Fa.i [ Fa.Solid.AngleDoubleUp ] []
           str "Big up"
         ]
-        a [ Class "big-up-box-player"
-            OnClick(fun _ -> PlayersRoute(PlayerRoute playerId) |> dispatch) ] [
-          str ("@" + player)
-        ]
+        a
+          ([ Class "big-up-box-player" ]
+           @ (anchorNavProps dispatch (PlayersRoute(PlayerRoute playerId))))
+          [ str ("@" + player) ]
       ]
       div [ Class "big-up-box-bottom" ] [
         span [ Class "big-up-box-team" ] [

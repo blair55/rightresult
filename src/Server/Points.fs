@@ -77,3 +77,12 @@ module Points =
     |> List.sortByDescending (fun (_, row) -> row.Points, row.GoalsFor - row.GoalsAgainst, row.GoalsFor)
     |> List.mapi (fun i (team, row) -> team, { row with Position = i+1 })
     |> fun r -> { PremTable.Rows = r |> Map.ofList }
+
+module KickoffComponents =
+
+  let build (ko:KickOff) =
+    { KickOff = ko
+      Group = ko.Raw.ToString("ddd d MMM yyyy")
+      DateAndShortMonth = ko.Raw.ToString("dd MMM")
+      ShortDay = ko.Raw.ToString("ddd")
+      ClockTime = ko.Raw.ToString("HH:mm") }

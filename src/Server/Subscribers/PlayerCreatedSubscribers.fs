@@ -23,7 +23,7 @@ module PlayerCreatedSubscribers =
       Documents.repo deps.ElasticSearch
     repo.Upsert
       (LeagueTableDocument (GlobalLeague, Full))
-      (LeagueTableDoc.Init Global.leagueName)
+      (LeagueTableDoc.Init GlobalLeague Global.leagueName)
       (fun table -> { table with Members = (playerId, LeagueTableMember.Init name)::table.Members })
 
   let all =

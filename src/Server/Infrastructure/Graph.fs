@@ -76,7 +76,8 @@ let queries (gc:GraphClient) : Queries =
         .Where(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
         .Return<FixtureNode>("f")
         .ResultsAsync.Result
-      |> Seq.map buildFixtureRecord
+      |> List.ofSeq
+      |> List.map buildFixtureRecord
 
     getAllFixtureSetsAndFixtures = fun () ->
       gc.Cypher
@@ -124,15 +125,6 @@ let queries (gc:GraphClient) : Queries =
       |> Seq.map buildPredictionRecord
       |> Seq.tryHead
 
-    getFixtureSetEarliestKickOff = fun (FixtureSetId fsId) ->
-      gc.Cypher
-        .Match("(f:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet)")
-        .Where(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
-        .Return(fun () -> Return.As<DateTime>("min(f.KickOff)"))
-        .ResultsAsync.Result
-      |> Seq.head
-      |> Ko.create
-
     getPredictionsForPlayer = fun (PlayerId playerId) ->
       gc.Cypher
         .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)")
@@ -154,7 +146,7 @@ let queries (gc:GraphClient) : Queries =
       |> List.map (fun (fixtureNode, predictionNode) ->
         buildFixtureRecord fixtureNode, buildPredictionRecord predictionNode)
 
-    getPredictionsForPlayerInMonth = fun (year, month) (PlayerId playerId) ->
+    getPredictionsForPlayerInMonth = fun (YearMonth(year, month)) (PlayerId playerId) ->
       gc.Cypher
         .Match("(player:Player)-[:PREDICTED]->(pred:Prediction)-[:FOR_FIXTURE]->(fixture:Fixture)-[:IN_FIXTURESET]->(fs:FixtureSet)")
         .Where(fun (fs:FixtureSetNode) -> fs.Year = year)
@@ -208,15 +200,6 @@ let queries (gc:GraphClient) : Queries =
         .ResultsAsync.Result
       |> List.ofSeq
       |> List.map GameweekNo
-
-    getFixtureSetYearAndMonth = fun (FixtureSetId fsId) ->
-      gc.Cypher
-        .Match("(fs:FixtureSet)")
-        .Where(fun (fs:FixtureSetNode) -> fs.Id = string fsId)
-        .Return<FixtureSetNode>("fs")
-        .ResultsAsync.Result
-      |> Seq.head
-      |> fun fs -> fs.Year, fs.Month
 
     getFixtureRecord = fun (FixtureId fId) ->
       gc.Cypher

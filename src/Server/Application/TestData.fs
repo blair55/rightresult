@@ -44,18 +44,25 @@ module TestData =
     let fId2 = fixtures.[1] |> fun f -> f.Id
     let fId3 = fixtures.[2] |> fun f -> f.Id
 
-    let pIdStr =
+    let newPlayerIdStr() =
       Guid.NewGuid().ToString().Substring(0, 7)
 
-    let url =
-      Environment.GetEnvironmentVariable "CLIENTHOST"
+    let buildPlayerId prefix pIdStr =
+      PlayerId(sprintf $"{prefix}-{pIdStr}")
 
+    let buildPlayerLoginCommand () =
+      let pId = newPlayerIdStr()
+      let name = PlayerName $"tester-{pId}"
+      PlayerCommand(buildPlayerId "tst" pId, Login(name, ""))
+
+    let pIdStr = newPlayerIdStr()
+    let url = Environment.GetEnvironmentVariable "CLIENTHOST"
     let playerName, playerPrefix = $"tester-{pIdStr}", "tst"
+    let pId = buildPlayerId playerPrefix pIdStr
     printfn $"{url}/api/testlogin/{playerPrefix}/{pIdStr}/{playerName}"
 
-    let pId =
-      PlayerId(sprintf $"{playerPrefix}-{pIdStr}")
-
+    ([1..30] |> List.map (fun _ -> buildPlayerLoginCommand()))
+    @
     [ FixtureSetCommand(fsId, CreateFixtureSet(gwno, fixtures))
       PlayerCommand(pId, Login(PlayerName playerName, ""))
 
@@ -77,4 +84,4 @@ module TestData =
 
       FixtureSetCommand(fsId, KickOffFixture fId3)
       FixtureSetCommand(fsId, ClassifyFixture(fId3, ScoreLine(Score 1, Score 1)))
-      ]
+    ]
