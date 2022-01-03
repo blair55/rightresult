@@ -46,6 +46,8 @@ module LeagueMatrix =
       | KickedOff -> Components.ScoreBox.emptyScoreBox ()
       | Classified sl -> Components.ScoreBox.openScoreBox sl
 
+    let teamName (Team team) = str (team)
+
     sortedMatrixCols
     |> List.map
          (fun (_,
@@ -55,12 +57,17 @@ module LeagueMatrix =
              div [ Class "matrix-head-container" ] [
                div [ Class "matrix-head matrix-head-left" ] [
                  badge M home
+                // teamName home
+                // str "h"
                ]
                div [ Class "matrix-head matrix-head-right" ] [
                  badge M away
+                // teamName away
+                // str "a"
                ]
              ]
              matrixScoreBox state
+            // str "b"
            ])
     |> fun cols -> ((th [] []) :: cols) @ [ th [] [] ]
     |> fun cols ->
@@ -102,7 +109,7 @@ module LeagueMatrix =
                       TotalPoints = totalPoints }) ->
                 tr
                   [ Class "matrix-player-row" ]
-                  ((td [ Class "matrix-player-name" ] [
+                  ((th [ Class "matrix-player-name" ] [
                       playerLink playerId playerName
                     ])
                    :: buildPlayerColumns predictions
@@ -110,10 +117,10 @@ module LeagueMatrix =
                          str <| sprintf "%i pts" totalPoints
                        ] ]))
          |> fun rws ->
-              div [] [
+              div [Class "matrix"] [
                 Table.table [ Table.IsHoverable
-                              Table.IsFullWidth
-                              Table.CustomClass "matrix"
+                              // Table.IsFullWidth
+                              // Table.CustomClass "matrix"
                               Table.Props [ Style [ MarginBottom "1em" ] ] ] [
                   thead [] [ tr [] cols ]
                   tbody [] rws
@@ -154,12 +161,10 @@ module LeagueMatrix =
     (model: Model)
     dispatch
     =
-    div [ Class "matrix-container" ] [
+    div [] [
       Components.pageTitle leagueName
       Components.subHeading <| sprintf "Gameweek %i Matrix" gwno
-      Card.card [ Props [ Style [ MarginBottom "1em" ] ] ] [
-        matrixComponent mCols mRows dispatch
-      ]
+      matrixComponent mCols mRows dispatch
       emptyMatrixMsg dispatch (GameweekNo gwno) model.LeagueId (Map.toList mRows)
       Components.SubMenu.element (NavTo >> dispatch) (menuLinks mdoc)
     ]

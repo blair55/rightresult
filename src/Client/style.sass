@@ -1,17 +1,10 @@
 @charset "utf-8"
 
-// FontAwesome
 $fa_font_path: "~@fortawesome/fontawesome-free/webfonts"
 @import '~@fortawesome/fontawesome-free/scss/fontawesome.scss'
 @import '~@fortawesome/fontawesome-free/scss/regular.scss'
 @import '~@fortawesome/fontawesome-free/scss/solid.scss'
 @import '~@fortawesome/fontawesome-free/scss/brands.scss'
-
-// OpenSans
-// $FontPathOpenSans: "~open-sans-fonts/open-sans"
-// @import '~open-sans-fonts/open-sans'
-// body
-//   font-family: 'Open Sans' !important
 
 @import "~bulma/sass/utilities/initial-variables"
 
@@ -21,15 +14,10 @@ $link: $primary
 $info: #5AB1BB
 $success: #1EA896
 $warning: #FFAD05
-// $warning: #FAA613
-// $warning-light:#FFEBC2
 $danger: #F05D5E // #F0803C
-// $danger-light: #FCD9D9
-// $dark: $primary
 $dark: $grey-darker
 $text: $grey-dark
 $background: #F1F8F9
-// $background: #E2F1F3
 $background-alt: #dbe7ea
 $body-background-color: $background
 $white-ter: $background
@@ -39,14 +27,14 @@ $radius-small: 0
 $radius-large: 0
 $shadow: none
 $body-line-height: 1
-// $modal-card-foot-border-top: 0
 
 $dropdown-content-background-color: $dark
 $dropdown-divider-background-color: $grey
 $dropdown-item-color: $grey-light
 $dropdown-content-offset: 1px
 
-// Bulma
+
+Bulma
 @import "~bulma/bulma"
 @import "~bulma-quickview/dist/css/bulma-quickview.sass"
 @import "~bulma/sass/utilities/derived-variables"
@@ -74,12 +62,12 @@ $dropdown-content-offset: 1px
   right: 0
   bottom: 40px
   transition: bottom 0.3s
+  z-index: 5
 
 #submenu.hide-submenu
   bottom: 0px !important
   .dropdown-menu
     display: none
-
 
 .box
   border-radius: 0
@@ -161,10 +149,33 @@ table.table th.text-right
 table.table th.text-left
   text-align: left !important
 
-.matrix-container
-  .card
-    overflow-x: scroll
 .matrix
+
+  @include touch
+    -webkit-overflow-scrolling: touch
+    overflow: auto
+    overflow-y: scroll
+    height: 80vh
+
+  tbody th
+    font-weight: unset
+
+  tbody th
+    @include touch
+      max-width: 45%
+
+  th
+    background: $white
+    position: sticky
+    z-index: 1
+  thead th
+    top: 0
+  thead th:first-child
+    z-index: 2
+    left: 0
+  tbody th
+    left: 0
+
   .matrix-head-container
     position: relative
     width: 64px
@@ -183,6 +194,7 @@ table.table th.text-left
     right: 1px
   .matrix-player-row td
     padding: .5em .75em .3em
+
   .matrix-player-name, .matrix-player-score
     white-space: nowrap
     line-height: 2em
@@ -267,14 +279,12 @@ table.table th.text-left
 .page-title
   font-weight: bold
 .page-title, .page-sub-title
-  // padding-left: 1em
   margin-bottom: 1em
   span
     color: $white-ter
     background-color: $secondary
     display: inline-flex
     padding: 0.3em 0.7em
-    // font-weight: bold
     font-size: $size-normal
     text-transform: uppercase
 
@@ -378,28 +388,18 @@ table.table th.text-left
     z-index: 20
 
 .player-gw-fixture
-
   .gw-item
-
-    // .gw-item-body
-    //   *
-    //     cursor: unset
-
     .gw-item-body
       margin-top: 0px
-
     .gw-item-score-polygon
       padding: 1em 0
       margin-top: 0px
-
     .gw-item-prediction
       .gw-item-score-polygon
         clip-path: polygon(0% 0%,100% 0%,90% 101%,0% 101%)
-
     .gw-item-result
       .gw-item-score-polygon
         clip-path: polygon(10% 0%,100% 0%,100% 101%,0% 101%)
-
     .pred-score-container
       margin: 0 5px
 
@@ -478,7 +478,6 @@ table.table th.text-left
       color: $grey
       border-color: $grey
       background-color: $white
-    .formguide-result-d
     .formguide-result-l
       color: $danger
       border-color: $danger
@@ -503,16 +502,12 @@ table.table th.text-left
         font-weight: bold
       span, b
         margin-right: 4px
-        // font-weight: bold
     .formguide-gwno
       color: $grey-light
       position: absolute
       right: 1em
 
-// $formguideHeight: 10em
 .gw-fixture-modal-container
-  // background-color: $background
-  // padding: 1em 0 0
   .gw-fixture-modal-title-container
     position: sticky
     top: 0
@@ -520,7 +515,6 @@ table.table th.text-left
   .gw-fixture-modal-title
     padding: 1em
     display: flex
-    // background-color: $background
     color: $primary
     text-transform: uppercase
     .gw-fixture-modal-team
@@ -566,7 +560,7 @@ table.table th.text-left
 
   .gw-fixture-modal-prediction
 
-    .pred-score-container
+    // .pred-score-container
 
     .pred-score, .pred-score-empty
       width: 36px
@@ -741,7 +735,6 @@ table.table th.text-left
       background-color: $warning
       display: inline-flex
       padding: 4px 12px
-      // font-weight: bold
       text-transform: uppercase
       position: relative
       margin-bottom: 10px
@@ -759,9 +752,7 @@ table.table th.text-left
     display: flex
     padding: 10px
     background-color: $white
-    // border-bottom: solid 1px $primary
   .big-up-box-team
-    // font-weight: bold
     white-space: nowrap
     text-transform: uppercase
     color: $primary
@@ -821,100 +812,3 @@ table.table th.text-left
         margin-left: 2.3em
       p:not(:last-child)
         margin-bottom: 0.5em
-
-.team-title.ARS
-  background-image: linear-gradient(180deg, #e10512 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #fff
-.team-title.AVL
-  background-image: linear-gradient(180deg, #93bee5 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #670a30
-.team-title.BOU
-  background-image: linear-gradient(180deg, #d41319 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.BHA
-  background-image: linear-gradient(180deg, #0053a3 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.BRE
-  background-image: linear-gradient(180deg, #232020 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.BUR
-  background-image: linear-gradient(180deg, #6a0b46 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #8bd3f5
-.team-title.CHE
-  background-image: linear-gradient(180deg, #024593 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.CRY
-  background-image: linear-gradient(180deg, #16216a 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.EVE
-  background-image: linear-gradient(180deg, #024593 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.FUL
-  background-image: linear-gradient(180deg, #000001 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.LEI
-  background-image: linear-gradient(180deg, #033f96 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.LEE
-  background-image: linear-gradient(180deg, #f3ed0c 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #2954a2
-.team-title.LIV
-  background-image: linear-gradient(180deg, #d20911 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.MCI
-  background-image: linear-gradient(180deg, #6cafdf 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #0a265b
-.team-title.MUN
-  background-image: linear-gradient(180deg, #db0b14 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #222222
-.team-title.NEW
-  background-image: linear-gradient(180deg, #231f20 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.NOR
-  background-image: linear-gradient(180deg, #fef100 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #1c1b1d
-.team-title.SHU
-  background-image: linear-gradient(180deg, #ee1c25 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.SOU
-  background-image: linear-gradient(180deg, #ec1a3a 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.TOT
-  background-image: linear-gradient(180deg, #031e59 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.WAT
-  background-image: linear-gradient(180deg, #f9f125 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #060606
-.team-title.WBA
-  background-image: linear-gradient(180deg, #051251 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #ffffff
-.team-title.WHU
-  background-image: linear-gradient(180deg, #7a2539 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #fffefe
-.team-title.WOL
-  background-image: linear-gradient(180deg, #faa41a 50%, rgb(0, 0, 0, 0) 50%)
-  .title
-    color: #231f20
