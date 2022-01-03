@@ -45,10 +45,8 @@ module FixtureSet =
 
 
   let makeSureFixtureIsOpen { FixtureRecord.State = state } =
-    printfn "Fixture state is %A" state
     match state with
-    | FixtureState.Open _ ->
-      Ok ()
+    | FixtureState.Open _ -> Ok ()
     | _ -> ValidationError "Fixture not open" |> Error
 
   let makeSureFixtureIsInPlay { FixtureRecord.State = state; Id = fId; GameweekNo = gwno } =
@@ -86,4 +84,4 @@ module FixtureSet =
       [ FixtureAppended (fsId, fixture) ] |> Ok
 
     | RemoveOpenFixture fId ->
-      fixtures.[fId] |> makeSureFixtureIsOpen |> Result.map (fun () -> [ FixtureRemoved fId ])
+      Ok [ FixtureRemoved fId ]
