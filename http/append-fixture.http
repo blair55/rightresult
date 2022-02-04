@@ -1,0 +1,9 @@
+POST https://rightresu.lt/api/appendFixtureToGameweek
+content-type: application/json
+
+{
+  "FixtureSetId": "0a6043c5-7721-4074-b700-bf44fe0d906b",
+  "Home": "Burnley",
+  "Away": "Watford",
+  "KickOff": "2022-02-05T18:00:00",
+}
