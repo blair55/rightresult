@@ -40,11 +40,11 @@ module LeagueMatrix =
       |> Map.toList
       |> List.sortBy (fun (_, { SortOrder = sortOrder; KickOff = ko }) -> sortOrder, ko.Raw)
 
-    let matrixScoreBox =
+    let matrixFixtureHeaderScoreBox =
       function
-      | Open -> div [] []
-      | KickedOff -> Components.ScoreBox.emptyScoreBox ()
-      | Classified sl -> Components.ScoreBox.openScoreBox sl
+      | FixtureState.Open _ -> div [] []
+      | FixtureState.InPlay _ -> Components.ScoreBox.emptyScoreBox ()
+      | FixtureState.Classified sl -> Components.ScoreBox.openScoreBox sl
 
     let teamName (Team team) = str (team)
 
@@ -57,34 +57,37 @@ module LeagueMatrix =
              div [ Class "matrix-head-container" ] [
                div [ Class "matrix-head matrix-head-left" ] [
                  badge M home
-                // teamName home
-                // str "h"
                ]
                div [ Class "matrix-head matrix-head-right" ] [
                  badge M away
-                // teamName away
-                // str "a"
                ]
              ]
-             matrixScoreBox state
-            // str "b"
+             matrixFixtureHeaderScoreBox state
            ])
     |> fun cols -> ((th [] []) :: cols) @ [ th [] [] ]
     |> fun cols ->
+
          let buildPlayerColumns (predictions: Map<FixtureId, MatrixPrediction>) =
            sortedMatrixCols
            |> List.map
                 (fun (fId, { State = state }) ->
                   match state, predictions.TryFind fId with
-                  | Open, _ -> td [] []
-                  | KickedOff,
+                  | FixtureState.Open _,
+                    Some { Prediction = scoreLine
+                           Modifier = PredictionModifier.BigUp as modifier } ->
+                    td [] [
+
+                      ScoreBox.kickedOffScoreBox scoreLine modifier
+                    ]
+                  | FixtureState.Open _, _ -> td [] []
+                  | FixtureState.InPlay _,
                     Some { Prediction = scoreLine
                            Modifier = modifier } ->
                     td [] [
                       ScoreBox.kickedOffScoreBox scoreLine modifier
                     ]
-                  | KickedOff, None -> td [] [ ScoreBox.emptyScoreBox () ]
-                  | Classified _,
+                  | FixtureState.InPlay _, None -> td [] [ ScoreBox.emptyScoreBox () ]
+                  | FixtureState.Classified _,
                     Some { Prediction = scoreLine
                            Modifier = modifier
                            Points = p } ->
@@ -97,7 +100,7 @@ module LeagueMatrix =
                       td [] [
                         ScoreBox.kickedOffScoreBox scoreLine modifier
                       ]
-                  | Classified _, None -> td [] [ ScoreBox.emptyScoreBox () ])
+                  | FixtureState.Classified _, None -> td [] [ ScoreBox.emptyScoreBox () ])
 
          mRows
          |> Map.toList

@@ -162,7 +162,9 @@ table.table th.text-left
 
   tbody th
     @include touch
-      max-width: 45%
+      max-width: 150px
+      text-overflow: ellipsis
+      overflow: hidden
 
   th
     background: $white

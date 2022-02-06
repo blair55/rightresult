@@ -250,6 +250,7 @@ let queries (gc:GraphClient) : Queries =
         .Return<LeagueNode>("league")
         .ResultsAsync.Result
       |> Seq.map buildLeagueRecord
+      |> List.ofSeq
 
     getPlayerFixtureSet = fun (PlayerId playerId) (GameweekNo gwno) ->
       gc.Cypher
@@ -371,6 +372,14 @@ let nonQueries (gc:GraphClient) : NonQueries =
         .Where(fun (f:FixtureNode) -> f.Id = string fId)
         .Set("f.KickOff = $ko")
         .WithParam("ko", ko.Raw)
+        .ExecuteWithoutResultsAsync().Wait()
+
+    editFixtureSortOrder = fun (FixtureId fId, sortOrder) ->
+      gc.Cypher
+        .Match("(f:Fixture)")
+        .Where(fun (f:FixtureNode) -> f.Id = string fId)
+        .Set("f.SortOrder = $sortOrder")
+        .WithParam("sortOrder", sortOrder)
         .ExecuteWithoutResultsAsync().Wait()
 
     createFixtureSet = fun fs ->

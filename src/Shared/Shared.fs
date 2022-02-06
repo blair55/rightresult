@@ -273,6 +273,10 @@ module FixtureState =
 
   let isClassified = classifiedScoreLine >> Option.isSome
 
+  let isOpen = function
+    | FixtureState.Open _ -> true
+    | _ -> false
+
 module PredictionModifier =
 
   module Consts =
@@ -460,23 +464,22 @@ and MatrixFixture =
   { TeamLine : TeamLine
     KickOff : KickOff
     SortOrder : int
-    State : MatrixFixtureState
+    State : FixtureState
   }
-and MatrixFixtureState =
-  | Open
-  | KickedOff
-  | Classified of ScoreLine
 and MatrixPlayer =
   { PlayerName : PlayerName
     Predictions : Map<FixtureId, MatrixPrediction>
     TotalPoints : int
   }
+  static member Init name =
+    { PlayerName = name
+      Predictions = Map.empty
+      TotalPoints = 0 }
 and MatrixPrediction =
   { Prediction : ScoreLine
     Modifier : PredictionModifier
     Points : (int * PointsCategory) option
   }
-
 and PredictionPointsMonoid =
   { Points : int
     CorrectScores : int
@@ -495,6 +498,7 @@ and PredictionPointsMonoid =
       CorrectResults=ppm1.CorrectResults+ppm2.CorrectResults }
       // DoubleDownCorrectScores=ppm1.DoubleDownCorrectScores+ppm2.DoubleDownCorrectScores
       // DoubleDownCorrectResults=ppm1.DoubleDownCorrectResults+ppm2.DoubleDownCorrectResults }
+
 
 and [<CLIMutable>] PlayerViewModel =
   { Id : PlayerId

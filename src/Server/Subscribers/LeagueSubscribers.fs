@@ -32,7 +32,7 @@ module CreateLeagueSubscribers =
           f.Id,
           { MatrixFixture.TeamLine = f.TeamLine
             KickOff = f.KickOff
-            State = MatrixFixtureState.Open
+            State = f.State
             SortOrder = f.SortOrder })
         |> Map.ofList
       Documents.repo deps.ElasticSearch
@@ -91,9 +91,34 @@ module LeagueJoinedSubscribers =
         |> ignore
     | None -> ()
 
+  let private addPlayerAndOpenFixtureBigUpsToMatrices (deps:Dependencies) _ (leagueId, playerId) =
+    let repo = Documents.repo deps.ElasticSearch
+    let q = deps.Queries
+    let player = q.getPlayer playerId
+    q.getUnconcludedFixtureSets ()
+    |> List.ofSeq
+    |> List.iter (fun (fsId, gwno, _) ->
+      let preds =
+       q.getPredictionsForPlayerInFixtureSet fsId playerId
+        |> List.filter (fun (f, p) -> FixtureState.isOpen f.State && PredictionModifier.isBigUp p.Modifier)
+        |> List.map (fun (f, p) ->
+          f.Id,
+          { MatrixPrediction.Prediction = p.ScoreLine
+            Modifier = p.Modifier
+            Points = None })
+        |> Map.ofList
+      match player with
+      | None -> ()
+      | Some pl ->
+        let mp = { MatrixPlayer.Init pl.Name with Predictions = preds }
+        repo.Edit (Matrix (PrivateLeague leagueId, gwno)) (fun (m:MatrixDoc) -> { m with Rows = m.Rows.Add(playerId, mp) })
+        |> ignore<Rresult<unit>>)
+
   let all =
     [ joinLeagueGraph
-      joinLeagueUpdateLatestTableDoc ]
+      joinLeagueUpdateLatestTableDoc
+      addPlayerAndOpenFixtureBigUpsToMatrices
+    ]
 
 module LeagueLeftSubscribers =
 

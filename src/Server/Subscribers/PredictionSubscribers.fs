@@ -135,12 +135,38 @@ module PredictionBigUpAppliedSubscribers =
         |> ignore<Rresult<Unit>>
     | _ -> ()
 
-  let updateFixtureMatrix (deps:Dependencies) (pId, fId) =
-    ()
+  let updateMatricesOfLeaguesPlayerBelongsTo (deps:Dependencies) (pId, fId) =
+    let q = deps.Queries
+    let { FixtureRecord.GameweekNo = gwno } = q.getFixtureRecord fId
+    let repo = Documents.repo deps.ElasticSearch
+    let leagues = q.getLeaguesPlayerIsIn pId
+    let player = q.getPlayer pId
+    let prediction =
+      q.getPlayerPredictionForFixture pId fId
+      |> Option.map (fun p ->
+        { MatrixPrediction.Prediction = p.ScoreLine
+          Modifier = p.Modifier
+          Points = None })
+    leagues
+    |> List.ofSeq
+    |> List.map (fun l -> PrivateLeague l.PrivateLeagueId)
+    |> (@) [GlobalLeague]
+    |> List.iter (fun leagueId ->
+      repo.Edit (Matrix (leagueId, gwno))
+        (fun (m:MatrixDoc) ->
+          { m with Rows =
+                    m.Rows.Change(pId,
+                                  fun mp ->
+                                    match mp, prediction, player with
+                                    | Some mp, Some pr, _       -> Some { mp with Predictions = mp.Predictions.Add(fId, pr) }
+                                    | _      , Some pr, Some pl -> Some { MatrixPlayer.Init pl.Name with Predictions = Map.ofList [ fId, pr ] }
+                                    | _                         -> None )})
+      |> ignore<Rresult<unit>>)
 
   let all =
     [ UpdatePredictionModifier.setModifier PredictionModifier.Consts.BigUp
       updateFixtureDetails
+      updateMatricesOfLeaguesPlayerBelongsTo
     ]
 
 module PredictionDoubleDownAppliedSubscribers =

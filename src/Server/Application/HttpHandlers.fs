@@ -311,7 +311,7 @@ module HttpHandlers =
           | Error s -> ServerErrors.INTERNAL_ERROR s next ctx
         let buildRedirectUrl = sprintf "%s/logged-in#player=%s" appConfig.clientHost
         let appendRedirectPath url = sprintf "%s&%s=%s" url redirectPathKey redirectPath
-        (sprintf "%s-%s" idPrefix ext.id |> PlayerId, PlayerName ext.name, ext.email)
+        (PlayerId(sprintf "%s-%s" idPrefix ext.id), PlayerName ext.name, ext.email)
         |> (loginPlayer
         >> Async.toTask (AsyncResult.map (cspToString >> buildRedirectUrl >> appendRedirectPath))
         >> Task.bind respond)

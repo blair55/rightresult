@@ -2,8 +2,8 @@ POST https://rightresu.lt/api/classifyFixture
 content-type: application/json
 
 {
-    "HomeTeam": "West Ham",
-    "AwayTeam": "Norwich",
-    "HomeScore": 2,
+    "HomeTeam": "Burnley",
+    "AwayTeam": "Watford",
+    "HomeScore": 0,
     "AwayScore": 0,
 }
