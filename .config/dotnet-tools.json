@@ -15,7 +15,7 @@
       ]
     },
     "fable": {
-      "version": "3.2.9",
+      "version": "3.7.0-beta-015",
       "commands": [
         "fable"
       ]
@@ -24,6 +24,12 @@
       "version": "5.258.1",
       "commands": [
         "paket"
+      ]
+    },
+    "fantomas-tool": {
+      "version": "4.6.0-alpha-004",
+      "commands": [
+        "fantomas"
       ]
     }
   }
