@@ -40,14 +40,6 @@ module LeagueMatrix =
       |> Map.toList
       |> List.sortBy (fun (_, { SortOrder = sortOrder; KickOff = ko }) -> sortOrder, ko.Raw)
 
-    let matrixFixtureHeaderScoreBox =
-      function
-      | FixtureState.Open _ -> div [] []
-      | FixtureState.InPlay _ -> Components.ScoreBox.emptyScoreBox ()
-      | FixtureState.Classified sl -> Components.ScoreBox.openScoreBox sl
-
-    let teamName (Team team) = str (team)
-
     sortedMatrixCols
     |> List.map
          (fun (_,
@@ -62,9 +54,9 @@ module LeagueMatrix =
                  badge M away
                ]
              ]
-             matrixFixtureHeaderScoreBox state
+             Components.PredictionScore.ResultScore.element state
            ])
-    |> fun cols -> ((th [] []) :: cols) @ [ th [] [] ]
+    |> fun cols -> [ th [] [] ] @ cols @ [ th [] [] ]
     |> fun cols ->
 
          let buildPlayerColumns (predictions: Map<FixtureId, MatrixPrediction>) =
@@ -74,33 +66,24 @@ module LeagueMatrix =
                   match state, predictions.TryFind fId with
                   | FixtureState.Open _,
                     Some { Prediction = scoreLine
-                           Modifier = PredictionModifier.BigUp as modifier } ->
-                    td [] [
-
-                      ScoreBox.kickedOffScoreBox scoreLine modifier
-                    ]
-                  | FixtureState.Open _, _ -> td [] []
+                           Modifier = PredictionModifier.BigUp as modifier
+                           Points = pts } ->
+                    td [] [ Components.PredictionScore.element (Some (scoreLine, modifier)) pts ]
+                  | FixtureState.Open _, _ ->
+                    td [] [ Components.PredictionScore.element None 0 ]
                   | FixtureState.InPlay _,
                     Some { Prediction = scoreLine
-                           Modifier = modifier } ->
-                    td [] [
-                      ScoreBox.kickedOffScoreBox scoreLine modifier
-                    ]
-                  | FixtureState.InPlay _, None -> td [] [ ScoreBox.emptyScoreBox () ]
+                           Modifier = modifier
+                           Points = pts } ->
+                    td [] [ Components.PredictionScore.element (Some (scoreLine, modifier)) pts ]
+                  | FixtureState.InPlay _, None -> td [] [ Components.PredictionScore.element None 0 ]
                   | FixtureState.Classified _,
                     Some { Prediction = scoreLine
                            Modifier = modifier
-                           Points = p } ->
-                    match p with
-                    | Some (_, category) ->
-                      td [] [
-                        ScoreBox.classifiedScoreBox scoreLine modifier category
-                      ]
-                    | _ ->
-                      td [] [
-                        ScoreBox.kickedOffScoreBox scoreLine modifier
-                      ]
-                  | FixtureState.Classified _, None -> td [] [ ScoreBox.emptyScoreBox () ])
+                           Points = pts } ->
+                    td [] [ Components.PredictionScore.element (Some (scoreLine, modifier)) pts ]
+                  | FixtureState.Classified _, None ->
+                    td [] [ Components.PredictionScore.element None 0 ])
 
          mRows
          |> Map.toList
@@ -130,25 +113,6 @@ module LeagueMatrix =
                 ]
               ]
 
-  let emptyMatrixMsg dispatch (GameweekNo gwno) leagueId rows =
-    let leagueIdStr =
-      match leagueId with
-      | GlobalLeague -> Global.identifier
-      | PrivateLeague (PrivateLeagueId id) -> string id
-
-    (if List.isEmpty rows then
-       Message.message [ Message.Color IsWarning ] [
-         Message.body [ Modifiers [ Modifier.TextAlignment(Screen.Mobile, TextAlignment.Left) ] ] [
-           str (sprintf "Gameweek %i fixtures have not kicked off yet! View past matrices in " gwno)
-           a
-             (Components.anchorNavProps (NavTo >> dispatch) (LeaguesRoute(LeagueHistoryRoute leagueIdStr)))
-             [ str "League History" ]
-           str "."
-         ]
-       ]
-     else
-       div [] [])
-
   let menuLinks
     ({ MatrixDoc.LeagueId = leagueId
        GameweekNo = GameweekNo gwno }) =
@@ -168,7 +132,6 @@ module LeagueMatrix =
       Components.pageTitle leagueName
       Components.subHeading <| sprintf "Gameweek %i Matrix" gwno
       matrixComponent mCols mRows dispatch
-      emptyMatrixMsg dispatch (GameweekNo gwno) model.LeagueId (Map.toList mRows)
       Components.SubMenu.element (NavTo >> dispatch) (menuLinks mdoc)
     ]
 

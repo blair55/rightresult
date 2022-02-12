@@ -112,7 +112,7 @@ module PlayerGameweek =
         div [ Class $"gw-item-prediction {Components.predictionModifierClass fp.Prediction}" ] [
           div [ Class "gw-item-score-polygon" ] [
             mediumTeamBadge h
-            Components.PredictionScore.element fp.Prediction
+            Components.PredictionScore.element fp.Prediction (fst fp.Points)
             mediumTeamBadge a
           ]
         ]

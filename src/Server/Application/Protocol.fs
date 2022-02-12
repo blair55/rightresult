@@ -39,7 +39,7 @@ module Protocol =
       match state, pred with
       | FixtureState.Classified result, Some { PredictionRecord.Modifier = modifier; ScoreLine = pred } ->
         let vectors = Points.getPointVectors result pred modifier
-        let ({PredictionPointsMonoid.Points = p}, _) = Points.getPointsForPrediction result pred vectors
+        let {PredictionPointsMonoid.Points = p} = Points.getPointsForPrediction result pred vectors
         p, vectors
       | _ -> 0, []
 

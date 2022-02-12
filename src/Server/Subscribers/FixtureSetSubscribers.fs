@@ -195,7 +195,7 @@ module FixtureKickedOffSubscribers =
       |> Option.map (fun p ->
         { MatrixPrediction.Prediction = p.ScoreLine
           Modifier = p.Modifier
-          Points = None })
+          Points = 0 })
 
     let buildRow (m:MatrixDoc) fId (player:PlayerRecord) =
       let pId = player.Id
@@ -243,8 +243,8 @@ module FixtureClassifiedSubscribers =
   let fixturePredictionToPoints ({ FixtureRecord.State = state }, { PredictionRecord.Modifier = modifier; ScoreLine = pred }) =
     FixtureState.classifiedScoreLine state
     |> Option.map (fun result ->
-      let vectors = Points.getPointVectors result pred modifier
-      Points.getPointsForPrediction result pred vectors |> fst)
+      Points.getPointVectors result pred modifier
+      |> Points.getPointsForPrediction result pred)
     |> Option.defaultValue PredictionPointsMonoid.Init
 
   type PositionNumber = PositionNumber of int
@@ -445,10 +445,10 @@ module FixtureClassifiedSubscribers =
       |> Option.map (fun p ->
         Points.getPointVectors resultScoreLine p.ScoreLine p.Modifier
         |> Points.getPointsForPrediction resultScoreLine p.ScoreLine
-        |> fun (ppm, cat) ->
+        |> fun ppm ->
         { MatrixPrediction.Prediction = p.ScoreLine
           Modifier = p.Modifier
-          Points = Some (ppm.Points, cat) })
+          Points = ppm.Points })
 
     let buildRow (m:MatrixDoc) fId (player:PlayerRecord) =
       let pId = player.Id
@@ -457,7 +457,7 @@ module FixtureClassifiedSubscribers =
           let predictions = mPlayer.Predictions.Add(fId, mPrediction)
           let totalPoints =
             Map.toList predictions
-            |> List.sumBy (fun (_, p) -> match p.Points with | Some (points, _) -> points | None -> 0)
+            |> List.sumBy (fun (_, p) -> p.Points)
           pId, { mPlayer with Predictions = predictions; TotalPoints = totalPoints }
       | Some mPlayer, None -> pId, mPlayer
       | None, Some mPrediction -> pId, { MatrixPlayer.Init player.Name with Predictions = Map.ofList [ fId, mPrediction ] }

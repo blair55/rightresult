@@ -44,10 +44,10 @@ module Points =
     let init =
       { PredictionPointsMonoid.Init with Points = sumVectorPoints vectors }
     if result = pred
-    then { init with CorrectScores=1 }, CorrectScore
+    then { init with CorrectScores=1 }
     elif getScoreResult result = getScoreResult pred
-    then { init with CorrectResults=1 }, CorrectResult
-    else init, Incorrect
+    then { init with CorrectResults=1 }
+    else init
 
   let getHomeAndAwayPremTableRowDiff (ScoreLine (Score homeScore, Score awayScore)) =
     { PremTableRow.Init with Played = 1 }

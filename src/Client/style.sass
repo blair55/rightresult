@@ -8,7 +8,7 @@ $fa_font_path: "~@fortawesome/fontawesome-free/webfonts"
 
 @import "~bulma/sass/utilities/initial-variables"
 
-$primary: #114B5F
+$primary: #114b5f
 $secondary: #AA4465
 $link: $primary
 $info: #5AB1BB
@@ -120,7 +120,6 @@ Bulma
   border-color: unset
 
 .message
-  margin-bottom: 1em !important
   .message-body
     line-height: 1.5em
   a
@@ -162,7 +161,7 @@ table.table th.text-left
 
   tbody th
     @include touch
-      max-width: 150px
+      max-width: 120px
       text-overflow: ellipsis
       overflow: hidden
 
@@ -172,6 +171,7 @@ table.table th.text-left
     z-index: 1
   thead th
     top: 0
+    padding: 0.5em 0 .7em
   thead th:first-child
     z-index: 2
     left: 0
@@ -195,7 +195,8 @@ table.table th.text-left
   .matrix-head-right
     right: 1px
   .matrix-player-row td
-    padding: .5em .75em .3em
+    padding: 0em 0.5em
+    vertical-align: middle
 
   .matrix-player-name, .matrix-player-score
     white-space: nowrap
@@ -226,53 +227,6 @@ table.table th.text-left
   text-align: center
   color: $grey
 
-.scorebox-container
-  width: 64px
-  height: 36px
-  position: relative
-  margin: 0 auto
-  .scorebox
-    position: absolute
-    width: 30px
-    height: 30px
-    align-items: center
-    background-color: $background
-    border-color: $background
-    border-style: solid
-    border-width: 1px
-    border-radius: 0px
-    color: $dark
-    display: inline-flex
-    justify-content: center
-    line-height: 1.5
-    padding-left: .75em
-    padding-right: .75em
-    white-space: nowrap
-    font-weight: bold
-  .scorebox-left
-    left: 1px
-  .scorebox-right
-    right: 1px
-
-  .scorebox.correct-result
-    background-color: $white
-    border-color: $brand-green
-    border-width: 2px
-
-  .scorebox.correct-score
-    background-color: $brand-green
-    border-color: $brand-green
-    color: $white
-
-  .scorebox-dd, .scorebox-bigup
-    @extend .scorebox
-    background-color: $warning
-    width: 18px
-    height: 18px
-    font-size: 10px
-    left: 23px
-    bottom: 1px
-    border: none
 
 .card.card-footer-only
   .card-footer
@@ -428,15 +382,40 @@ table.table th.text-left
   color: $white
   border-radius: 1px
 
+.pred-score-container.point-shade-0 .pred-score
+  background-color: rgba(17, 75, 95, 0%)
+  color: $dark
+.pred-score-container.point-shade-10 .pred-score
+  background-color: rgba(17, 75, 95, 20%)
+  color: $dark
+.pred-score-container.point-shade-20 .pred-score
+  background-color: rgba(17, 75, 95, 40%)
+  color: $dark
+.pred-score-container.point-shade-30 .pred-score
+  background-color: rgba(17, 75, 95, 60%)
+  color: $dark
+.pred-score-container.point-shade-40 .pred-score
+  background-color: rgba(17, 75, 95, 80%)
+  color: $white
+.pred-score-container.point-shade-50 .pred-score,
+.pred-score-container.point-shade-60 .pred-score,
+.pred-score-container.point-shade-70 .pred-score,
+.pred-score-container.point-shade-80 .pred-score,
+.pred-score-container.point-shade-90 .pred-score,
+.pred-score-container.point-shade-100 .pred-score
+  background-color: $primary
+  color: $white
+
 .pred-dd, .pred-bigup
   position: absolute
   background: $warning
   left: calc(50% - var(--content-width))
   text-align: center
   width: 16px
-  bottom: -6px
-  border: solid 1px $primary
+  bottom: -7px
   box-sizing: content-box
+  font-size: 10px
+  padding: 3px 0
 
 .pred-score-empty
   border: solid 1px $primary
@@ -562,8 +541,6 @@ table.table th.text-left
 
   .gw-fixture-modal-prediction
 
-    // .pred-score-container
-
     .pred-score, .pred-score-empty
       width: 36px
       height: 36px
@@ -573,7 +550,7 @@ table.table th.text-left
     .pred-dd, .pred-bigup
       width: 22px
       bottom: -9px
-      font-size: $size-medium
+      font-size: 0.9rem
 
 .gw-fixture-modal-content
   position: relative

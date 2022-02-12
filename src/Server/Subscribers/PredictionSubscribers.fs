@@ -146,7 +146,7 @@ module PredictionBigUpAppliedSubscribers =
       |> Option.map (fun p ->
         { MatrixPrediction.Prediction = p.ScoreLine
           Modifier = p.Modifier
-          Points = None })
+          Points = 0 })
     leagues
     |> List.ofSeq
     |> List.map (fun l -> PrivateLeague l.PrivateLeagueId)

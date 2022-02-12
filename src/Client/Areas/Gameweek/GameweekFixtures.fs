@@ -81,7 +81,7 @@ module GameweekFixtures =
             largeTeamBadge a
           ]
           div [ Class "gw-item-score-polygon" ] [
-            Components.PredictionScore.element fp.Prediction
+            Components.PredictionScore.element fp.Prediction (fst fp.Points)
           ]
           div [ Class "gw-item-pointer" ] [
             Fa.i [ Fa.Solid.ChevronRight ] []
@@ -305,14 +305,14 @@ module GameweekFixtures =
         bigUps dispatch fp
       ] ]
 
-  let inplayFixtureModalContent dispatch (GameweekNo gwno) (sl, mp) =
-    [ Message.message [ Message.Color IsInfo ] [
+  let matrixLink dispatch (GameweekNo gwno) =
+    [ Message.message [ Message.Color IsInfo; Message.Modifiers [ Modifier.IsMarginless ] ] [
         Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
           Content.content [] [
             str "See all predictions in the "
             a
               (anchorNavProps (NavTo >> dispatch) (LeaguesRoute(LeagueMatrixRoute(Global.identifier, gwno))))
-              [ str (sprintf "gameweek %i matrix" gwno) ]
+              [ str (sprintf "Gameweek %i Matrix" gwno) ]
           ]
         ]
       ] ]
@@ -417,7 +417,7 @@ module GameweekFixtures =
                  xLargeTeamBadge away
                ] ] [
         div [ Class "gw-fixture-modal-prediction" ] [
-          Components.PredictionScore.element fp.Prediction
+          Components.PredictionScore.element fp.Prediction (fst fp.Points)
         ]
       ]
     ]
@@ -443,12 +443,14 @@ module GameweekFixtures =
 
       let ({ Neighbours = (prev, next) } as fp: FixturePredictionViewModel) = model.Fixtures.Item fId
 
-      let body =
+      let matrixLink =
+        Box.box' [ Modifiers [ Modifier.IsMarginless] ] (matrixLink dispatch model.GameweekNo)
+
+      let body, matrixLink =
         match fp.State with
-        | FixtureState.Open _ -> openFixtureModalContent dispatch model fp
-        | FixtureState.InPlay (sl, mp) -> inplayFixtureModalContent dispatch model.GameweekNo (sl, mp)
-        | FixtureState.Classified _ -> classifiedFixtureModalContent fp
-        |> Text.div [ Props [ Class "" ] ]
+        | FixtureState.Open _ -> openFixtureModalContent dispatch model fp, div [] []
+        | FixtureState.InPlay _ -> [], matrixLink
+        | FixtureState.Classified _ -> classifiedFixtureModalContent fp, matrixLink
 
       let formGuide (fp: FixturePredictionViewModel) =
         fp.FixtureDetails
@@ -474,11 +476,12 @@ module GameweekFixtures =
               div [ Class "gw-fixture-modal-content" ] [
                 Box.box' [] [
                   modalBadgesAndScore fp
-                  body
+                  div [] body
                 ]
               ]
             ]
           ]
+          matrixLink
           Modal.Card.foot [] [
             pageFixtureButton dispatch Fa.Solid.AngleDoubleLeft model.Fixtures prev
             pageFixtureButton dispatch Fa.Solid.AngleDoubleRight model.Fixtures next

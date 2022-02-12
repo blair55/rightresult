@@ -95,11 +95,6 @@ type PointVector =
   | BigUp of int
   | DoubleDown
 
-type PointsCategory =
-  | CorrectScore
-  | CorrectResult
-  | Incorrect
-
 type FixtureRecord =
   { Id : FixtureId
     FixtureSetId : FixtureSetId
@@ -478,7 +473,7 @@ and MatrixPlayer =
 and MatrixPrediction =
   { Prediction : ScoreLine
     Modifier : PredictionModifier
-    Points : (int * PointsCategory) option
+    Points : int
   }
 and PredictionPointsMonoid =
   { Points : int

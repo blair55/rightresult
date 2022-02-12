@@ -105,7 +105,7 @@ module LeagueJoinedSubscribers =
           f.Id,
           { MatrixPrediction.Prediction = p.ScoreLine
             Modifier = p.Modifier
-            Points = None })
+            Points = 0 })
         |> Map.ofList
       match player with
       | None -> ()

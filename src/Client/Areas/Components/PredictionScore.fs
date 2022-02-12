@@ -21,23 +21,35 @@ module PredictionScore =
 
   let private predDoubleDown =
     div [ Class "pred-dd" ] [
-      Fa.i [ Fa.Solid.AngleDoubleDown
-             Fa.Size Fa.FaExtraSmall ] []
+      Fa.i [ Fa.Solid.AngleDoubleDown ] []
     ]
 
   let private predBigUp =
     div [ Class "pred-bigup" ] [
-      Fa.i [ Fa.Solid.AngleDoubleUp
-             Fa.Size Fa.FaExtraSmall ] []
+      Fa.i [ Fa.Solid.AngleDoubleUp ] []
     ]
 
-  let element pred =
+  let element pred points =
+    let shading =
+      match (float points / float 10) * 100. with
+      | pc when pc = 0 -> "0"
+      | pc when pc <= 10 -> "10"
+      | pc when pc <= 20 -> "20"
+      | pc when pc <= 30 -> "30"
+      | pc when pc <= 40 -> "40"
+      | pc when pc <= 50 -> "50"
+      | pc when pc <= 60 -> "60"
+      | pc when pc <= 70 -> "70"
+      | pc when pc <= 80 -> "80"
+      | pc when pc <= 90 -> "90"
+      | _ -> "100"
+      |> sprintf "point-shade-%s"
     match pred with
     | Some (sl, PredictionModifier.BigUp) -> predScoreline sl @ [ predBigUp ]
     | Some (sl, PredictionModifier.DoubleDown) -> predScoreline sl @ [ predDoubleDown ]
     | Some (sl, PredictionModifier.None) -> predScoreline sl
     | None -> [ predScoreEmpty; predScoreEmpty ]
-    |> div [ Class "pred-score-container" ]
+    |> div [ Class ("pred-score-container " + shading) ]
 
   module ResultScore =
 
