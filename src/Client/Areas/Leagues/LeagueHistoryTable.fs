@@ -40,7 +40,7 @@ module LeagueHistoryTable =
       @ match window with
         | Month (YearMonth (y, m)) ->
           [ Cmd.OfAsync.either
-              /// use (y, m, 2) to prevent against utc vs gmt+0100 issue
+              // use (y, m, 2) to prevent against utc vs gmt+0100 issue
               (api.getDateFormat (DateTime(y, m, 2)) "MMMM yyyy")
               player.Token
               LeagueWindowDescriptionReceived

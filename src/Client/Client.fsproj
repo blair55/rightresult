@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
-        <DefineConstants>FABLE_COMPILER</DefineConstants>
-    </PropertyGroup>
-    <ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <DefineConstants>FABLE_COMPILER</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
     <None Include="index.html" />
     <None Include="paket.references" />
     <Compile Include="Routes.fs" />
@@ -18,11 +18,9 @@
     <Compile Include="Areas/Home.fs" />
     <Compile Include="Areas/HowItWorks.fs" />
     <Compile Include="Areas/Contact.fs" />
-
     <Compile Include="Areas/Gameweek/GameweekFixtures.fs" />
     <Compile Include="Areas/Gameweek/AddGameweek.fs" />
     <Compile Include="Areas/Gameweek/GameweekArea.fs" />
-
     <Compile Include="Areas/Leagues/CreateLeague.fs" />
     <Compile Include="Areas/Leagues/Leagues.fs" />
     <Compile Include="Areas/Leagues/League.fs" />
@@ -35,18 +33,16 @@
     <Compile Include="Areas/Leagues/LeagueTable.fs" />
     <Compile Include="Areas/Leagues/PremTable.fs" />
     <Compile Include="Areas/Leagues/LeaguesArea.fs" />
-
     <Compile Include="Areas/Players/AllPlayers.fs" />
     <Compile Include="Areas/Players/Player.fs" />
     <Compile Include="Areas/Players/MyProfile.fs" />
     <Compile Include="Areas/Players/PlayerGameweek.fs" />
     <Compile Include="Areas/Players/PlayersArea.fs" />
-
     <Compile Include="Decoders.fs" />
     <Compile Include="Client.fs" />
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="../Shared/Shared.fsproj" />
-    </ItemGroup>
-    <Import Project="../../.paket/Paket.Restore.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Shared/Shared.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

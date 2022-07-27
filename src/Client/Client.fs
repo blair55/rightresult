@@ -50,7 +50,7 @@ let api: IProtocol =
   |> Remoting.withRouteBuilder Routes.builder
   |> Remoting.buildProxy<IProtocol>
 
-let playerStorageKey = "player-21/22"
+let playerStorageKey = "player-2022/23"
 
 [<Emit("window.navigator.standalone === true")>]
 let isIosStandalone: bool = jsNative

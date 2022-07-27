@@ -21,7 +21,7 @@ module HttpContext =
 
   let escapedPath baseUrl path =
     sprintf "%s%s" baseUrl path
-    |> Uri.EscapeUriString
+    |> Uri.EscapeDataString
 
   let requestFormKey (ctx:HttpContext) key =
     match ctx.Request.Form.TryGetValue(key) with

@@ -15,14 +15,9 @@ open Server.Config
 
 
 let compositionRoot () =
-  let appConfig =
-    buildAppConfig Environment.GetEnvironmentVariable
-
+  let appConfig = buildAppConfig Environment.GetEnvironmentVariable
   let elasticSearch = () // DocumentStore Map.empty
-
-  let eventStore =
-    EventStore.eventStoreConnection appConfig.eventStoreUrl
-
+  let eventStore = EventStore.eventStoreConnection appConfig.eventStoreUrl
   let graphClient = Graph.client appConfig.neo4jUrl
   let queries = Graph.queries graphClient
   let nonQueries = Graph.nonQueries graphClient
@@ -84,16 +79,14 @@ let main =
 
     TestData.generate deps
     |> List.map (handleCommand >> Async.RunSynchronously)
-    |> List.iter
-         (function
-         | Error e -> sprintf "%A" e |> failwith
-         | _ -> ())
+    |> List.iter (function
+      | Error e -> sprintf "%A" e |> failwith
+      | _ -> ())
     |> printfn "Test data\n%A"
 
     0
 
-  | [| a |] ->
-    failwithf "running unknown command! %s" a
+  | [| a |] -> failwithf "running unknown command! %s" a
 
 
   | _ ->
@@ -123,7 +116,7 @@ let main =
         Action<IApplicationBuilder> configureApp
       )
       .ConfigureServices(configureServices)
-      .UseUrls(sprintf "http://0.0.0.0:%i/" port)
+      .UseUrls("http://*:8085")
       .Build()
       .Run()
 

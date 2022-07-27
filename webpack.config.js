@@ -17,14 +17,15 @@ var CONFIG = {
   // See https://github.com/jantimon/html-webpack-plugin
   indexHtmlTemplate: "./src/Client/index.html",
   serviceWorkerTemplate: "./src/Client/sw.js",
-  fsharpEntry: './src/Client/Client.fs.js',
+  // fsharpEntry: './src/Client/Client.fs.js',
+  fsharpEntry: './src/Client/output/Client.js',
   cssEntry: "./src/Client/style.sass",
   badgeCssEntry: "./src/Client/badges.css",
   outputDir: "./deploy/public",
   assetsDir: "./src/Client/public",
   logoPath: "./src/Client/public/logo.png",
-  favicon: "./public/favicon.png",
-  appTitle: "RIGHT RESULT 2021/22",
+  // favicon: "./public/favicon.png",
+  appTitle: "RIGHT RESULT 2022/23",
   devServerPort: 8080,
   // When using webpack-dev-server, you may need to redirect some calls
   // to a external API server. See https://webpack.js.org/configuration/dev-server/#devserver-proxy
@@ -55,7 +56,8 @@ var commonPlugins = [
   new HtmlWebpackPlugin({
     filename: "index.html",
     title: CONFIG.appTitle,
-    favicon: CONFIG.favicon,
+    // favicon: CONFIG.favicon,
+    favicon: resolve(CONFIG.assetsDir + '/favicon.png'),
     template: resolve(CONFIG.indexHtmlTemplate),
   }),
   new WebpackPwaManifest({
@@ -107,7 +109,7 @@ var commonPluginsLast = new WorkboxPlugin.InjectManifest({
 module.exports = {
   // In development, bundle styles together with the code so they can also
   // trigger hot reloads. In production, put them in a separate CSS file.
-  stats: false,
+  stats: true,
   entry: isProduction
     ? {
       app: [
@@ -155,9 +157,9 @@ module.exports = {
     proxy: CONFIG.devServerProxy,
     historyApiFallback: true,
     hot: true,
-    inline: true,
-    progress: false,
-    quiet: true
+    // inline: true,
+    // progress: false,
+    // quiet: true
   },
   // - sass-loaders: transforms SASS/SCSS into JS
   // - file-loader: Moves files referenced in the code (fonts, images) into output folder

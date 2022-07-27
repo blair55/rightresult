@@ -74,7 +74,7 @@ module Components =
           ]
           Heading.h3 [ Heading.IsSubtitle; Heading.Is6 ] [
             Fa.i [ Fa.Solid.AngleDoubleDown ] []
-            str " 2021/22"
+            str " 2022/23"
           ]
         ]
       ]
@@ -124,17 +124,11 @@ module Components =
     ]
 
   let pageTitle s =
-    // div [ Style [ MarginLeft "1em"; MarginTop "1em"; MarginBottom "1em" ] ]
-    //   [ Heading.h1 [ Heading.Is3 ] [ str s ] ]
     Heading.h1 [ Heading.Props [ Class "page-title" ] ] [
       span [] [ str s ]
     ]
 
   let subHeading s =
-    // Heading.h5 [ Heading.IsSubtitle
-    //              Heading.Props [ Style [ MarginLeft "1em" ] ] ] [
-    //   str s
-    // ]
     Heading.h2 [ Heading.Props [ Class "page-sub-title" ] ] [
       span [] [ str s ]
     ]
@@ -200,15 +194,16 @@ module Components =
     match team with
     | Arsenal -> "ARS"
     | AstonVilla -> "AVL"
-    // | Bournemouth -> "BOU"
+    | Bournemouth -> "BOU"
     | Brentford -> "BRE"
     | Brighton -> "BHA"
-    | Burnley -> "BUR"
+    // | Burnley -> "BUR"
     // | Cardiff -> "CAR"
     | Chelsea -> "CHE"
     | CrystalPalace -> "CRY"
     | Everton -> "EVE"
-    // | Fulham -> "FUL"
+    | Forest -> "NFO"
+    | Fulham -> "FUL"
     // | Huddersfield -> "HUD"
     | Leeds -> "LEE"
     | Leicester -> "LEI"
@@ -216,11 +211,11 @@ module Components =
     | ManCity -> "MCI"
     | ManUtd -> "MUN"
     | Newcastle -> "NEW"
-    | Norwich -> "NOR"
+    // | Norwich -> "NOR"
     // | SheffieldUtd -> "SHU"
     | Southampton -> "SOU"
     | Spurs -> "TOT"
-    | Watford -> "WAT"
+    // | Watford -> "WAT"
     // | WestBrom -> "WBA"
     | WestHam -> "WHU"
     | Wolves -> "WOL"

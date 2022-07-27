@@ -1,6 +1,5 @@
 ﻿namespace Server
 
-open System.Diagnostics
 open FSharp.Core
 open Shared
 open Server.Events
@@ -8,16 +7,11 @@ open Server.Subscribers
 
 module EventHandling =
 
-  let correctGwno1Fixtures : FixtureRecord list -> FixtureRecord list =
-    List.map (function
-      | { GameweekNo = GameweekNo 1; TeamLine = TeamLine (Team Teams.Leeds, Team away) } as f -> { f with TeamLine = TeamLine(Team Teams.Leicester, Team away) }
-      | { GameweekNo = GameweekNo 1; TeamLine = TeamLine (Team home, Team Teams.Leicester) } as f -> { f with TeamLine = TeamLine(Team home, Team Teams.Leeds) }
-      | f -> f)
-
   let (|MapPredictionSetEventPlayerIdId|) (PlayerId playerId) : PlayerId =
-    if "fb-735238821018" = playerId
-    then PlayerId "tw-458540585"
-    else PlayerId playerId
+    PlayerId playerId
+    // if "fb-735238821018" = playerId
+    // then PlayerId "tw-458540585"
+    // else PlayerId playerId
 
   let onEvent deps (DatedEvent (event, created)) =
     printfn "handling event: %A" event
@@ -57,7 +51,7 @@ module EventHandling =
     // fixtures
     | FixtureSetCreated (fsId, gwno, fixtures) ->
       FixtureSetCreatedSubscribers.all
-      |> List.iter (fun f -> f deps created (fsId, gwno, correctGwno1Fixtures fixtures))
+      |> List.iter (fun f -> f deps created (fsId, gwno, fixtures))
 
     | FixtureSetConcluded (fsId, gwno) ->
       FixtureSetConcludedSubscribers.all

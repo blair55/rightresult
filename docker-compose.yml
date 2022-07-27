@@ -22,7 +22,7 @@ services:
       - neo4j
 
   eventstore:
-    image: eventstore/eventstore:21.6.0-buster-slim
+    image: ghcr.io/eventstore/eventstore:21.10.5-alpha-arm64v8
     volumes:
       - eventstore_volume:/var/lib/eventstore
     # volumes:
@@ -40,7 +40,7 @@ services:
       - "2113:2113"
 
   neo4j:
-    image: neo4j:4.3.2-community
+    image: neo4j:4.4.8-community
     ports:
       - 7474:7474
       - 7687:7687

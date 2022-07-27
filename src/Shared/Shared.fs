@@ -154,15 +154,16 @@ module Teams =
 
   let [<Literal>] Arsenal = "Arsenal"
   let [<Literal>] AstonVilla = "Aston Villa"
-  // let [<Literal>] Bournemouth = "Bournemouth"
+  let [<Literal>] Bournemouth = "Bournemouth"
   let [<Literal>] Brentford = "Brentford"
   let [<Literal>] Brighton = "Brighton"
-  let [<Literal>] Burnley = "Burnley"
+  // let [<Literal>] Burnley = "Burnley"
   // let [<Literal>] Cardiff = "Cardiff"
   let [<Literal>] Chelsea = "Chelsea"
   let [<Literal>] CrystalPalace = "Crystal Palace"
   let [<Literal>] Everton = "Everton"
-  // let [<Literal>] Fulham = "Fulham"
+  let [<Literal>] Forest = "Nott'm Forest"
+  let [<Literal>] Fulham = "Fulham"
   // let [<Literal>] Huddersfield = "Huddersfield"
   let [<Literal>] Leeds = "Leeds"
   let [<Literal>] Leicester = "Leicester"
@@ -170,11 +171,11 @@ module Teams =
   let [<Literal>] ManCity = "Man City"
   let [<Literal>] ManUtd = "Man Utd"
   let [<Literal>] Newcastle = "Newcastle"
-  let [<Literal>] Norwich = "Norwich"
+  // let [<Literal>] Norwich = "Norwich"
   // let [<Literal>] SheffieldUtd = "Sheffield Utd"
   let [<Literal>] Southampton = "Southampton"
   let [<Literal>] Spurs = "Spurs"
-  let [<Literal>] Watford = "Watford"
+  // let [<Literal>] Watford = "Watford"
   // let [<Literal>] WestBrom = "West Brom"
   let [<Literal>] WestHam = "West Ham"
   let [<Literal>] Wolves = "Wolves"
@@ -182,22 +183,22 @@ module Teams =
   let all =
     [ Arsenal
       AstonVilla
+      Bournemouth
       Brentford
       Brighton
-      Burnley
       Chelsea
       CrystalPalace
       Everton
+      Forest
+      Fulham
       Leicester
       Leeds
       Liverpool
       ManCity
       ManUtd
       Newcastle
-      Norwich
       Southampton
       Spurs
-      Watford
       WestHam
       Wolves ]
     |> List.map Team
@@ -580,37 +581,37 @@ type GlobalGameweekWinner =
   }
 
 
-/// separate because sourced by db query,
-/// its not document at rest. Also maybe we don't
-/// want if fixture has not yet kicked off?
-/// If so, this endpoint should be protected
-/// such that this info is not returned until ko
+// separate because sourced by db query,
+// its not document at rest. Also maybe we don't
+// want if fixture has not yet kicked off?
+// If so, this endpoint should be protected
+// such that this info is not returned until ko
 and PredictionsAggregate =
   { AvgHomeScore : decimal
     AvgAwayScore : decimal
     HomeWinCount : int
     AwayWinCount : int
     DrawCount : int }
-///       +
-/// +     +
-/// + + + + +
-/// W W D W L
-/// -   - - -
-///       - -
-/// h a h h a
-///
-/// toggle: HomeAway/All
-/// opacity gradient with recency
+//       +
+// +     +
+// + + + + +
+// W W D W L
+// -   - - -
+//       - -
+// h a h h a
+//
+// toggle: HomeAway/All
+// opacity gradient with recency
 
 
-/// MATCH (p:Prediction)-[:FOR_FIXTURE]->(f:Fixture)
-/// WHERE f.Id = 'c785a15e-7e59-4da1-a201-afe61916701c'
-/// RETURN
-/// avg(p.HomeScore) as AvgHomeScore,
-/// avg(p.AwayScore) as AvgAwayScore,
-/// count(case p.HomeScore > p.AwayScore when true then 1 end) as HomeWins,
-/// count(case p.HomeScore = p.AwayScore when true then 1 end) as Draws,
-/// count(case p.HomeScore < p.AwayScore when true then 1 end) as AwayWins
+// MATCH (p:Prediction)-[:FOR_FIXTURE]->(f:Fixture)
+// WHERE f.Id = 'c785a15e-7e59-4da1-a201-afe61916701c'
+// RETURN
+// avg(p.HomeScore) as AvgHomeScore,
+// avg(p.AwayScore) as AvgAwayScore,
+// count(case p.HomeScore > p.AwayScore when true then 1 end) as HomeWins,
+// count(case p.HomeScore = p.AwayScore when true then 1 end) as Draws,
+// count(case p.HomeScore < p.AwayScore when true then 1 end) as AwayWins
 
 
 type Document =
@@ -753,90 +754,90 @@ module PredictionGrid =
     else grid
 
 
-/// TODO:
+// TODO:
 
-/// - league history multiple winners
-/// - league history paging
-/// - protect add fixtures
-/// - fixture prediction stats
-/// - handle unhappy notifcations reg path
-/// - homeplayer week history & average points
-/// - player rank, points, average pts chart
-/// - player highlights section - DDs and outliers
-/// - new awards added to hp ?
-/// - xss ?
-/// - undo allowing multiple league join events per player / revert 6250be3
-/// - SSRify
-/// - femtoify
-/// - felizify
-/// - deploy fixture ko change
-/// - fix push!
-/// - homepage gw global leaderboard / player photo
-/// - dynamic h1
-/// - gw stats by month (pts/avg/max/pos)
-/// - only run bg tasks when web available & tasks not running
-/// - swipable fixture page
-/// - capture score in big up event
-/// - remove `correctGwno1Fixtures` func
-/// - matrix: full screen, show bigups, points scored shading
-/// - add live match data & refresh button?
-/// - BADGES
-/// - move fixture node module etc from shared into server
-/// - ^ then move points into FixtureState.Classified
+// - league history multiple winners
+// - league history paging
+// - protect add fixtures
+// - fixture prediction stats
+// - handle unhappy notifcations reg path
+// - homeplayer week history & average points
+// - player rank, points, average pts chart
+// - player highlights section - DDs and outliers
+// - new awards added to hp ?
+// - xss ?
+// - undo allowing multiple league join events per player / revert 6250be3
+// - SSRify
+// - femtoify
+// - felizify
+// - deploy fixture ko change
+// - fix push!
+// - homepage gw global leaderboard / player photo
+// - dynamic h1
+// - gw stats by month (pts/avg/max/pos)
+// - only run bg tasks when web available & tasks not running
+// - swipable fixture page
+// - capture score in big up event
+// - remove `correctGwno1Fixtures` func
+// - matrix: full screen, show bigups, points scored shading
+// - add live match data & refresh button?
+// - BADGES
+// - move fixture node module etc from shared into server
+// - ^ then move points into FixtureState.Classified
 
 
-/// + scorebreakdown on player gw page
-/// + gw fixtures header: top score - avg score - my score
-/// + scrolling preset boxes
-/// + landing page
-/// + points
-/// + server side tidy
-/// + fix serviceworker error
-/// + page per fixture
-/// + add fixture score to matrix
-/// + real & predicted prem tables
-/// + league position delta
-/// + fixture form guide
-/// + homepage winning player
-/// + pwa
-/// + swap elasticsearch for in-memory
-/// + league position grouping
-/// + league matrix
-/// + gameweek in omnifixture view
-/// + fix invite social icons
-/// + matrix column sort order
-/// + homepage player global rank
-/// + https
-/// + auto add results
-/// + month/week league history
-/// + fixture paging
-/// + password protect eventstore
-/// + productionize & dns
-/// + feedback/survey
-/// + other player's predictions/points
-/// + Favicon
-/// + DateTime.Now???
-/// + Link home in nav bar
-/// + prevent negative score
-/// + Cancel button on Join League & Create League views
-/// + auto add fixtures
-/// + sort fixtures by ko
-/// + redirect url on login
-/// + home page
-/// + league page
-/// + club badges
-/// + selected tab
-/// + error msgs & handle all Result|Error cases
-/// + serve index.html on all unmatched paths
-/// + use proper facebook login using private key
-/// + twitter login
-/// + double down
-/// + share/join league
-///
-/// - edit result (ApplyResult cmd to Classified fixture)
-///   -> how does this work with adding points to players in leagues?
-/// - only league admin can remove league, capabilities?
-/// - elasticsearch async endpoints?
-///
-/// + edit fixture cmd/event (e.g. ko)
-/// + event versioning
+// + scorebreakdown on player gw page
+// + gw fixtures header: top score - avg score - my score
+// + scrolling preset boxes
+// + landing page
+// + points
+// + server side tidy
+// + fix serviceworker error
+// + page per fixture
+// + add fixture score to matrix
+// + real & predicted prem tables
+// + league position delta
+// + fixture form guide
+// + homepage winning player
+// + pwa
+// + swap elasticsearch for in-memory
+// + league position grouping
+// + league matrix
+// + gameweek in omnifixture view
+// + fix invite social icons
+// + matrix column sort order
+// + homepage player global rank
+// + https
+// + auto add results
+// + month/week league history
+// + fixture paging
+// + password protect eventstore
+// + productionize & dns
+// + feedback/survey
+// + other player's predictions/points
+// + Favicon
+// + DateTime.Now???
+// + Link home in nav bar
+// + prevent negative score
+// + Cancel button on Join League & Create League views
+// + auto add fixtures
+// + sort fixtures by ko
+// + redirect url on login
+// + home page
+// + league page
+// + club badges
+// + selected tab
+// + error msgs & handle all Result|Error cases
+// + serve index.html on all unmatched paths
+// + use proper facebook login using private key
+// + twitter login
+// + double down
+// + share/join league
+//
+// - edit result (ApplyResult cmd to Classified fixture)
+//   -> how does this work with adding points to players in leagues?
+// - only league admin can remove league, capabilities?
+// - elasticsearch async endpoints?
+//
+// + edit fixture cmd/event (e.g. ko)
+// + event versioning

@@ -1,5 +1,5 @@
 source https://api.nuget.org/v3/index.json
-framework net5.0
+framework net6.0
 storage none
 
 nuget FSharp.Core
@@ -13,7 +13,6 @@ nuget Neo4j.Driver.Signed
 nuget EventStore.Client.Grpc.Streams
 nuget Neo4jClient
 nuget WebPush
-nuget TaskBuilder.fs
 
 nuget Expecto
 
@@ -21,7 +20,7 @@ nuget Fable.Core
 nuget Fable.Elmish
 nuget Fable.Elmish.React
 nuget Fable.Elmish.Debugger
-nuget Fable.Elmish.HMR
+nuget Fable.Elmish.HMR == 4.1
 nuget Fable.FontAwesome.Free
 nuget Fable.Mocha
 nuget Fable.React
@@ -32,11 +31,5 @@ nuget Fulma
 nuget Fulma.Extensions.Wikiki.Quickview
 nuget Thoth.Elmish.Toast
 
-group Build
-  source https://api.nuget.org/v3/index.json
-  framework net5.0
-  storage none
-
-  nuget FSharp.Core
-  nuget Fake.Core.Target
-  nuget Fake.IO.FileSystem
+nuget Fake.Core.Target
+nuget Fake.IO.FileSystem

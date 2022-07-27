@@ -90,8 +90,6 @@ module AsyncResult =
 
   let asyncResult = AsyncResultBuilder()
 
-open FSharp.Control.Tasks.V2
-
 module Task =
 
   let retn x = task {

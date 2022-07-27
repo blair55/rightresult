@@ -2,8 +2,8 @@ POST https://rightresu.lt/api/appendFixtureToGameweek
 content-type: application/json
 
 {
-  "FixtureSetId": "0a6043c5-7721-4074-b700-bf44fe0d906b",
-  "Home": "Burnley",
-  "Away": "Watford",
-  "KickOff": "2022-02-05T18:00:00",
+  "FixtureSetId": "1b4cd150-b562-4986-bd3a-87a87a708805",
+  "Home": "Norwich",
+  "Away": "Chelsea",
+  "KickOff": "2022-03-10T19:30:00",
 }

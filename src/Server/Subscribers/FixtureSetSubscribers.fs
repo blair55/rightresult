@@ -512,7 +512,7 @@ module FixtureClassifiedSubscribers =
 
 
   let updateOpenFixtureDetails deps _ (_, _, _) =
-    /// needed to update fd with first result when a team appears twice in one gw
+    // needed to update fd with first result when a team appears twice in one gw
     deps.Queries.getOpenFixtures ()
     |> List.ofSeq
     |> List.iter (fun { FixtureRecord.Id = fId; TeamLine = TeamLine (home, away) } ->

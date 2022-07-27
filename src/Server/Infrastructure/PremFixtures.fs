@@ -18,22 +18,22 @@ module PremFixtures =
     function
     | 1 -> Arsenal
     | 2 -> AstonVilla
-    | 3 -> Brentford
-    | 4 -> Brighton
-    | 5 -> Burnley
+    | 3 -> Bournemouth
+    | 4 -> Brentford
+    | 5 -> Brighton
     | 6 -> Chelsea
     | 7 -> CrystalPalace
     | 8 -> Everton
-    | 9 -> Leicester
-    | 10 -> Leeds
-    | 11 -> Liverpool
-    | 12 -> ManCity
-    | 13 -> ManUtd
-    | 14 -> Newcastle
-    | 15 -> Norwich
-    | 16 -> Southampton
-    | 17 -> Spurs
-    | 18 -> Watford
+    | 9 -> Fulham
+    | 10 -> Leicester
+    | 11 -> Leeds
+    | 12 -> Liverpool
+    | 13 -> ManCity
+    | 14 -> ManUtd
+    | 15 -> Newcastle
+    | 16 -> Forest
+    | 17 -> Southampton
+    | 18 -> Spurs
     | 19 -> WestHam
     | 20 -> Wolves
     | _ -> failwith "Unrecognised team id"

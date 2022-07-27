@@ -8,4 +8,3 @@ jose-jwt
 EventStore.Client.Grpc.Streams
 Neo4jClient
 WebPush
-TaskBuilder.fs

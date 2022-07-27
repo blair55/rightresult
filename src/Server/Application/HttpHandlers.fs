@@ -379,5 +379,5 @@ module HttpHandlers =
       GET  >=> route  "/api/now" >=> warbler (fun _ -> deps.Now().ToString("s") |> text)
       GET  >=> route  "/api/utcnow" >=> warbler (fun _ -> DateTime.UtcNow.ToString("s") |> text)
       Protocol.buildProtocol handleCommand deps
-      htmlFile "public/index.html"
+      htmlFile "public/index.html" // only relied on in prod? devserver historyApiFallback used locally
     ]

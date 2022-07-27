@@ -45,6 +45,7 @@ let store (client:EventStoreClient) (StreamId streamId) (EventVersion expected) 
 
 let subscribeToAll (client:EventStoreClient) onEvent =
   client.SubscribeToAllAsync(
+    FromAll.Start,
     (fun _ (e:ResolvedEvent) _ ->
       try toDatedEvent e |> onEvent
       with ex -> eprintfn "%A" ex
