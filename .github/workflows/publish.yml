@@ -4,29 +4,31 @@ on:
   push:
     branches:
       - master
+      - fable3
 
 env:
-  publish_version: 0.0.${{ github.run_number }}
+  publish_version: 2022-${{ github.run_number }}
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        dotnet: [3.1.300]
-    runs-on: ${{ matrix.os }}
+  publish:
+
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1.4.1
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          dotnet-version: ${{ matrix.dotnet }}
+          node-version: 18
+      - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.x
 
-      - run: yarn
+      - run: npm install
       - run: dotnet tool restore
       - run: dotnet paket restore
-      - run: dotnet fake build -t bundle
+      - run: dotnet run -- bundle
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
 
       - uses: actions/create-release@latest
         env:
