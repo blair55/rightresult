@@ -3,10 +3,10 @@
   "scripts": {
     "reload": "docker-compose down -v && docker-compose up -d deps && wait-on tcp:7474 -t 10000 && npm run start",
     "start": "env-cmd dotnet run",
-    "run:server": "env-cmd dotnet run -p src/Server",
-    "run:bgmin": "env-cmd dotnet run -p src/Server bgminute",
-    "run:bgday": "env-cmd dotnet run -p src/Server bgdaily",
-    "run:generate": "env-cmd dotnet run -p src/Server generate",
+    "run:server": "env-cmd dotnet run --project src/Server",
+    "run:bgmin": "env-cmd dotnet run --project src/Server bgminute",
+    "run:bgday": "env-cmd dotnet run --project src/Server bgdaily",
+    "run:generate": "env-cmd dotnet run --project src/Server generate",
     "start:frontend": "webpack-dev-server",
     "build": "webpack -p",
     "test:live": "webpack-dev-server --config webpack.tests.config.js"
