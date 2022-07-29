@@ -52,36 +52,48 @@ module HowItWorksArea =
       Box.box' [] [
         rdmBadgeBox ()
         p [] [
-          str "A prediction with the correct result (home/away win or draw) will be awarded "
+          str "A prediction with the correct result (home win, away win or draw) will be awarded "
           b [] [ str "2 points" ]
           str "."
         ]
+        hr []
         p [] [
-          str "Irrespective of the result, a prediction will be awarded bonus points for any of the following:"
+          str "A 'non-reverse' prediction will be awarded bonus points for any of the following:"
         ]
         p [] [
-          li [] [
-            b [] [ str "1 point" ]
-            str " for the correct home score"
-          ]
-          li [] [
-            b [] [ str "1 point" ]
-            str " for the correct away score"
-          ]
-          li [] [
-            b [] [ str "1 point" ]
-            str " for the correct goal difference"
-            br []
-            str " e.g. predict 3-1 when the result is 2-0"
-          ]
+          b [] [ str "1 point" ]
+          str " for the correct home score"
+          br []
+          str " e.g. predict 2-0 when the result is 2-1"
         ]
+        p [] [
+          b [] [ str "1 point" ]
+          str " for the correct away score"
+          br []
+          str " e.g. predict 2-0 when the result is 0-0"
+        ]
+        p [] [
+          b [] [ str "1 point" ]
+          str " for the correct goal difference"
+          br []
+          str " e.g. predict 2-0 when the result is 3-1"
+        ]
+        hr []
+        p [] [
+          str "A 'reverse' prediction will not be awarded bonus points:"
+        ]
+        p [] [
+          b [] [ str "0 points" ]
+          str
+            " for the correct home score"
+          br []
+          str " e.g. predict 2-0 when the result is 2-3"
+        ]
+        hr []
         p [] [
           str "A prediction with the correct scoreline will be awarded all bonuses and return the maximum "
           b [] [ str "5 points" ]
           str ". "
-        ]
-        p [] [
-          str "A prediction with an incorrect result may still be awarded a bonus point."
         ]
       ]
     ]
@@ -124,10 +136,10 @@ module HowItWorksArea =
         ]
         p [] [
           str "A Big Up prediction with a correct scoreline will be awarded an additional "
-          b [] [ str "3 points" ]
+          b [] [ str "5 points" ]
           str ". "
           str "A Big Up prediction with a correct result will be awarded an additional "
-          b [] [ str "1 point" ]
+          b [] [ str "3 points" ]
           str "."
         ]
       ]

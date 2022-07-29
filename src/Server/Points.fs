@@ -14,6 +14,11 @@ module Points =
     elif home < away then AwayWin
     else Draw
 
+  let isReverse = function
+    | HomeWin, AwayWin
+    | AwayWin, HomeWin -> true
+    | _ -> false
+
   let pointVectorFunction = function
     | PointVector.Result -> (+) 2
     | PointVector.HomeScore
@@ -26,15 +31,17 @@ module Points =
     seq {
       let fixtureResult = getScoreResult result
       let predictionResult = getScoreResult pred
-      if fixtureResult = predictionResult then yield PointVector.Result
-      if hr = hp then yield PointVector.HomeScore
-      if ar = ap then yield PointVector.AwayScore
-      if result.Difference = pred.Difference then yield PointVector.GoalDifference
-      match modifier with
-      | PredictionModifier.BigUp when result = pred -> yield PointVector.BigUp 3
-      | PredictionModifier.BigUp when fixtureResult = predictionResult -> yield PointVector.BigUp 1
-      | PredictionModifier.DoubleDown -> yield PointVector.DoubleDown
-      | _ -> yield! []
+      if isReverse (fixtureResult, predictionResult) then yield! []
+      else
+        if fixtureResult = predictionResult then yield PointVector.Result
+        if hr = hp then yield PointVector.HomeScore
+        if ar = ap then yield PointVector.AwayScore
+        if result.Difference = pred.Difference then yield PointVector.GoalDifference
+        match modifier with
+        | PredictionModifier.BigUp when result = pred -> yield PointVector.BigUp 5
+        | PredictionModifier.BigUp when fixtureResult = predictionResult -> yield PointVector.BigUp 3
+        | PredictionModifier.DoubleDown -> yield PointVector.DoubleDown
+        | _ -> yield! []
     } |> List.ofSeq
 
   let sumVectorPoints =

@@ -127,12 +127,13 @@ module TestData =
       // PredictionSetCommand(pId, fsId, DatedPredictionCommand(SetAwayScore(Score 1), fId1, PredictionEditDate now))
       // PredictionSetCommand(pId, fsId, DatedPredictionCommand(DoubleDown, fId1, PredictionEditDate now))
 
-      PredictionSetCommand(pId1, fsId, DatedPredictionCommand(SetScoreLine(ScoreLine(Score 3, Score 3)), fId1, PredictionEditDate now))
+      PredictionSetCommand(pId1, fsId, DatedPredictionCommand(SetScoreLine(ScoreLine(Score 4, Score 2)), fId1, PredictionEditDate now))
       PredictionSetCommand(pId1, fsId, DatedPredictionCommand(BigUp, fId1, PredictionEditDate now))
 
-      PredictionSetCommand(pId1, fsId, DatedPredictionCommand(SetScoreLine(ScoreLine(Score 3, Score 3)), fId2, PredictionEditDate now))
+      PredictionSetCommand(pId1, fsId, DatedPredictionCommand(SetScoreLine(ScoreLine(Score 2, Score 0)), fId2, PredictionEditDate now))
 
       PredictionSetCommand(pId1, fsId, DatedPredictionCommand(SetScoreLine(ScoreLine(Score 3, Score 3)), fId3, PredictionEditDate now))
+      PredictionSetCommand(pId1, fsId, DatedPredictionCommand(DoubleDown, fId3, PredictionEditDate now))
     ]
     @
     [
@@ -157,10 +158,10 @@ module TestData =
     @
     [
       FixtureSetCommand(fsId, KickOffFixture fId1)
-      FixtureSetCommand(fsId, ClassifyFixture(fId1, ScoreLine(Score 2, Score 1)))
+      FixtureSetCommand(fsId, ClassifyFixture(fId1, ScoreLine(Score 4, Score 2)))
 
       FixtureSetCommand(fsId, KickOffFixture fId2)
-      FixtureSetCommand(fsId, ClassifyFixture(fId2, ScoreLine(Score 1, Score 1)))
+      FixtureSetCommand(fsId, ClassifyFixture(fId2, ScoreLine(Score 2, Score 3)))
 
       FixtureSetCommand(fsId, KickOffFixture fId3)
       FixtureSetCommand(fsId, ClassifyFixture(fId3, ScoreLine(Score 1, Score 1)))

@@ -193,6 +193,8 @@ module GameweekFixtures =
           str txt
         ] ]
 
+    let bold s = b [] [ str s ]
+
     match f.Prediction, f.BigUpState with
     | Some (_, PredictionModifier.None), BigUpState.Available ->
       button
@@ -207,14 +209,29 @@ module GameweekFixtures =
           Message.message [ Message.Color IsInfo ] [
             Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
               Content.content [] [
-                Text.p [ Modifiers [ Modifier.TextWeight TextWeight.Bold ] ] [
-                  str "Big Up for more points!"
+                li [] [
+                  bold "BIG UP"
+                  str " on a correct score for "
+                  bold "+5 points"
                 ]
                 li [] [
-                  str "Big Ups are visible to all players"
+                  bold "BIG UP"
+                  str " on a correct result for "
+                  bold "+3 points"
                 ]
-                li [] [ str "Big Ups cannot be edited" ]
-                li [] [ str "One Big Up per gameweek" ]
+                li [] [
+                  bold "BIG UPs"
+                  str " are visible to all players"
+                ]
+                li [] [
+                  bold "BIG UPs"
+                  str " cannot be edited"
+                ]
+                li [] [
+                  str "One "
+                  bold "BIG UP"
+                  str " per gameweek"
+                ]
               ]
             ]
           ]
@@ -365,7 +382,7 @@ module GameweekFixtures =
 
   let modalTitle dispatch ({ TeamLine = TeamLine (Team home, Team away) } as fp: FixturePredictionViewModel) =
     div [ Class "gw-fixture-modal-title" ] [
-      Components.pageTitle (GameweekNo.toGWString fp.GameweekNo)
+      Components.pageTitle (GameweekNo.toGWStringLong fp.GameweekNo)
       div [ Class "gw-fixture-modal-title-kotime" ] [
         str $"{fp.KickOff.ShortDay} {fp.KickOff.ClockTime}"
       ]
