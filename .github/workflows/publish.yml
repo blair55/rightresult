@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - fable3
 
 env:
   publish_version: 2022-${{ github.run_number }}
