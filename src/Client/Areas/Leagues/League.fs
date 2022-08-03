@@ -82,6 +82,22 @@ module League =
                     Modal.Close.OnClick(fun _ -> dispatch HideModal) ] []
     ]
 
+  let whatsAppGroup leagueId =
+    if leagueId = CashLeague.identifier then
+      Box.box' [ Props [ Style [ MarginBottom "2em" ] ] ] [
+        Button.a
+          ([ Button.IsFullWidth
+             Button.CustomClass "whatsapp-button"
+             Button.IsLink
+             Button.Props [ Href "https://chat.whatsapp.com/KkBqratVHJI1xWKmYYI51M" ] ])
+          [ span [ Style [ MarginRight "3px" ] ] [
+              Fa.i [ Fa.Brand.Whatsapp ] []
+            ]
+            str "Join WhatsApp Group" ]
+      ]
+    else
+      div [] []
+
   let leagueView { LeagueTableDoc.LeagueName = LeagueName name } (GameweekNo gwno) model dispatch =
     let (PrivateLeagueId leagueId) = model.PrivateLeagueId
 
@@ -94,25 +110,24 @@ module League =
           Panel.icon [] [
             Fa.i [ Fa.Solid.UserFriends ] []
           ]
-          str "Invite"
+          str "Invite to join League"
         ]
         Components.panelAnchor
           Fa.Solid.DoorOpen
-          "Leave"
+          "Leave League"
           (NavTo >> dispatch)
           (LeaguesRoute(LeaveLeagueRoute(string leagueId)))
       ]
 
     div [ ClassName "block" ] [
       Components.pageTitle name
-      Components.subHeading "Standings"
       Card.card [ CustomClass "card-footer-only"
                   Props [ Style [ MarginBottom "1em" ] ] ] [
-        div [] [ standingsFooter ]
-      ]
-      Components.subHeading "Membership"
-      Card.card [ CustomClass "card-footer-only" ] [
         div [] [ membershipFooter ]
+      ]
+      whatsAppGroup model.PrivateLeagueId
+      Card.card [ CustomClass "card-footer-only" ] [
+        div [] [ standingsFooter ]
       ]
       div [] [ inviteModal model dispatch ]
     ]
@@ -128,14 +143,8 @@ module League =
     match msg with
     | Init _ -> model, []
     | Noop _ -> model, []
-    | LeagueReceived r ->
-      { model with
-          League = resultToWebData r },
-      []
-    | ActiveGwnoReceived r ->
-      { model with
-          ActiveGameweekNo = resultToWebData r },
-      []
+    | LeagueReceived r -> { model with League = resultToWebData r }, []
+    | ActiveGwnoReceived r -> { model with ActiveGameweekNo = resultToWebData r }, []
     | NavTo r -> model, navTo r
     | ShowModal -> { model with ShowInviteModal = true }, Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
     | HideModal -> { model with ShowInviteModal = false }, Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop)

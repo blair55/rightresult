@@ -679,6 +679,10 @@ module Global =
   let leagueName = LeagueName "Global League"
   let identifier = "global"
 
+module CashLeague =
+
+  let rawId = "a004fdf0-a381-4f4d-90af-1b804ab493b2"
+  let identifier = PrivateLeagueId (Guid.Parse rawId)
 
 module PredictionGrid =
 
