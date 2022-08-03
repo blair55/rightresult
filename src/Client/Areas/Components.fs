@@ -21,6 +21,36 @@ module CustomClasses =
   [<Literal>]
   let IsClipped = "is-clipped"
 
+module Sharing =
+
+  open Fable.Core
+
+  // [<Emit "$0 === null">]
+  // let isJsNull (x:'t) : bool = jsNative
+
+  // [<Emit "!($0 === null)">]
+  // let isNotJsNull (x:'t) : bool = jsNative
+
+  [<Emit "navigator.share || false">]
+  let canShare () : bool = jsNative
+
+  type ShareData(title, text, url) =
+    interface Browser.Types.ShareData with
+      member this.title
+        with get (): string = title
+        and set (v: string): unit = ()
+
+      member this.text
+        with get (): string = text
+        and set (v: string): unit = ()
+
+      member this.url
+        with get (): string = url
+        and set (v: string): unit = ()
+
+  let share (d:ShareData) = Browser.Navigator.navigator.share d
+
+
 module Html =
 
   let private elem () =

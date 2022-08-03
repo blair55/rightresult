@@ -51,18 +51,6 @@ module League =
       // (if Browser.Dom.window.location.port = "79" then "" else sprintf ":%s" Browser.Dom.window.location.port)
       (string leagueId |> Routes.joinLeaguePath)
 
-  type ShareData(title, text, url) =
-    interface Browser.Types.ShareData with
-      member this.title
-        with get (): string = title
-        and set (v: string): unit = ()
-      member this.text
-        with get (): string = text
-        and set (v: string): unit = ()
-      member this.url
-        with get (): string = url
-        and set (v: string): unit = ()
-
   let inviteModal (model: Model) dispatch =
     let inviteLink = buildInviteLink model.PrivateLeagueId
 
@@ -122,7 +110,7 @@ module League =
           Panel.icon [] [
             Fa.i [ Fa.Solid.UserFriends ] []
           ]
-          str "Invite to join League"
+          str "Share Invite Link"
         ]
         Components.panelAnchor
           Fa.Solid.DoorOpen
@@ -158,12 +146,11 @@ module League =
     | LeagueReceived r -> { model with League = resultToWebData r }, []
     | ActiveGwnoReceived r -> { model with ActiveGameweekNo = resultToWebData r }, []
     | NavTo r -> model, navTo r
-    | ShowModal doc ->
-      if isNull (box (Browser.Navigator.navigator)) then
-        { model with ShowInviteModal = true }, Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
+    | ShowModal _ ->
+      if Sharing.canShare () then
+        let link = buildInviteLink model.PrivateLeagueId
+        let shareData = Sharing.ShareData("", "", link)
+        model, Cmd.OfPromise.perform Sharing.share shareData (fun _ -> Noop)
       else
-        let (LeagueName name) = doc.LeagueName
-        let inviteLink = buildInviteLink model.PrivateLeagueId
-        let shareData = ShareData(name, "Join my RightResult predictions league!", inviteLink)
-        model, Cmd.OfPromise.perform Browser.Navigator.navigator.share shareData (fun _ -> Noop)
+        { model with ShowInviteModal = true }, Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
     | HideModal -> { model with ShowInviteModal = false }, Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop)
