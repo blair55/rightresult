@@ -1,5 +1,6 @@
 namespace Areas.Gameweek
 
+open System
 open Elmish
 open Shared
 open Routes
@@ -18,15 +19,19 @@ module GameweekFixtures =
     | ModalOpen of FixtureId
     | ModalClosed
 
+  type LeagueList = Map<PrivateLeagueId, PlayerLeagueViewModel>
+
   type Model =
     { GameweekFixtures: GameweekFixturesViewModel WebData
       Player: ClientSafePlayer
+      LeagueList: LeagueList WebData
       ModalState: ModalState }
 
   type Msg =
     | Init of Result<string, exn>
     | Noop
     | GameweekFixturesReceived of Rresult<GameweekFixturesViewModel>
+    | LeaguesReceived of Rresult<LeagueList>
     | ShowModal of FixtureId
     | HideModal
     | NavTo of Route
@@ -45,16 +50,16 @@ module GameweekFixtures =
   let init api p gwno =
     { GameweekFixtures = Fetching
       Player = p
+      LeagueList = Fetching
       ModalState = ModalClosed },
-    Cmd.OfAsync.either (api.getGameweekFixtures p.Token) gwno GameweekFixturesReceived (Error >> Init)
-
+    Cmd.batch [ Cmd.OfAsync.either (api.getGameweekFixtures p.Token) gwno GameweekFixturesReceived (Error >> Init)
+                Cmd.OfAsync.either api.getPlayerLeagues p.Token LeaguesReceived (Error >> Init) ]
 
   let xLargeTeamBadge = Components.badge Components.BadgeSize.XL
 
   let largeTeamBadge = Components.badge Components.BadgeSize.L
 
-  let teamName (Team team) = str (team)
-  // str (badgeAbbrv team)
+  let teamName (Team team) = str team
 
   let resultClock (mp: string) =
     div [ Class "gw-item-clock" ] [ str mp ]
@@ -320,18 +325,36 @@ module GameweekFixtures =
         bigUps dispatch fp
       ] ]
 
+  let (|InCashLeague|_|) (leagues: LeagueList) =
+    Map.containsKey CashLeague.identifier leagues
+    |> function
+      | true -> Some CashLeague.identifier
+      | _ -> None
+
+  let (|InAPrivateLeague|_|) (leagues: LeagueList) =
+    Map.toList leagues
+    |> function
+      | (plId, _) :: _ -> Some plId
+      | _ -> None
+
+  let (|PrivateLeagueIdString|) (PrivateLeagueId plId) = string plId
+
   let matrixLink dispatch (GameweekNo gwno) =
-    [ Message.message [ Message.Color IsInfo
-                        Message.Modifiers [ Modifier.IsMarginless ] ] [
-        Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
-          Content.content [] [
-            str "See all predictions in the "
-            a
-              (anchorNavProps (NavTo >> dispatch) (LeaguesRoute(LeagueMatrixRoute(Global.identifier, gwno))))
-              [ str (sprintf "Gameweek %i Matrix" gwno) ]
+    function
+    | InCashLeague (PrivateLeagueIdString plId)
+    | InAPrivateLeague (PrivateLeagueIdString plId) ->
+      [ Message.message [ Message.Color IsInfo
+                          Message.Modifiers [ Modifier.IsMarginless ] ] [
+          Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
+            Content.content [] [
+              str "See all predictions in the "
+              a
+                (anchorNavProps (NavTo >> dispatch) (LeaguesRoute(LeagueMatrixRoute(plId, gwno))))
+                [ str (sprintf "Gameweek %i Matrix" gwno) ]
+            ]
           ]
-        ]
-      ] ]
+        ] ]
+    | _ -> []
 
   let classifiedFixtureModalContent (fp: FixturePredictionViewModel) =
     [ Components.PointVectors.element fp.Points ]
@@ -471,7 +494,7 @@ module GameweekFixtures =
         right
     ]
 
-  let fixtureModal dispatch (model: GameweekFixturesViewModel) modalState =
+  let fixtureModal dispatch (model: GameweekFixturesViewModel) leagues modalState =
 
     match modalState with
     | ModalOpen fId ->
@@ -480,7 +503,7 @@ module GameweekFixtures =
         model.Fixtures.Item fId
 
       let matrixLink =
-        Box.box' [ Modifiers [ Modifier.IsMarginless ] ] (matrixLink dispatch model.GameweekNo)
+        Box.box' [ Modifiers [ Modifier.IsMarginless ] ] (matrixLink dispatch model.GameweekNo leagues)
 
       let body, matrixLink =
         match fp.State with
@@ -595,6 +618,8 @@ module GameweekFixtures =
       | FixtureState.Classified _, SomePoints -> "🟨"
       | FixtureState.Classified _, MaxPoints -> "🟩"
 
+    let br = Environment.NewLine
+
     gwfs.Fixtures
     |> Map.toList
     |> List.sortBy (snd >> fun p -> p.KickOff.KickOff)
@@ -607,12 +632,13 @@ module GameweekFixtures =
            $"{resultToText (state, vectors)} {badgeAbbrv hometeam} {predictionToText pl} {badgeAbbrv awayteam}{modifierToText pl}"
     )
     |> fun fs ->
-         $"#{GameweekNo.toGWString gwfs.GameweekNo} Predictions{totalGWPointsText gwfs}{System.Environment.NewLine}{System.String.Join(System.Environment.NewLine, fs)}"
+         $"#{GameweekNo.toGWString gwfs.GameweekNo} Predictions{totalGWPointsText gwfs}{br}{System.String.Join(br, fs)}{br}"
 
   let fullView
     dispatch
     ({ GameweekNo = GameweekNo gwno
        Neighbours = neighbours } as gwfs: GameweekFixturesViewModel)
+    leagues
     player
     modalState
     =
@@ -643,13 +669,14 @@ module GameweekFixtures =
             |> dispatch)
           neighbours
       ]
-      fixtureModal dispatch gwfs modalState
+      fixtureModal dispatch gwfs leagues modalState
     ]
 
   let view (model: Model) dispatch =
-    match model.GameweekFixtures with
-    | Success gwfs -> fullView dispatch gwfs model.Player model.ModalState
-    | WebError e -> div [] [ str "error" ]
+    match model.GameweekFixtures, model.LeagueList with
+    | Success gwfs, Success leagues -> fullView dispatch gwfs leagues model.Player model.ModalState
+    | WebError _, _
+    | _, WebError _ -> div [] [ str "error" ]
     | _ -> div [] []
 
   let updateSingleModelGwf model fId f =
@@ -789,8 +816,8 @@ module GameweekFixtures =
        //  Browser.Dom.console.log (buildShareGameweekString gwfs)
        let shareData = Sharing.ShareData("", buildShareGameweekString gwfs, "")
        model, Cmd.OfPromise.perform Sharing.share shareData (fun _ -> Noop)
+     | LeaguesReceived r -> { model with LeagueList = resultToWebData r }, [])
 
-    )
 // |> (fun (({ GameweekFixtures = gwfs }, _) as r) ->
 //   match gwfs with
 //   | WebData.Success f ->

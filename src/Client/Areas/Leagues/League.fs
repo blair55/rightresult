@@ -30,18 +30,16 @@ module League =
     | HideModal
 
   let init api player privateleagueId =
+    { PrivateLeagueId = privateleagueId
+      League = Fetching
+      ActiveGameweekNo = Fetching
+      ShowInviteModal = false },
     Cmd.batch [ Cmd.OfAsync.either
                   (api.getLeagueTable (PrivateLeague privateleagueId) Full)
                   player.Token
                   LeagueReceived
                   (Error >> Init)
                 Cmd.OfAsync.either api.getEarliestOpenGwno player.Token ActiveGwnoReceived (Error >> Init) ]
-    |> fun cmds ->
-         { PrivateLeagueId = privateleagueId
-           League = Fetching
-           ActiveGameweekNo = Fetching
-           ShowInviteModal = false },
-         cmds
 
   let buildInviteLink (PrivateLeagueId leagueId) =
     sprintf
