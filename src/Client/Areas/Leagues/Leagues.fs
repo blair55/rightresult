@@ -55,64 +55,58 @@ module Leagues =
 
   let bold s = b [] [ str s ]
 
-  let cashLeagueView dispatch (model: LeagueList) =
-    model
-    |> Map.toList
-    |> List.map fst
-    |> List.contains CashLeague.identifier
-    |> function
-      // | false
-      | true ->
-        Card.card [ CustomClass "card-footer-only"
-                    Props [ Style [ MarginBottom "1em" ] ] ] [
-          Panel.panel [ Panel.Color IsPrimary ] [
-            Components.panelAnchor
-              Fa.Solid.MoneyBillAlt
-              "Prediction League 1"
-              (NavTo >> dispatch)
-              (LeaguesRoute(LeagueRoute(CashLeague.rawId)))
-          ]
+  let cashLeagueView dispatch = function
+    // | false
+    | true ->
+      Card.card [ CustomClass "card-footer-only"
+                  Props [ Style [ MarginBottom "1em" ] ] ] [
+        Panel.panel [ Panel.Color IsPrimary ] [
+          Components.panelAnchor
+            Fa.Solid.MoneyBillAlt
+            "Prediction League 1"
+            (NavTo >> dispatch)
+            (LeaguesRoute(LeagueRoute(CashLeague.rawId)))
         ]
-      | false ->
-        div [] [
-          Message.message [ Message.Color IsInfo
-                            Message.Modifiers [ Modifier.IsMarginless ] ] [
-            Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
-              Content.content [] [
-                li [] [ str "£25 entry" ]
-                li [] [
-                  str "All cash paid in winnings"
-                ]
-                li [] [
-                  str "Monthly payouts & bonus prizes"
-                ]
-                li [] [
-                  str "Email updates & WhatsApp group"
-                ]
+      ]
+    | false ->
+      div [] [
+        Message.message [ Message.Color IsInfo
+                          Message.Modifiers [ Modifier.IsMarginless ] ] [
+          Message.body [ Modifiers [ Modifier.TextSize(Screen.All, TextSize.Is7) ] ] [
+            Content.content [] [
+              li [] [ str "£25 entry" ]
+              li [] [
+                str "All cash paid in winnings"
+              ]
+              li [] [
+                str "Monthly payouts & bonus prizes"
+              ]
+              li [] [
+                str "Email updates & WhatsApp group"
               ]
             ]
           ]
-          boxLinkButton
-            dispatch
-            (NavTo(LeaguesRoute(JoinLeagueRoute(CashLeague.rawId))))
-            Fa.Solid.AngleDoubleRight
-            "Join the Cash League"
         ]
+        boxLinkButton
+          dispatch
+          (NavTo(LeaguesRoute(JoinLeagueRoute(CashLeague.rawId))))
+          Fa.Solid.AngleDoubleRight
+          "Join the Cash League"
+      ]
 
 
   let leaguesList dispatch (model: LeagueList) =
     model
     |> Map.toList
-    |> List.filter (fst >> (=) CashLeague.identifier >> not)
     |> List.map (fun (PrivateLeagueId leagueId, { LeagueName = (LeagueName leaguename) }) ->
       Components.panelAnchor Fa.Solid.Trophy leaguename (NavTo >> dispatch) (LeaguesRoute(LeagueRoute(string leagueId))))
     |> Panel.panel [ Panel.Color IsPrimary
                      Panel.Modifiers [ Modifier.IsMarginless ] ]
 
-  // let globalLeaguePanel dispatch =
-  //   Panel.panel [ Panel.Color IsPrimary ] [
-  //     (Components.panelAnchor Fa.Solid.GlobeAfrica "Global League" (NavTo >> dispatch) (LeaguesRoute(GlobalLeagueRoute)))
-  //   ]
+  let globalLeaguePanel dispatch =
+    Panel.panel [ Panel.Color IsPrimary ] [
+      (Components.panelAnchor Fa.Solid.GlobeAfrica "Global League" (NavTo >> dispatch) (LeaguesRoute(GlobalLeagueRoute)))
+    ]
 
   let premTables dispatch =
     Panel.panel [ Panel.Color IsPrimary ] [
@@ -128,9 +122,15 @@ module Leagues =
         (LeaguesRoute(LeaguePremTableRoute "predicted"))
     ]
 
+  let (|FilterOutCashLeague|) (l:LeagueList) =
+    Map.remove CashLeague.identifier l
+
+  let (|IsInCashLeague|) (l:LeagueList) =
+    Map.containsKey CashLeague.identifier l
+
   let view (model: Model) dispatch =
     match model with
-    | Success l ->
+    | Success (FilterOutCashLeague filtered & IsInCashLeague cash) ->
       div [] [
         Components.pageTitle "Premier League"
         Card.card [ CustomClass "card-footer-only"
@@ -140,11 +140,11 @@ module Leagues =
         Components.pageTitle "My Leagues"
         Card.card [ CustomClass "card-footer-only"
                     Props [ Style [ MarginBottom "0em" ] ] ] [
-          leaguesList dispatch l
+          leaguesList dispatch filtered
         ]
-        createLeagueButton dispatch l
+        createLeagueButton dispatch filtered
         Components.pageTitle "Cash League (PL1)"
-        cashLeagueView dispatch l
+        cashLeagueView dispatch cash
 
       // Components.subHeading "Global League"
       // Card.card [ CustomClass "card-footer-only"
