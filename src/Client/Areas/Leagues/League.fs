@@ -26,7 +26,7 @@ module League =
     | LeagueReceived of Rresult<LeagueTableDoc>
     | ActiveGwnoReceived of Rresult<GameweekNo>
     | NavTo of Route
-    | ShowModal
+    | ShowModal of LeagueTableDoc
     | HideModal
 
   let init api player privateleagueId =
@@ -50,6 +50,18 @@ module League =
       Browser.Dom.window.location.hostname
       // (if Browser.Dom.window.location.port = "79" then "" else sprintf ":%s" Browser.Dom.window.location.port)
       (string leagueId |> Routes.joinLeaguePath)
+
+  type ShareData(title, text, url) =
+    interface Browser.Types.ShareData with
+      member this.title
+        with get (): string = title
+        and set (v: string): unit = ()
+      member this.text
+        with get (): string = text
+        and set (v: string): unit = ()
+      member this.url
+        with get (): string = url
+        and set (v: string): unit = ()
 
   let inviteModal (model: Model) dispatch =
     let inviteLink = buildInviteLink model.PrivateLeagueId
@@ -98,7 +110,7 @@ module League =
     else
       div [] []
 
-  let leagueView { LeagueTableDoc.LeagueName = LeagueName name } (GameweekNo gwno) model dispatch =
+  let leagueView ({ LeagueTableDoc.LeagueName = LeagueName name } as doc) (GameweekNo gwno) model dispatch =
     let (PrivateLeagueId leagueId) = model.PrivateLeagueId
 
     let standingsFooter =
@@ -106,7 +118,7 @@ module League =
 
     let membershipFooter =
       Panel.panel [ Panel.Color IsPrimary ] [
-        Panel.Block.div [ Panel.Block.Props [ OnClick(fun _ -> dispatch ShowModal) ] ] [
+        Panel.Block.div [ Panel.Block.Props [ OnClick(fun _ -> dispatch (ShowModal doc)) ] ] [
           Panel.icon [] [
             Fa.i [ Fa.Solid.UserFriends ] []
           ]
@@ -146,5 +158,12 @@ module League =
     | LeagueReceived r -> { model with League = resultToWebData r }, []
     | ActiveGwnoReceived r -> { model with ActiveGameweekNo = resultToWebData r }, []
     | NavTo r -> model, navTo r
-    | ShowModal -> { model with ShowInviteModal = true }, Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
+    | ShowModal doc ->
+      if isNull (box (Browser.Navigator.navigator)) then
+        { model with ShowInviteModal = true }, Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
+      else
+        let (LeagueName name) = doc.LeagueName
+        let inviteLink = buildInviteLink model.PrivateLeagueId
+        let shareData = ShareData(name, "Join my RightResult predictions league!", inviteLink)
+        model, Cmd.OfPromise.perform Browser.Navigator.navigator.share shareData (fun _ -> Noop)
     | HideModal -> { model with ShowInviteModal = false }, Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop)

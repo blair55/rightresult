@@ -2,6 +2,7 @@ source https://api.nuget.org/v3/index.json
 framework net6.0
 storage none
 
+nuget Fable.Browser.Navigator
 nuget FSharp.Core
 nuget FSharp.Data
 nuget Fable.Remoting.Giraffe
