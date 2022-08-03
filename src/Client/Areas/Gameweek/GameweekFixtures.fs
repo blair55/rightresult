@@ -40,6 +40,7 @@ module GameweekFixtures =
     | CollapseBigUp of FixtureId
     | SetBigUp of FixtureSetId * FixtureId
     | SetBigUpResponse of Rresult<FixtureSetId * FixtureId>
+    | ShareGameweek of GameweekFixturesViewModel
 
   let init api p gwno =
     { GameweekFixtures = Fetching
@@ -525,6 +526,85 @@ module GameweekFixtures =
 
     | ModalClosed -> div [] []
 
+  let shareGameweek dispatch gwfs =
+    let icon i =
+      [ Fa.i [ i ] []
+        span [ Style [ MarginLeft "5px" ] ] [
+          str "Share Predictions"
+        ] ]
+
+    div [ Class "px-5 pt-5 has-background-white" ] [
+      button
+        [ Button.Color IsWarning
+          Button.IsLight ]
+        (fun _ -> ShareGameweek gwfs |> dispatch)
+        (icon Fa.Solid.Share)
+    ]
+
+  let buildShareGameweekString (gwfs: GameweekFixturesViewModel) =
+    let modifierToText =
+      function
+      | Some (_, PredictionModifier.BigUp) -> " ⏫"
+      | Some (_, PredictionModifier.DoubleDown) -> " ⏬"
+      | _ -> ""
+
+    let predictionToText =
+      function
+      | Some (sl, _) -> simpleScoreString sl
+      | None -> "_-_"
+
+    let (|ContainsAllPointVectors|_|) vectors =
+      List.forall
+        (fun v -> List.contains v vectors)
+        [ PointVector.Result
+          PointVector.HomeScore
+          PointVector.AwayScore
+          PointVector.GoalDifference ]
+      |> function
+        | true -> Some()
+        | _ -> None
+
+    let (|MaxPoints|SomePoints|NoPoints|) =
+      function
+      | [] -> NoPoints
+      | ContainsAllPointVectors -> MaxPoints
+      | _ -> SomePoints
+
+    let resultToText =
+      function
+      | FixtureState.Open _, _ -> "🔘"
+      | FixtureState.InPlay _, _ -> "⏳"
+      | FixtureState.Classified _, NoPoints -> "⬜️"
+      | FixtureState.Classified _, SomePoints -> "🟨"
+      | FixtureState.Classified _, MaxPoints -> "🟩"
+
+    let totalGWPointsText (gwfs: GameweekFixturesViewModel) =
+      gwfs.Fixtures
+      |> Map.toList
+      |> List.map (snd >> fun p -> fst p.Points)
+      |> List.sum
+      |> function
+        | 0 -> ""
+        | 1 -> " / 1 point"
+        | p -> $" / {p} points"
+
+    gwfs.Fixtures
+    |> Map.toList
+    |> List.sortBy (snd >> fun p -> p.KickOff.KickOff)
+    |> List.map (
+      snd
+      >> fun { TeamLine = TeamLine (hometeam, awayteam)
+               Prediction = pl
+               State = state
+               Points = (_, vectors) } ->
+           $"{resultToText (state, vectors)} {badgeAbbrv hometeam} {predictionToText pl} {badgeAbbrv awayteam}{modifierToText pl}"
+    )
+    |> fun fs ->
+         $"""#{GameweekNo.toGWString gwfs.GameweekNo} Predictions{totalGWPointsText gwfs}
+{System.String.Join(System.Environment.NewLine, fs)}
+{Browser.Dom.window.location.origin}
+"""
+
   let fullView
     dispatch
     ({ GameweekNo = GameweekNo gwno
@@ -545,6 +625,12 @@ module GameweekFixtures =
          |> List.sortBy (fun f -> f.SortOrder)
          |> List.groupBy (fun f -> f.KickOff.Group)
          |> List.map (fixtureGroup dispatch))
+
+      // (if true then
+      (if Sharing.canShare () then
+         shareGameweek dispatch gwfs
+       else
+         div [] [])
 
       div [ Class "gw-fixture-page-row" ] [
         Components.pageGwButtonRow
@@ -695,6 +781,10 @@ module GameweekFixtures =
 
          m, infoAlert "Big Up!"
        | Error e -> model, alert e
+     | ShareGameweek gwfs ->
+       //  Browser.Dom.console.log (buildShareGameweekString gwfs)
+       let shareData = Sharing.ShareData("", "", buildShareGameweekString gwfs)
+       model, Cmd.OfPromise.perform Sharing.share shareData (fun _ -> Noop)
 
     )
 // |> (fun (({ GameweekFixtures = gwfs }, _) as r) ->
