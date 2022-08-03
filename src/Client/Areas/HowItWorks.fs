@@ -23,7 +23,7 @@ module HowItWorksArea =
         p [] [
           str
             "Right Result is fantasy football for match predictions.
-            Predict on every Premier League fixture of the season and prove how much you know!"
+            Predict a result for every Premier League fixture of the season to prove what you know!"
         ]
       ]
     ]
@@ -35,7 +35,7 @@ module HowItWorksArea =
         rdmBadgeBox ()
         p [] [
           str
-            "Predict once per fixture. Points awarded will apply to the Global League and every private league you belong to."
+            "Predict once per fixture. Points awarded will apply to every league you belong to."
         ]
         p [] [
           str
