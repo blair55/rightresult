@@ -91,7 +91,8 @@ module Components =
     else
       string i
 
-  let simpleScore (ScoreLine (Score h, Score a)) = str (sprintf "%i-%i" h a)
+  let simpleScoreString (ScoreLine (Score h, Score a)) = sprintf "%i-%i" h a
+  let simpleScore s = str (simpleScoreString s)
 
   let heroBar =
     Hero.hero [ Hero.Color IsPrimary
