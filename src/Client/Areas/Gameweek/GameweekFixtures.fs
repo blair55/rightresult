@@ -32,8 +32,8 @@ module GameweekFixtures =
     | Noop
     | GameweekFixturesReceived of Rresult<GameweekFixturesViewModel>
     | LeaguesReceived of Rresult<LeagueList>
-    | ShowModal of FixtureId
-    | HideModal
+    | ShowModal of GameweekNo * FixtureId
+    | HideModal of GameweekNo
     | NavTo of Route
     | Prediction of FixtureId * PredictionAction
     | PredictionAccepted of Rresult<PredictionAction>
@@ -47,11 +47,14 @@ module GameweekFixtures =
     | SetBigUpResponse of Rresult<FixtureSetId * FixtureId>
     | ShareGameweek of GameweekFixturesViewModel
 
-  let init api p gwno =
+  let init api p gwno fixtureId =
     { GameweekFixtures = Fetching
       Player = p
       LeagueList = Fetching
-      ModalState = ModalClosed },
+      ModalState =
+        match fixtureId with
+        | Some fId -> ModalOpen fId
+        | _ -> ModalClosed },
     Cmd.batch [ Cmd.OfAsync.either (api.getGameweekFixtures p.Token) gwno GameweekFixturesReceived (Error >> Init)
                 Cmd.OfAsync.either api.getPlayerLeagues p.Token LeaguesReceived (Error >> Init) ]
 
@@ -80,7 +83,7 @@ module GameweekFixtures =
       Components.GameweekItemTitle.element (fp.KickOff, tl)
       div [ Class $"gw-item-space {inplayClass}" ] []
       div [ Class "gw-item-body"
-            OnClick(fun _ -> dispatch (ShowModal fp.Id)) ] [
+            OnClick(fun _ -> dispatch (ShowModal(fp.GameweekNo, fp.Id))) ] [
         div [ Class $"gw-item-prediction {Components.predictionModifierClass fp.Prediction}" ] [
           div [ Class "gw-item-badges" ] [
             largeTeamBadge h
@@ -364,7 +367,7 @@ module GameweekFixtures =
     >> function
       | Some (fp: FixturePredictionViewModel) ->
         Button.button [ Button.Color IsLight
-                        Button.Props [ OnClick(fun _ -> dispatch (ShowModal fp.Id)) ] ] [
+                        Button.Props [ OnClick(fun _ -> dispatch (ShowModal(fp.GameweekNo, fp.Id))) ] ] [
           Fa.i [ icon ] []
         ]
       | None ->
@@ -414,7 +417,7 @@ module GameweekFixtures =
         str fp.KickOff.DateAndShortMonth
       ]
       div [ Class "gw-fixture-modal-close"
-            OnClick(fun _ -> dispatch HideModal) ] [
+            OnClick(fun _ -> dispatch (HideModal fp.GameweekNo)) ] [
         Fa.i [ Fa.Solid.TimesCircle ] []
       ]
     ]
@@ -523,7 +526,7 @@ module GameweekFixtures =
         |> div [ Class "formguide" ]
 
       Modal.modal [ Modal.IsActive true ] [
-        Modal.background [ Props [ OnClick(fun _ -> dispatch HideModal) ] ] []
+        Modal.background [ Props [ OnClick(fun _ -> dispatch (HideModal fp.GameweekNo)) ] ] []
         Modal.Card.card [] [
           Modal.Card.body [ Props [ Id "fixture-modal-card" ] ] [
             div [ Class "gw-fixture-modal-container" ] [
@@ -622,7 +625,7 @@ module GameweekFixtures =
 
     gwfs.Fixtures
     |> Map.toList
-    |> List.sortBy (snd >> fun p -> p.KickOff.KickOff)
+    |> List.sortBy (snd >> fun p -> p.SortOrder)
     |> List.map (
       snd
       >> fun { TeamLine = TeamLine (hometeam, awayteam)
@@ -716,107 +719,117 @@ module GameweekFixtures =
           InProgress = false })
 
   let update api player msg model : Model * Cmd<Msg> =
-    (match msg with
-     | Init _ -> model, []
-     | GameweekFixturesReceived r -> { model with GameweekFixtures = resultToWebData r }, []
-     | ShowModal fId ->
-       let m =
-         updateSingleModelGwf model fId (fun fixture ->
-           { fixture with
-               BigUpState =
-                 if fixture.BigUpState = BigUpState.Expanded then
-                   BigUpState.Available
-                 else
-                   fixture.BigUpState })
+    match msg with
+    | Init _ -> model, []
+    | GameweekFixturesReceived r -> { model with GameweekFixtures = resultToWebData r }, []
+    | ShowModal (GameweekNo gwno, (FixtureId fixtureIdGuid as fId)) ->
+      let m =
+        updateSingleModelGwf model fId (fun fixture ->
+          { fixture with
+              BigUpState =
+                if fixture.BigUpState = BigUpState.Expanded then
+                  BigUpState.Available
+                else
+                  fixture.BigUpState })
 
-       { m with ModalState = ModalOpen fId },
-       Cmd.batch [ Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
-                   Cmd.OfFunc.perform Html.resetScrollTop "fixture-modal-card" (fun _ -> Noop)
-                   Cmd.OfFunc.perform Html.resetScrollLeft "modal-big-ups" (fun _ -> Noop) ]
+      let routeCmd =
+        match model.ModalState with
+        | ModalClosed -> fun r -> Cmd.OfFunc.perform Routes.pushState r (fun _ -> Noop)
+        | ModalOpen _ -> Routes.replaceUrl
 
-     | HideModal -> { model with ModalState = ModalClosed }, Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop)
-     | Noop -> model, []
-     | NavTo r ->
-       model,
-       Cmd.batch [ Routes.navTo r
-                   Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop) ]
+      { m with ModalState = ModalOpen fId },
+      Cmd.batch [ Cmd.OfFunc.perform Html.clip () (fun _ -> Noop)
+                  Cmd.OfFunc.perform Html.resetScrollTop "fixture-modal-card" (fun _ -> Noop)
+                  Cmd.OfFunc.perform Html.resetScrollLeft "modal-big-ups" (fun _ -> Noop)
+                  routeCmd (GameweekRoute(GameweekFixtureRoute(gwno, string fixtureIdGuid))) ]
 
-     | Prediction (fId, action) ->
-       updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
-       Cmd.OfAsync.perform (api.prediction player.Token) action PredictionAccepted
+    | HideModal (GameweekNo gwno) ->
+      { model with ModalState = ModalClosed },
+      Cmd.batch [ Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop)
+                  Cmd.OfFunc.perform Routes.pushState (GameweekRoute(GameweekFixturesRoute gwno)) (fun _ -> Noop) ]
+    | Noop -> model, []
+    | NavTo r ->
+      model,
+      Cmd.batch [ Routes.navTo r
+                  Cmd.OfFunc.perform Html.unClip () (fun _ -> Noop) ]
 
-     | PredictionAccepted result ->
-       match result with
-       | Ok (PredictionAction.SetScoreline (_, fId, sl)) -> updatePredictionInModel model fId (fun (_, m) -> sl, m), []
-       | Ok (PredictionAction.IncrementScore (_, fId, Home)) ->
-         updatePredictionInModel model fId (fun (ScoreLine (Score h, a), m) -> ScoreLine(h + 1 |> Score, a), m), []
-       | Ok (PredictionAction.DecrementScore (_, fId, Home)) ->
-         updatePredictionInModel model fId (fun (ScoreLine (Score h, a), m) -> ScoreLine(h - 1 |> Score, a), m), []
-       | Ok (PredictionAction.IncrementScore (_, fId, Away)) ->
-         updatePredictionInModel model fId (fun (ScoreLine (h, Score a), m) -> ScoreLine(h, a + 1 |> Score), m), []
-       | Ok (PredictionAction.DecrementScore (_, fId, Away)) ->
-         updatePredictionInModel model fId (fun (ScoreLine (h, Score a), m) -> ScoreLine(h, a - 1 |> Score), m), []
-       | Error e -> updateAllModelGwf model (fun f -> { f with InProgress = false }), alert e
+    | Prediction (fId, action) ->
+      updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
+      Cmd.OfAsync.perform (api.prediction player.Token) action PredictionAccepted
+
+    | PredictionAccepted result ->
+      match result with
+      | Ok (PredictionAction.SetScoreline (_, fId, sl)) -> updatePredictionInModel model fId (fun (_, m) -> sl, m), []
+      | Ok (PredictionAction.IncrementScore (_, fId, Home)) ->
+        updatePredictionInModel model fId (fun (ScoreLine (Score h, a), m) -> ScoreLine(h + 1 |> Score, a), m), []
+      | Ok (PredictionAction.DecrementScore (_, fId, Home)) ->
+        updatePredictionInModel model fId (fun (ScoreLine (Score h, a), m) -> ScoreLine(h - 1 |> Score, a), m), []
+      | Ok (PredictionAction.IncrementScore (_, fId, Away)) ->
+        updatePredictionInModel model fId (fun (ScoreLine (h, Score a), m) -> ScoreLine(h, a + 1 |> Score), m), []
+      | Ok (PredictionAction.DecrementScore (_, fId, Away)) ->
+        updatePredictionInModel model fId (fun (ScoreLine (h, Score a), m) -> ScoreLine(h, a - 1 |> Score), m), []
+      | Error e -> updateAllModelGwf model (fun f -> { f with InProgress = false }), alert e
 
 
-     | SetDoubleDown (fsId, fId) ->
-       updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
-       Cmd.OfAsync.perform (api.doubleDown player.Token) (fsId, fId) SetDoubleDownResponse
-     | SetDoubleDownResponse r ->
-       match r with
-       | Ok (_, fId) ->
-         let m = removeDoubleDownFromAllPredictions model
-         updatePredictionInModel m fId (fun (sl, _) -> sl, PredictionModifier.DoubleDown), infoAlert "Double Down set"
-       | Error e -> model, alert e
-     | RemoveDoubleDown fsId ->
-       updateAllModelGwf model (fun fixture -> { fixture with InProgress = true }),
-       Cmd.OfAsync.perform (api.removeDoubleDown player.Token) fsId RemoveDoubleDownResponse
-     | RemoveDoubleDownResponse r ->
-       match r with
-       | Ok _ -> removeDoubleDownFromAllPredictions model, infoAlert "Double Down removed"
-       | Error e -> model, alert e
+    | SetDoubleDown (fsId, fId) ->
+      updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
+      Cmd.OfAsync.perform (api.doubleDown player.Token) (fsId, fId) SetDoubleDownResponse
+    | SetDoubleDownResponse r ->
+      match r with
+      | Ok (_, fId) ->
+        let m = removeDoubleDownFromAllPredictions model
+        updatePredictionInModel m fId (fun (sl, _) -> sl, PredictionModifier.DoubleDown), infoAlert "Double Down set"
+      | Error e -> model, alert e
+    | RemoveDoubleDown fsId ->
+      updateAllModelGwf model (fun fixture -> { fixture with InProgress = true }),
+      Cmd.OfAsync.perform (api.removeDoubleDown player.Token) fsId RemoveDoubleDownResponse
+    | RemoveDoubleDownResponse r ->
+      match r with
+      | Ok _ -> removeDoubleDownFromAllPredictions model, infoAlert "Double Down removed"
+      | Error e -> model, alert e
 
-     | ExpandBigUp fId ->
-       updateSingleModelGwf model fId (fun fixture -> { fixture with BigUpState = BigUpState.Expanded }), []
-     | CollapseBigUp fId ->
-       updateSingleModelGwf model fId (fun fixture -> { fixture with BigUpState = BigUpState.Available }), []
-     | SetBigUp (fsId, fId) ->
-       updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
-       Cmd.OfAsync.perform (api.bigUp player.Token) (fsId, fId) SetBigUpResponse
-     | SetBigUpResponse r ->
-       match r with
-       | Ok (_, fId) ->
-         let m =
-           updateAllModelGwf model (fun f ->
-             { f with
-                 BigUpState = BigUpState.Unavailable
-                 InProgress = false })
+    | ExpandBigUp fId ->
+      updateSingleModelGwf model fId (fun fixture -> { fixture with BigUpState = BigUpState.Expanded }), []
+    | CollapseBigUp fId ->
+      updateSingleModelGwf model fId (fun fixture -> { fixture with BigUpState = BigUpState.Available }), []
+    | SetBigUp (fsId, fId) ->
+      updateSingleModelGwf model fId (fun fixture -> { fixture with InProgress = true }),
+      Cmd.OfAsync.perform (api.bigUp player.Token) (fsId, fId) SetBigUpResponse
+    | SetBigUpResponse r ->
+      match r with
+      | Ok (_, fId) ->
+        let m =
+          updateAllModelGwf model (fun f ->
+            { f with
+                BigUpState = BigUpState.Unavailable
+                InProgress = false })
 
-         let m =
-           updateSingleModelGwf m fId (fun fixture ->
-             { fixture with
-                 BigUpState = BigUpState.Set
-                 FixtureDetails =
-                   (fixture.FixtureDetails, fixture.Prediction)
-                   ||> Option.map2 (fun fd (sl, _) ->
-                     { fd with
-                         BigUps =
-                           { PlayerName = PlayerName player.Name
-                             PlayerId = player.Id
-                             TeamLine = fixture.TeamLine
-                             ScoreLine = sl }
-                           :: fd.BigUps })
-                 Prediction =
-                   fixture.Prediction
-                   |> Option.map (fun (sl, _) -> sl, PredictionModifier.BigUp) })
+        let m =
+          updateSingleModelGwf m fId (fun fixture ->
+            { fixture with
+                BigUpState = BigUpState.Set
+                FixtureDetails =
+                  (fixture.FixtureDetails, fixture.Prediction)
+                  ||> Option.map2 (fun fd (sl, _) ->
+                    { fd with
+                        BigUps =
+                          { PlayerName = PlayerName player.Name
+                            PlayerId = player.Id
+                            TeamLine = fixture.TeamLine
+                            ScoreLine = sl }
+                          :: fd.BigUps })
+                Prediction =
+                  fixture.Prediction
+                  |> Option.map (fun (sl, _) -> sl, PredictionModifier.BigUp) })
 
-         m, infoAlert "Big Up!"
-       | Error e -> model, alert e
-     | ShareGameweek gwfs ->
-       //  Browser.Dom.console.log (buildShareGameweekString gwfs)
-       let shareData = Sharing.ShareData("", buildShareGameweekString gwfs, "")
-       model, Cmd.OfPromise.perform Sharing.share shareData (fun _ -> Noop)
-     | LeaguesReceived r -> { model with LeagueList = resultToWebData r }, [])
+        m, infoAlert "Big Up!"
+      | Error e -> model, alert e
+    | ShareGameweek gwfs ->
+      //  Browser.Dom.console.log (buildShareGameweekString gwfs)
+      let shareData = Sharing.ShareData("", buildShareGameweekString gwfs, "")
+      model, Cmd.OfPromise.perform Sharing.share shareData (fun _ -> Noop)
+    | LeaguesReceived r -> { model with LeagueList = resultToWebData r }, []
+
 
 // |> (fun (({ GameweekFixtures = gwfs }, _) as r) ->
 //   match gwfs with

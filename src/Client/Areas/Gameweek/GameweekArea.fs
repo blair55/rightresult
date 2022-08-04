@@ -30,10 +30,10 @@ module GameweekArea =
     match message, model with
     | InitMsg _, InitModel -> InitModel, []
     | GetEarliestOpenGwno (Ok (GameweekNo gwno)), InitModel ->
-        let m, cmd = GameweekFixtures.init api p (GameweekNo gwno)
+        let m, cmd = GameweekFixtures.init api p (GameweekNo gwno) None
         GameweekFixturesModel m,
           Cmd.batch
-            [ GameweekRoute(GameweekFixturesRoute gwno) |> Routes.pushTo
+            [ GameweekRoute(GameweekFixturesRoute gwno) |> Routes.replaceUrl
               Cmd.map GameweekFixturesMsg cmd
             ]
     | GameweekFixturesMsg msg, GameweekFixturesModel m ->
@@ -46,7 +46,9 @@ module GameweekArea =
   let urlUpdate api p = function
     | GameweekInitRoute -> init api p
     | GameweekFixturesRoute gwno ->
-        GameweekFixtures.init api p (GameweekNo gwno) |> fun (m, cmd) -> GameweekFixturesModel m, Cmd.map GameweekFixturesMsg cmd
+        GameweekFixtures.init api p (GameweekNo gwno) None |> fun (m, cmd) -> GameweekFixturesModel m, Cmd.map GameweekFixturesMsg cmd
+    | GameweekFixtureRoute (gwno, ToGuid fId) ->
+        GameweekFixtures.init api p (GameweekNo gwno) (Some (FixtureId(fId))) |> fun (m, cmd) -> GameweekFixturesModel m, Cmd.map GameweekFixturesMsg cmd
     | AddGameweekRoute ->
       AddGameweek.init api p |> fun (m, cmd) -> AddGameweekModel m, Cmd.map AddGameweekMsg cmd
 

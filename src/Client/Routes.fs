@@ -15,6 +15,7 @@ type Route =
 and GameweekRoute =
   | GameweekInitRoute
   | GameweekFixturesRoute of int
+  | GameweekFixtureRoute of int * string
   | AddGameweekRoute
 and LeaguesRoute =
   | PlayerLeaguesRoute
@@ -42,6 +43,7 @@ let howItWorksPath    = "how-it-works"
 let contactPath       = "get-in-touch"
 let gwPath            = "gameweek"
 let gwFixturesPath    = sprintf "gameweek/%i"
+let gwFixturePath     = sprintf "gameweek/%i/%s"
 let addGameweekPath   = "gameweek/add"
 let leaguesPath       = "leagues"
 let globalleaguePath  = "leagues/global"
@@ -73,6 +75,7 @@ let route : Parser<Route -> Route, _> =
     map (GameweekInitRoute  |> GameweekRoute) (s gwPath)
     map (AddGameweekRoute   |> GameweekRoute) (s gwPath </> s "add")
     map (GameweekFixturesRoute >> GameweekRoute) (s gwPath </> i32)
+    map (curry2 (GameweekFixtureRoute  >> GameweekRoute)) (s gwPath </> i32 </> str)
     map (PlayerLeaguesRoute |> LeaguesRoute) (s leaguesPath)
     map (GlobalLeagueRoute  |> LeaguesRoute) (s leaguesPath </> s "global")
     map (CreateLeagueRoute  |> LeaguesRoute) (s leaguesPath </> s "create")
@@ -99,9 +102,10 @@ let private routeToPath = function
   | ContactRoute       -> contactPath
   | GameweekRoute r ->
     match r with
-    | GameweekInitRoute         -> gwPath
-    | GameweekFixturesRoute gw  -> gwFixturesPath gw
-    | AddGameweekRoute          -> addGameweekPath
+    | GameweekInitRoute              -> gwPath
+    | GameweekFixturesRoute gw       -> gwFixturesPath gw
+    | GameweekFixtureRoute (gw, fId) -> gwFixturePath gw fId
+    | AddGameweekRoute               -> addGameweekPath
   | LeaguesRoute r ->
     match r with
     | PlayerLeaguesRoute        -> leaguesPath
@@ -123,22 +127,30 @@ let private routeToPath = function
     | PlayerRoute playerId     -> playerPath playerId
     | PlayerGameweekRoute (pId, gwno) -> playerGameweekPath pId gwno
 
-let navTo r =
-  (routeToPath >> sprintf "/%s" >> Navigation.newUrl) r
-
-open Fable.React
-
 let href =
-   routeToPath >> sprintf "/%s" >> Props.HTMLAttr.Href
+   routeToPath >> sprintf "/%s" >> Fable.React.Props.HTMLAttr.Href
 
-let pushTo r =
-  (routeToPath >> sprintf "/%s" >> Navigation.modifyUrl) r
+open Fable.Core
 
-let isValidGuid (g:string) =
-  System.Guid.TryParse g |> fst
+let (|RouteAsString|) = routeToPath >> sprintf "/%s"
 
-let toGuid (g:string) =
-  System.Guid.Parse g
+/// evaluate url and add to history
+let navTo (RouteAsString r) = Navigation.newUrl r
+
+[<Emit("window.history.pushState({}, '', $0)")>]
+let private pushStateInner (r:'t): Unit = jsNative
+
+/// do not evaluate url but do add to history
+let pushState (RouteAsString r) = pushStateInner r
+
+/// do not evaluate url and do overwrite latest history item
+let replaceUrl (RouteAsString r) = Navigation.modifyUrl r
+
+let isValidGuid (g:string) = System.Guid.TryParse g |> fst
+
+let toGuid (g:string) = System.Guid.Parse g
+
+let (|ToGuid|) = toGuid
 
 open Shared
 
