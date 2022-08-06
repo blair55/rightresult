@@ -552,6 +552,9 @@ module GameweekFixtures =
 
     | ModalClosed -> div [] []
 
+  [<Emit("/Android/i.test(window.navigator.userAgent)")>]
+  let isAndroid: bool = jsNative
+
   let shareGameweek dispatch gwfs =
     let icon i =
       [ Fa.i [ i ] []
@@ -564,7 +567,7 @@ module GameweekFixtures =
         [ Button.Color IsWarning
           Button.IsLight ]
         (fun _ -> ShareGameweek gwfs |> dispatch)
-        (icon Fa.Solid.Share)
+        (icon (if isAndroid then Fa.Solid.ShareAlt else Fa.Solid.Share))
     ]
 
   let buildShareGameweekString (gwfs: GameweekFixturesViewModel) =
@@ -596,30 +599,29 @@ module GameweekFixtures =
       | Some (sl, _) -> simpleScoreString sl
       | None -> "_-_"
 
-    let (|ContainsAllPointVectors|_|) vectors =
+    let (|CorrectScore|_|) vectors =
       List.forall
         (fun v -> List.contains v vectors)
         [ PointVector.Result
           PointVector.HomeScore
-          PointVector.AwayScore
-          PointVector.GoalDifference ]
+          PointVector.AwayScore ]
       |> function
         | true -> Some()
         | _ -> None
 
-    let (|MaxPoints|SomePoints|NoPoints|) =
-      function
-      | [] -> NoPoints
-      | ContainsAllPointVectors -> MaxPoints
-      | _ -> SomePoints
+    let (|CorrectResult|_|) =
+      List.contains PointVector.Result
+      >> function
+        | true -> Some()
+        | _ -> None
 
     let resultToText =
       function
-      | FixtureState.Open _, _ -> "🔘"
+      | FixtureState.Open _, _
       | FixtureState.InPlay _, _ -> "⏳"
-      | FixtureState.Classified _, NoPoints -> "⬜️"
-      | FixtureState.Classified _, SomePoints -> "🟨"
-      | FixtureState.Classified _, MaxPoints -> "🟩"
+      | FixtureState.Classified _, CorrectScore -> "🟩"
+      | FixtureState.Classified _, CorrectResult -> "🟨"
+      | _ -> "⬜️"
 
     let br = Environment.NewLine
 
