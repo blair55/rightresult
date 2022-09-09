@@ -1,0 +1,7 @@
+POST https://rightresu.lt/api/removePlayerFromLeague
+content-type: application/json
+
+{
+    "PlayerId": "fb-10157105435016333",
+    "LeagueId": "a004fdf0-a381-4f4d-90af-1b804ab493b2",
+}

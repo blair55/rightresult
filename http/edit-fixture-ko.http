@@ -1,0 +1,8 @@
+POST https://rightresu.lt/api/fixtureKo
+content-type: application/json
+
+{
+  "FixtureSetId": "d67f103b-cc33-449b-a291-bbaa2237dc95",
+  "FixtureId": "ada4167b-0e04-4351-979a-94d16af57ee3",
+  "KickOff": "2022-09-03T15:00:00",
+}

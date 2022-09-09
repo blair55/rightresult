@@ -2,6 +2,6 @@ POST https://rightresu.lt/api/removeOpenFixture
 content-type: application/json
 
 {
-    "FixtureSetId": "4b3758df-9ba4-4a9c-a99b-b9c87ef73fce",
-    "FixtureId": "080132fe-a2ee-4227-a244-7961b2cdd43e",
+    "FixtureSetId": "9919845c-693f-4593-a5fb-2d5956c5cfc3",
+    "FixtureId": "f277b57c-ec24-4889-b7fc-bee09ab5f36d",
 }
