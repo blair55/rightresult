@@ -89,62 +89,60 @@ module Protocol =
           MaximumPoints = t.MaximumPoints
           Player = pointsAndPosition })
 
-    let getGameweekFixtures gwno (jwtPlayer:Jwt.JwtPlayer) : Rresult<GameweekFixturesViewModel> =
+    let getGameweekFixtures (GameweekNo gw as gwno) (jwtPlayer:Jwt.JwtPlayer) : Rresult<GameweekFixturesViewModel> =
       let fixturesAndPredictions =
         q.getPlayerFixtureSet (PlayerId jwtPlayer.playerId) gwno
         |> List.ofSeq
         |> List.sortBy (fun (f, _) -> f.SortOrder)
-      let gwNeighbours = Neighbours.build (q.getGameweekNos() |> List.sort)
-      let fxNeighbours = Neighbours.build (fixturesAndPredictions |> List.map (fun (f, _) -> f.Id))
-      let bigUpState { FixtureRecord.KickOff = ko }  (pred:PredictionRecord option) =
-        let hasBigUpOnAnyFixture =
-          fixturesAndPredictions
-          |> List.exists (function _, Some { Modifier = PredictionModifier.BigUp } -> true | _ -> false)
-        let isLessThanOneHourBeforeKickOff = Ko.isLessThanOneHourBeforeKickOff (now()) ko
-        match hasBigUpOnAnyFixture, isLessThanOneHourBeforeKickOff, pred with
-        | _, _, Some { Modifier = PredictionModifier.BigUp } -> BigUpState.Set
-        | true, _, _
-        | _, true, _ -> BigUpState.Unavailable
-        | _ -> BigUpState.Available
-      fixturesAndPredictions
-      |> List.map (fun (f, pred) ->
-        let repo = Documents.repo deps.ElasticSearch
-        let fixtureDetails = repo.Read (FixtureDetailsDocument f.Id)
-        let grid =
-          pred
-          |> Option.map (fun p -> p.ScoreLine)
-          |> PredictionGrid.init (PredictionGrid.Dims (5, 3))
-        f.Id,
-        { FixturePredictionViewModel.Id = f.Id
-          FixtureSetId = f.FixtureSetId
-          GameweekNo = f.GameweekNo
-          SortOrder = f.SortOrder
-          TeamLine = f.TeamLine
-          KickOff = KickoffComponents.build f.KickOff
-          FixtureDetails = fixtureDetails
-          State = fixtureStateFirstMinuteHack now f
-          Prediction = pred |> Option.map (fun p -> p.ScoreLine, p.Modifier)
-          PredictionGrid = grid
-          Points = getPoints f pred
-          BigUpState = bigUpState f pred
-          InProgress = false
-          Neighbours = Neighbours.get fxNeighbours f.Id })
-      |> function
-      | h::t ->
-        let (_, { FixturePredictionViewModel.FixtureSetId = fsId }) = h
-        h::t
+      match q.getGameweekNoFixtureSet gwno with
+      | None -> ValidationError $"could not find gwno {gw}" |> Error
+      | Some fsId ->
+        let gwNeighbours = Neighbours.build (q.getGameweekNos() |> List.sort)
+        let fxNeighbours = Neighbours.build (fixturesAndPredictions |> List.map (fun (f, _) -> f.Id))
+        let bigUpState { FixtureRecord.KickOff = ko }  (pred:PredictionRecord option) =
+          let hasBigUpOnAnyFixture =
+            fixturesAndPredictions
+            |> List.exists (function _, Some { Modifier = PredictionModifier.BigUp } -> true | _ -> false)
+          let isLessThanOneHourBeforeKickOff = Ko.isLessThanOneHourBeforeKickOff (now()) ko
+          match hasBigUpOnAnyFixture, isLessThanOneHourBeforeKickOff, pred with
+          | _, _, Some { Modifier = PredictionModifier.BigUp } -> BigUpState.Set
+          | true, _, _
+          | _, true, _ -> BigUpState.Unavailable
+          | _ -> BigUpState.Available
+        fixturesAndPredictions
+        |> List.map (fun (f, pred) ->
+          let repo = Documents.repo deps.ElasticSearch
+          let fixtureDetails = repo.Read (FixtureDetailsDocument f.Id)
+          let grid =
+            pred
+            |> Option.map (fun p -> p.ScoreLine)
+            |> PredictionGrid.init (PredictionGrid.Dims (5, 3))
+          f.Id,
+          { FixturePredictionViewModel.Id = f.Id
+            FixtureSetId = f.FixtureSetId
+            GameweekNo = f.GameweekNo
+            SortOrder = f.SortOrder
+            TeamLine = f.TeamLine
+            KickOff = KickoffComponents.build f.KickOff
+            FixtureDetails = fixtureDetails
+            State = fixtureStateFirstMinuteHack now f
+            Prediction = pred |> Option.map (fun p -> p.ScoreLine, p.Modifier)
+            PredictionGrid = grid
+            Points = getPoints f pred
+            BigUpState = bigUpState f pred
+            InProgress = false
+            Neighbours = Neighbours.get fxNeighbours f.Id })
         |> Map.ofList
         |> fun fixtures ->
-            { GameweekFixturesViewModel.GameweekNo = gwno
-              FixtureSetId = fsId
-              Fixtures = fixtures
-              IsDoubleDownAvailable = not <| isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno fixturesAndPredictions
-              Neighbours = Neighbours.get gwNeighbours gwno
-              GlobalGameweekStats =
-                if isAnyFixtureForGameweekClosed fixturesAndPredictions
-                then gwTable (PlayerId jwtPlayer.playerId) gwno else None
-            } |> Ok
-      | _ -> ValidationError "No fixtures in gw" |> Error
+          Ok { GameweekFixturesViewModel.GameweekNo = gwno
+               FixtureSetId = fsId
+               Fixtures = fixtures
+               IsDoubleDownAvailable = not <| isAnyDoubleDownFixtureForGameweekAlreadyKickedOff gwno fixturesAndPredictions
+               Neighbours = Neighbours.get gwNeighbours gwno
+               GlobalGameweekStats =
+                 if isAnyFixtureForGameweekClosed fixturesAndPredictions
+                 then gwTable (PlayerId jwtPlayer.playerId) gwno else None
+             }
 
     let getPlayerGameweek playerId gwno : Rresult<PlayerGameweekViewModel> =
       let fixturesAndPredictions =
