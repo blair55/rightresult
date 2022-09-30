@@ -16,17 +16,18 @@ module ContactArea =
 
   let titleBar =
     div [] [
-      Components.pageTitle "Get In touch"
+      Components.pageTitle "Get In Touch"
       Box.box' [] [
         rdmBadgeBox ()
         p [ Class "block" ] [
-          str "
+          str
+            "
             We organise a private league for cash each season called Prediction League 1.
             All entrance fees are paid back as cash prizes throughout the seaon.
             If you'd like to join our cash league please let us know."
         ]
         p [ Class "block mb-5" ] [
-            str "We'd also love to hear your comments, questions & ideas."
+          str "We'd also love to hear your comments, questions & ideas."
         ]
         p [ Class "block mb-5" ] [
           a [ Href(Components.Social.twitterHref "@rightresu_lt") ] [
@@ -46,10 +47,16 @@ module ContactArea =
         //     str "facebook"
         //   ]
         // ]
-        p [ Class "block" ] [
+        p [ Class "block mb-5" ] [
           a [ Href("mailto:predictionleague1@hotmail.com") ] [
             Fa.i [ Fa.Solid.At ] []
             str "email"
+          ]
+        ]
+        p [ Class "block" ] [
+          a [ Href("/privacy.txt"); Target "new" ] [
+            Fa.i [ Fa.Solid.ShieldAlt ] []
+            str "privacy policy"
           ]
         ]
       ]
