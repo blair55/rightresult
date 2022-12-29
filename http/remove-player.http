@@ -1,0 +1,6 @@
+POST https://rightresu.lt/api/removePlayer
+content-type: application/json
+
+{
+    "PlayerId": "",
+}

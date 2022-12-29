@@ -1,0 +1,59 @@
+POST https://rightresu.lt/api/putPredictions
+content-type: application/json
+
+{
+    "PlayerId": "",
+    "FixtureSetId": "",
+    "Predictions": [
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+        {
+            "FixtureId": "",
+            "HomeScore": int,
+            "AwayScore": int
+        },
+    ]
+}

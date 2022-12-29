@@ -1,0 +1,7 @@
+POST https://rightresu.lt/api/removePlayerFromLeague
+content-type: application/json
+
+{
+    "PlayerId": "",
+    "LeagueId": "",
+}

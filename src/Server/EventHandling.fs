@@ -8,10 +8,10 @@ open Server.Subscribers
 module EventHandling =
 
   let (|MapPredictionSetEventPlayerIdId|) (PlayerId playerId) : PlayerId =
-    PlayerId playerId
-    // if "fb-735238821018" = playerId
-    // then PlayerId "tw-458540585"
-    // else PlayerId playerId
+    match playerId with
+    | "fb-10160345161488703" -> PlayerId "tw-414832159"
+    | "fb-735238821018" -> PlayerId "tw-458540585"
+    | _ -> PlayerId playerId
 
   let onEvent deps (DatedEvent (event, created)) =
     printfn "handling event: %A" event
