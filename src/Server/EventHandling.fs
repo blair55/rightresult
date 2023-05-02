@@ -11,6 +11,8 @@ module EventHandling =
     match playerId with
     | "fb-10160345161488703" -> PlayerId "tw-414832159"
     | "fb-735238821018" -> PlayerId "tw-458540585"
+    | "tw-462436725" -> PlayerId "fb-10152951016485684"
+    | "tw-414832159" -> PlayerId "fb-10160345161488703"
     | _ -> PlayerId playerId
 
   let onEvent deps (DatedEvent (event, created)) =
