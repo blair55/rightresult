@@ -20,10 +20,10 @@ module EventHandling =
 
     match event with
     // players
-    | PlayerLoggedIn (MapPredictionSetEventPlayerIdId playerId) ->
+    | PlayerLoggedIn (playerId) ->
       PlayerLoggedInSubscribers.all
       |> List.iter (fun f -> f deps created playerId)
-    | PlayerCreated (MapPredictionSetEventPlayerIdId playerId, playerName, email) ->
+    | PlayerCreated (playerId, playerName, email) ->
       PlayerCreatedSubscribers.all
       |> List.iter (fun f -> f deps created (playerId, playerName, email))
     | PlayerRemoved playerId ->
@@ -40,7 +40,7 @@ module EventHandling =
     | LeagueRenamed (leagueId, leagueName) ->
       LeagueRenamedSubscribers.all
       |> List.iter (fun f -> f deps (leagueId, leagueName))
-    | LeagueJoined (leagueId, MapPredictionSetEventPlayerIdId playerId) ->
+    | LeagueJoined (leagueId, playerId) ->
       LeagueJoinedSubscribers.all
       |> List.iter (fun f -> f deps created (leagueId, playerId))
     | LeagueLeft (leagueId, playerId) ->
