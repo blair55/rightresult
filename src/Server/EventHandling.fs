@@ -10,14 +10,9 @@ module EventHandling =
   let (|MapPredictionSetEventPlayerIdId|) (PlayerId playerId) : PlayerId =
     match playerId with
     // | "fb-10160345161488703" -> PlayerId "tw-414832159" // JB reverse
-    | "tw-414832159" -> PlayerId "fb-10160345161488703" // JB
+    // | "tw-414832159" -> PlayerId "fb-10160345161488703" // JB
     | "fb-735238821018" -> PlayerId "tw-458540585" // PB
-    | "tw-462436725" -> PlayerId "fb-10152951016485684" // TD
-    | _ -> PlayerId playerId
-
-  let (|MapPlayerEventPlayerId|) (PlayerId playerId) : PlayerId =
-    match playerId with
-    | "tw-462436725" -> PlayerId "fb-10152951016485684" // TD
+    // | "tw-462436725" -> PlayerId "fb-10152951016485684" // TD
     | _ -> PlayerId playerId
 
   let onEvent deps (DatedEvent (event, created)) =
@@ -25,10 +20,10 @@ module EventHandling =
 
     match event with
     // players
-    | PlayerLoggedIn (MapPlayerEventPlayerId playerId) ->
+    | PlayerLoggedIn playerId ->
       PlayerLoggedInSubscribers.all
       |> List.iter (fun f -> f deps created playerId)
-    | PlayerCreated (MapPlayerEventPlayerId playerId, playerName, email) ->
+    | PlayerCreated (playerId, playerName, email) ->
       PlayerCreatedSubscribers.all
       |> List.iter (fun f -> f deps created (playerId, playerName, email))
     | PlayerRemoved playerId ->
@@ -45,7 +40,7 @@ module EventHandling =
     | LeagueRenamed (leagueId, leagueName) ->
       LeagueRenamedSubscribers.all
       |> List.iter (fun f -> f deps (leagueId, leagueName))
-    | LeagueJoined (leagueId, MapPlayerEventPlayerId playerId) ->
+    | LeagueJoined (leagueId, playerId) ->
       LeagueJoinedSubscribers.all
       |> List.iter (fun f -> f deps created (leagueId, playerId))
     | LeagueLeft (leagueId, playerId) ->
